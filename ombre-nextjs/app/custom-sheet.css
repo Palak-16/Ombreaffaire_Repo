@@ -1,0 +1,4 @@
+/* Hide the default close button in SheetContent */
+[role="dialog"] > button[type="button"] {
+  display: none !important;
+}

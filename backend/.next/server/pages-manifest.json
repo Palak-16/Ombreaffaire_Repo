@@ -1,0 +1,9 @@
+{
+  "/_error": "pages/_error.js",
+  "/_app": "pages/_app.js",
+  "/_document": "pages/_document.js",
+  "/api/auth/verify-otp": "pages/api/auth/verify-otp.js",
+  "/api/auth/login": "pages/api/auth/login.js",
+  "/api/auth/send-otp": "pages/api/auth/send-otp.js",
+  "/api/auth/register": "pages/api/auth/register.js"
+}
