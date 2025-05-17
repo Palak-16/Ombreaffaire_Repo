@@ -19,6 +19,9 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState("");
 
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
+
+
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
@@ -26,6 +29,16 @@ export default function SignupPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
   const sendOtp = async () => {
+    
+    if (!firstName.trim()) {
+      alert("First name is required.");
+      setIsLoading(false);
+      return;
+    }
+    if (!agreeToTerms) {
+      alert("Please agree to the Terms and Conditions before proceeding.");
+      return;
+    }
     if (password.length < 8) {
       alert("Password must be at least 8 characters long.");
       return;
@@ -60,9 +73,41 @@ export default function SignupPage() {
     }
   };
 
+  const resendOtp = async () => {
+    setIsLoading(true);
+
+    try {
+      const res = await fetch(`${apiUrl}/api/auth/send-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("OTP has been resent to your email.");
+      } else {
+        alert(data.error || "Failed to resend OTP");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("An error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
   const verifyAndRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+
+    if (!agreeToTerms) {
+      alert("Please agree to the Terms and Conditions before proceeding.");
+      setIsLoading(false);
+      return;
+    }
 
     try {
       // Step 1: Verify OTP
@@ -90,16 +135,36 @@ export default function SignupPage() {
         }),
       });
 
-      const result = await registerRes.json();
-      if (registerRes.ok) {
-        alert("Registration successful!");
-        router.push("/login");
-      } else {
-        alert(result.error || "Registration failed");
+      const registerData = await registerRes.json();
+
+      if (!registerRes.ok) {
+        alert(registerData.error || "Registration failed");
+        setIsLoading(false);
+        return;
       }
-    } catch (err) {
-      console.error(err);
-      alert("Server error");
+
+      // ✅ Step 3: Auto-login after successful registration
+      const loginRes = await fetch(`${apiUrl}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const loginData = await loginRes.json();
+
+      if (!loginRes.ok) {
+        alert(loginData.error || "Login after signup failed");
+        setIsLoading(false);
+        return;
+      }
+
+      localStorage.setItem("token", loginData.token);
+      window.dispatchEvent(new Event("storage")); // notify auth hook
+      router.push("/account");
+
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong.");
     } finally {
       setIsLoading(false);
     }
@@ -189,7 +254,14 @@ export default function SignupPage() {
               </div>
 
               <div className="flex items-start space-x-2">
-                <Checkbox id="terms" className="mt-1" required />
+                <Checkbox
+                  id="terms"
+                  className="mt-1"
+                  checked={agreeToTerms}
+                  onCheckedChange={(checked) => setAgreeToTerms(!!checked)} // ensure boolean
+                  required
+                />
+
                 <Label htmlFor="terms" className="text-sm font-normal">
                   I agree to the{" "}
                   <Link href="/terms" className="text-primary-foreground hover:underline">
@@ -225,6 +297,14 @@ export default function SignupPage() {
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
                 />
+                <button
+                  type="button"
+                  onClick={resendOtp}
+                  className="text-xs text-blue-600 hover:underline mt-1"
+                  disabled={isLoading}
+                >
+                  Resend OTP
+                </button>
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>

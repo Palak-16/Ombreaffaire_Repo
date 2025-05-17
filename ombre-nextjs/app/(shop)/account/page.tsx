@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,29 +14,46 @@ import WishlistTab from "@/components/account/wishlist-tab"
 import PaymentMethodsTab from "@/components/account/payment-methods-tab"
 import NotificationsTab from "@/components/account/notifications-tab"
 import AccountSettingsTab from "@/components/account/account-settings-tab"
+import { getUserFromToken } from "@/utils/getUserFromToken"
 
 export default function AccountPage() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const user = getUserFromToken();
+
+  useEffect(() => {
+    if (!user) {
+      router.replace("/login");
+    }
+  }, [user]);
+  if (!user) {
+  return (
+    <div className="h-screen flex items-center justify-center">
+      <p className="text-muted-foreground">Redirecting...</p>
+    </div>
+  );
+}
+
 
   const handleLogout = () => {
-    setIsLoading(true)
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false)
-      router.push("/login")
-    }, 1000)
-  }
+    setIsLoading(true);
+    // Clear token
+    localStorage.removeItem("token");
+    // Notify useAuth() and other tabs (if open)
+    window.dispatchEvent(new Event("storage"));
+    // Redirect to login page
+    router.push("/login");
+  };
 
-  // Mock user data
-  const user = {
-    name: "Jane Doe",
-    email: "jane.doe@example.com",
-    avatar: "/diverse-group-city.png",
-    memberSince: "March 2023",
-    ordersCount: 5,
-    wishlistCount: 3,
-  }
+  const name = user?.name || "User";
+  const email = user?.email || "not-available@example.com";
+
+  // Mock values for now
+  const avatar = "https://via.placeholder.com/150";
+  const memberSince = "March 2023";
+  const ordersCount = 5;
+  const wishlistCount = 3;
+
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -49,15 +67,15 @@ export default function AccountPage() {
                   <User className="h-6 w-6" />
                 </div>
                 <div>
-                  <CardTitle>{user.name}</CardTitle>
-                  <CardDescription>{user.email}</CardDescription>
+                  <CardTitle>{name}</CardTitle>
+                  <CardDescription>{email}</CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-sm text-muted-foreground">
-                <p>Member since {user.memberSince}</p>
-                <p className="mt-1">{user.ordersCount} orders placed</p>
+                <p>Member since {memberSince}</p>
+                <p className="mt-1">{ordersCount} orders placed</p>
               </div>
               <Button variant="outline" onClick={handleLogout} disabled={isLoading} className="w-full mt-4">
                 <LogOut className="mr-2 h-4 w-4" />
@@ -91,7 +109,7 @@ export default function AccountPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {user.ordersCount > 0 ? (
+                    {ordersCount > 0 ? (
                       <div className="space-y-4">
                         <div className="border-b pb-2">
                           <p className="font-medium">Order #ORD123456</p>
@@ -132,9 +150,9 @@ export default function AccountPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {user.wishlistCount > 0 ? (
+                    {wishlistCount > 0 ? (
                       <div className="space-y-4">
-                        <p className="text-sm">You have {user.wishlistCount} items in your wishlist</p>
+                        <p className="text-sm">You have {wishlistCount} items in your wishlist</p>
                         <Button variant="link" className="px-0" asChild>
                           <a
                             href="#wishlist"

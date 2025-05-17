@@ -10,6 +10,9 @@ import { Badge } from "@/components/ui/badge"
 import { useCart } from "@/hooks/use-cart"
 import { useFavorites } from "@/hooks/use-favorites"
 import { CartSidebar } from "@/components/cart-sidebar"
+import { useAuth } from "@/hooks/use-auth"
+import { getUserFromToken } from "@/utils/getUserFromToken"
+
 
 const categories = [
   { name: "New Arrivals", href: "/category/new-arrivals" },
@@ -25,6 +28,9 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { items } = useCart()
   const { items: favoriteItems } = useFavorites()
+  const { isLoggedIn } = useAuth();
+  const user = getUserFromToken();
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -87,7 +93,7 @@ export default function Header() {
             </Button>
 
             <Button variant="ghost" size="icon" asChild>
-              <Link href="/login">
+              <Link href={isLoggedIn ? "/account" : "/login"}>
                 <User className="h-5 w-5" />
                 <span className="sr-only">Account</span>
               </Link>
