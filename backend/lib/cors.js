@@ -3,7 +3,7 @@ import Cors from 'cors';
 // ✅ Allow multiple origins
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://ombrefafaire-repo-frontend.vercel.app',
+  'https://ombreaffaire-repo-frontend.vercel.app',
 ];
 
 // Dynamic origin function
