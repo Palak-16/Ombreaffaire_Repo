@@ -1,9 +1,22 @@
-// backend/lib/cors.js
 import Cors from 'cors';
 
-// Initialize the CORS middleware
+// ✅ Allow multiple origins
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://ombrefafaire-repo-frontend.vercel.app',
+];
+
+// Dynamic origin function
 const cors = Cors({
-  origin: 'http://localhost:3000', // allow frontend
+  origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['POST', 'GET', 'OPTIONS'],
 });
 
