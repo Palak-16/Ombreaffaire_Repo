@@ -3,6 +3,7 @@
 import bcrypt from 'bcryptjs';
 import supabase from '../../../lib/supabaseClient';
 import cors, { runMiddleware } from '../../../lib/cors';
+import { normalizeEmail } from '../../../lib/emailUtils';
 
 export default async function handler(req, res) {
   await runMiddleware(req, res, cors); // apply CORS
@@ -11,7 +12,10 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { name, email, password } = req.body;
+  const { name, password } = req.body;
+  const rawEmail = req.body.email;
+const email = normalizeEmail(rawEmail);
+
 
   if (!name || !email || !password) {
     return res.status(400).json({ error: 'Please fill all fields' });
