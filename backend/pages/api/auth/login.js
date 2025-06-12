@@ -35,10 +35,15 @@ const email = normalizeEmail(rawEmail);
   }
 
   const token = jwt.sign(
-    { id: user.id, email: user.email, name: user.name },
+    { id: user.id, email: user.email, name: user.name, is_admin: user.is_admin },
     process.env.JWT_SECRET,
     { expiresIn: '7d' }
   );
 
-  return res.status(200).json({ token });
+ return res.status(200).json({
+  token,
+  is_admin: user.is_admin,
+  name: user.name
+});
+
 }

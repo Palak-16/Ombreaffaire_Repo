@@ -4,8 +4,32 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { BarChart, LineChart } from "@/components/ui/charts"
 import { ArrowUpIcon, DollarSign, Package, ShoppingCart, Users } from "lucide-react"
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { getUserFromToken } from "@/utils/getUserFromToken";
 
 export default function AdminDashboard() {
+ const router = useRouter();
+  const user = getUserFromToken();
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    if (!user || !user.is_admin) {
+      router.replace("/login"); // redirect if not admin
+    } else {
+      setChecking(false); // allow render if admin
+    }
+  }, [user]);
+
+  if (checking) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p>Redirecting...</p>
+      </div>
+    );
+  }
+
+
   return (
     <div className="space-y-6">
       <div>

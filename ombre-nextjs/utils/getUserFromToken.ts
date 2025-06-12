@@ -4,6 +4,7 @@ type UserPayload = {
   id: string;
   email: string;
   name: string;
+   is_admin: boolean;
 };
 
 export function getUserFromToken(): UserPayload | null {

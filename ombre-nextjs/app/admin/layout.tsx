@@ -1,37 +1,45 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { usePathname } from "next/navigation"
-import { BarChart3, Package, ShoppingCart, Users, Settings, LogOut, Menu } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent } from "@/components/ui/sheet"
+import type React from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import {
+  BarChart3,
+  Package,
+  ShoppingCart,
+  Users,
+  Settings,
+  LogOut,
+  Menu,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 export default function AdminLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  const [isMobileView, setIsMobileView] = useState(false)
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isMobileView, setIsMobileView] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Detect mobile view
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsMobileView(window.innerWidth < 1024)
-    }
+      setIsMobileView(window.innerWidth < 1024);
+    };
 
     // Initial check
-    checkScreenSize()
+    checkScreenSize();
 
     // Add event listener for window resize
-    window.addEventListener("resize", checkScreenSize)
+    window.addEventListener("resize", checkScreenSize);
 
     // Cleanup
-    return () => window.removeEventListener("resize", checkScreenSize)
-  }, [])
+    return () => window.removeEventListener("resize", checkScreenSize);
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -79,34 +87,42 @@ export default function AdminLayout({
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-function AdminSidebar({ onNavItemClick }: { onNavItemClick?: () => void } = {}) {
-  const pathname = usePathname()
+function AdminSidebar({
+  onNavItemClick,
+}: { onNavItemClick?: () => void } = {}) {
+  const pathname = usePathname();
 
   const isActive = (path: string) => {
     if (path === "/admin" && pathname === "/admin") {
-      return true
+      return true;
     }
     if (path !== "/admin" && pathname?.startsWith(path)) {
-      return true
+      return true;
     }
-    return false
-  }
+    return false;
+  };
 
   const navItems = [
     { name: "Dashboard", href: "/admin", icon: BarChart3 },
     { name: "Products", href: "/admin/products", icon: Package },
     { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
     { name: "Customers", href: "/admin/customers", icon: Users },
-  ]
+  ];
 
   return (
     <div className="flex flex-col h-full">
       {/* Sidebar header */}
       <div className="flex items-center gap-2 px-4 py-4 border-b">
-        <Image src="/ombre-logo-new.jpeg" alt="OMBRÉ affaire" width={100} height={33} className="h-8 w-auto" />
+        <Image
+          src="/ombre-logo-new.jpeg"
+          alt="OMBRÉ affaire"
+          width={100}
+          height={33}
+          className="h-8 w-auto"
+        />
         <div className="flex flex-col">
           <span className="text-sm font-semibold">OMBRÉ affaire</span>
           <span className="text-xs text-muted-foreground">Admin Dashboard</span>
@@ -145,16 +161,19 @@ function AdminSidebar({ onNavItemClick }: { onNavItemClick?: () => void } = {}) 
             <Settings className="h-4 w-4" />
             <span>Settings</span>
           </Link>
-          <Link
-            href="/login"
-            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-            onClick={onNavItemClick}
+          <Button
+            className="flex items-center gap-3 w-full justify-start text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            onClick={() => {
+              localStorage.removeItem("token");
+              window.location.href = "/login";
+            }}
+            variant="ghost"
           >
             <LogOut className="h-4 w-4" />
             <span>Logout</span>
-          </Link>
+          </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }

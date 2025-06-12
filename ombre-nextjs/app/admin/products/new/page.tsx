@@ -1,52 +1,148 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { ArrowLeft, ImagePlus, Loader2, Save, Trash } from "lucide-react"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft, ImagePlus, Loader2, Save, Trash } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Switch } from "@/components/ui/switch"
-import { Separator } from "@/components/ui/separator"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
 
 export default function NewProductPage() {
-  const router = useRouter()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [images, setImages] = useState<string[]>([])
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Mock function to handle image upload
-  const handleImageUpload = () => {
-    // In a real app, this would handle file uploads
-    // For demo purposes, we'll just add a placeholder image
-    setImages([...images, "/assorted-products-display.png"])
-  }
+  const [name, setName] = useState("");
+  const [sku, setSku] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
+  const [brand, setBrand] = useState("");
+  const [published, setPublished] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
+  const [isImageUploading, setIsImageUploading] = useState(false);
 
-  // Mock function to remove an image
+  const [price, setPrice] = useState("");
+  const [compareAtPrice, setCompareAtPrice] = useState("");
+  const [cost, setCost] = useState("");
+  const [inventory, setInventory] = useState("");
+  const [trackInventory, setTrackInventory] = useState(false);
+
+  const [material, setMaterial] = useState("");
+  const [weight, setWeight] = useState("");
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+
+  const toggleSize = (size: string) => {
+    setSelectedSizes((prev) =>
+      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
+    );
+  };
+
+  const toggleColor = (color: string) => {
+    setSelectedColors((prev) =>
+      prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]
+    );
+  };
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    setIsImageUploading(true);
+    try {
+      const res = await fetch(`${apiUrl}/api/admin/products/upload-image`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setImages((prev) => [...prev, data.imageUrl]);
+      } else {
+        alert("Image upload failed");
+      }
+    } catch (err) {
+      alert("Image upload error");
+    } finally {
+      setIsImageUploading(false);
+    }
+  };
+
   const removeImage = (index: number) => {
-    const newImages = [...images]
-    newImages.splice(index, 1)
-    setImages(newImages)
-  }
+    const newImages = [...images];
+    newImages.splice(index, 1);
+    setImages(newImages);
+  };
 
   // Mock function to handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
 
-    // Simulate API call delay
-    setTimeout(() => {
-      setIsSubmitting(false)
-      router.push("/admin/products")
-    }, 1500)
-  }
+    try {
+      const res = await fetch(`${apiUrl}/api/admin/products/add`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          sku,
+          description,
+          category,
+          brand,
+          price: parseFloat(price),
+          compare_price: parseFloat(compareAtPrice),
+          cost: parseFloat(cost),
+          inventory: parseInt(inventory),
+          material,
+          weight: parseFloat(weight),
+          sizes: selectedSizes,
+          colors: selectedColors,
+          images,
+          published,
+          track_inventory: trackInventory,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        router.push("/admin/products");
+      } else {
+        alert(data.error || "Error saving product");
+      }
+    } catch (err) {
+      alert("Failed to save product");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -60,7 +156,10 @@ export default function NewProductPage() {
           </Button>
           <h1 className="text-2xl font-bold">Add New Product</h1>
         </div>
-        <Button onClick={handleSubmit} disabled={isSubmitting}>
+        <Button
+          onClick={handleSubmit}
+          disabled={isSubmitting || isImageUploading}
+        >
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -84,32 +183,49 @@ export default function NewProductPage() {
             <TabsTrigger value="attributes">Attributes</TabsTrigger>
           </TabsList>
 
+          {/* GENERAL */}
           <TabsContent value="general" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle>Product Information</CardTitle>
-                <CardDescription>Basic information about the product.</CardDescription>
+                <CardDescription>Basic product details.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="name">Product Name</Label>
-                    <Input id="name" placeholder="Enter product name" required />
+                    <Input
+                      id="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="sku">SKU</Label>
-                    <Input id="sku" placeholder="Enter product SKU" />
+                    <Input
+                      id="sku"
+                      value={sku}
+                      onChange={(e) => setSku(e.target.value)}
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="description">Description</Label>
-                  <Textarea id="description" placeholder="Enter product description" className="min-h-[120px]" />
+                  <Textarea
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="category">Category</Label>
-                    <Select>
-                      <SelectTrigger id="category">
+                    <Select
+                      value={category}
+                      onValueChange={(val) => setCategory(val)}
+                    >
+                      <SelectTrigger>
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
@@ -123,151 +239,178 @@ export default function NewProductPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="brand">Brand</Label>
-                    <Input id="brand" placeholder="Enter brand name" />
+                    <Input
+                      id="brand"
+                      value={brand}
+                      onChange={(e) => setBrand(e.target.value)}
+                    />
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Switch id="published" />
+                  <Switch
+                    id="published"
+                    checked={published}
+                    onCheckedChange={setPublished}
+                  />
                   <Label htmlFor="published">Published</Label>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
+          {/* IMAGES */}
           <TabsContent value="images" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle>Product Images</CardTitle>
-                <CardDescription>Upload images for this product.</CardDescription>
+                <CardDescription>
+                  Upload images for this product.
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4">
-                  <div className="flex flex-wrap gap-4">
-                    {images.map((image, index) => (
-                      <div key={index} className="relative">
-                        <img
-                          src={image || "/placeholder.svg"}
-                          alt={`Product image ${index + 1}`}
-                          className="h-32 w-32 rounded-md object-cover border"
-                        />
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          className="absolute -right-2 -top-2 h-6 w-6 rounded-full"
-                          onClick={() => removeImage(index)}
-                        >
-                          <Trash className="h-3 w-3" />
-                          <span className="sr-only">Remove image</span>
-                        </Button>
-                      </div>
-                    ))}
-                    <Button variant="outline" className="h-32 w-32 border-dashed" onClick={handleImageUpload}>
-                      <ImagePlus className="h-8 w-8 text-muted-foreground" />
-                      <span className="sr-only">Upload image</span>
-                    </Button>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Upload up to 8 images. The first image will be used as the product thumbnail.
-                  </div>
+                <div className="flex flex-wrap gap-4">
+                  {images.map((image, index) => (
+                    <div key={index} className="relative">
+                      <img
+                        src={image}
+                        alt="Product"
+                        className="h-32 w-32 rounded-md object-cover border"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute -top-2 -right-2 h-6 w-6"
+                        onClick={() => removeImage(index)}
+                      >
+                        <Trash className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                  />
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
+          {/* PRICING */}
           <TabsContent value="pricing" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle>Pricing & Inventory</CardTitle>
-                <CardDescription>Manage product pricing and inventory.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="price">Price</Label>
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">$</span>
-                      <Input id="price" type="number" step="0.01" min="0" className="pl-6" placeholder="0.00" />
-                    </div>
+                    <Input
+                      id="price"
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                    />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="compare-price">Compare at Price</Label>
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">$</span>
-                      <Input id="compare-price" type="number" step="0.01" min="0" className="pl-6" placeholder="0.00" />
-                    </div>
+                    <Label htmlFor="compareAtPrice">Compare at Price</Label>
+                    <Input
+                      id="compareAtPrice"
+                      value={compareAtPrice}
+                      onChange={(e) => setCompareAtPrice(e.target.value)}
+                    />
                   </div>
                 </div>
-                <Separator />
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="cost">Cost per item</Label>
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">$</span>
-                      <Input id="cost" type="number" step="0.01" min="0" className="pl-6" placeholder="0.00" />
-                    </div>
-                    <p className="text-xs text-muted-foreground">Customers won't see this</p>
+                    <Label htmlFor="cost">Cost</Label>
+                    <Input
+                      id="cost"
+                      value={cost}
+                      onChange={(e) => setCost(e.target.value)}
+                    />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="profit">Profit</Label>
-                    <Input id="profit" readOnly value="--" />
-                    <p className="text-xs text-muted-foreground">Calculated automatically</p>
-                  </div>
-                </div>
-                <Separator />
-                <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="inventory">Inventory</Label>
-                    <Input id="inventory" type="number" min="0" placeholder="0" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="sku">SKU (Stock Keeping Unit)</Label>
-                    <Input id="sku" placeholder="SKU-123456" />
+                    <Input
+                      id="inventory"
+                      value={inventory}
+                      onChange={(e) => setInventory(e.target.value)}
+                    />
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Switch id="track-inventory" />
-                  <Label htmlFor="track-inventory">Track inventory</Label>
+                  <Switch
+                    id="trackInventory"
+                    checked={trackInventory}
+                    onCheckedChange={setTrackInventory}
+                  />
+                  <Label htmlFor="trackInventory">Track Inventory</Label>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
+          {/* ATTRIBUTES */}
           <TabsContent value="attributes" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Product Attributes</CardTitle>
-                <CardDescription>Add attributes like size, color, material, etc.</CardDescription>
+                <CardTitle>Attributes</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label>Available Sizes</Label>
                   <div className="flex flex-wrap gap-2">
                     {["XS", "S", "M", "L", "XL", "XXL"].map((size) => (
-                      <div key={size} className="flex items-center space-x-2">
-                        <input type="checkbox" id={`size-${size}`} className="rounded border-gray-300" />
-                        <Label htmlFor={`size-${size}`}>{size}</Label>
-                      </div>
+                      <label key={size} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedSizes.includes(size)}
+                          onChange={() => toggleSize(size)}
+                          className="rounded border-gray-300"
+                        />
+                        <span>{size}</span>
+                      </label>
                     ))}
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label>Available Colors</Label>
                   <div className="flex flex-wrap gap-2">
-                    {["Black", "White", "Gray", "Beige", "Blue", "Green"].map((color) => (
-                      <div key={color} className="flex items-center space-x-2">
-                        <input type="checkbox" id={`color-${color}`} className="rounded border-gray-300" />
-                        <Label htmlFor={`color-${color}`}>{color}</Label>
-                      </div>
-                    ))}
+                    {["Black", "White", "Gray", "Beige", "Blue", "Green"].map(
+                      (color) => (
+                        <label
+                          key={color}
+                          className="flex items-center space-x-2"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedColors.includes(color)}
+                            onChange={() => toggleColor(color)}
+                            className="rounded border-gray-300"
+                          />
+                          <span>{color}</span>
+                        </label>
+                      )
+                    )}
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="material">Material</Label>
-                  <Input id="material" placeholder="e.g., Cotton, Silk, Polyester" />
+                  <Input
+                    id="material"
+                    value={material}
+                    onChange={(e) => setMaterial(e.target.value)}
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="weight">Weight (g)</Label>
-                  <Input id="weight" type="number" min="0" placeholder="0" />
+                  <Label htmlFor="weight">Weight (grams)</Label>
+                  <Input
+                    id="weight"
+                    value={weight}
+                    onChange={(e) => setWeight(e.target.value)}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -275,5 +418,5 @@ export default function NewProductPage() {
         </Tabs>
       </form>
     </div>
-  )
+  );
 }
