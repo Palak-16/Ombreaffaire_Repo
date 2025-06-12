@@ -28,10 +28,10 @@ export default async function handler(req, res) {
     images,
   } = req.body;
 
-  if (!name || !price || !category) {
+  if (!name || !price || !category || !sku || !description || !brand || !images || !inventory || !sizes || !colors) {
     return res
       .status(400)
-      .json({ error: "Name, price and category are required" });
+      .json({ error: "Fill the Required Fields!" });
   }
 
   const slug = slugify(name, { lower: true, strict: true });

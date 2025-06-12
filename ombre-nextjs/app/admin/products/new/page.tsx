@@ -106,6 +106,7 @@ export default function NewProductPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    
 
     try {
       const res = await fetch(`${apiUrl}/api/admin/products/add`, {
