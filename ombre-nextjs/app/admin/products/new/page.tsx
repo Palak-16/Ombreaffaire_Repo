@@ -41,6 +41,7 @@ export default function NewProductPage() {
   const [published, setPublished] = useState(false);
   const [images, setImages] = useState<string[]>([]);
   const [isImageUploading, setIsImageUploading] = useState(false);
+  const [mainImageIndex, setMainImageIndex] = useState(0);
 
   const [price, setPrice] = useState("");
   const [compareAtPrice, setCompareAtPrice] = useState("");
@@ -70,24 +71,27 @@ export default function NewProductPage() {
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("file", file);
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
 
     setIsImageUploading(true);
-    try {
-      const res = await fetch(`${apiUrl}/api/admin/products/upload-image`, {
-        method: "POST",
-        body: formData,
-      });
 
-      const data = await res.json();
-      if (res.ok) {
-        setImages((prev) => [...prev, data.imageUrl]);
-      } else {
-        alert("Image upload failed");
+    try {
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await fetch(`${apiUrl}/api/admin/products/upload-image`, {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          setImages((prev) => [...prev, data.imageUrl]);
+        } else {
+          alert("Image upload failed");
+        }
       }
     } catch (err) {
       alert("Image upload error");
@@ -106,7 +110,6 @@ export default function NewProductPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
 
     try {
       const res = await fetch(`${apiUrl}/api/admin/products/add`, {
@@ -127,6 +130,7 @@ export default function NewProductPage() {
           sizes: selectedSizes,
           colors: selectedColors,
           images,
+          mainImageIndex,
           published,
           track_inventory: trackInventory,
         }),
@@ -271,11 +275,15 @@ export default function NewProductPage() {
               <CardContent>
                 <div className="flex flex-wrap gap-4">
                   {images.map((image, index) => (
-                    <div key={index} className="relative">
+                    <div key={index} className="relative group">
                       <img
                         src={image}
                         alt="Product"
-                        className="h-32 w-32 rounded-md object-cover border"
+                        className={`h-32 w-32 rounded-md object-cover border-2 ${
+                          mainImageIndex === index
+                            ? "border-blue-500"
+                            : "border-gray-300"
+                        }`}
                       />
                       <Button
                         type="button"
@@ -286,11 +294,23 @@ export default function NewProductPage() {
                       >
                         <Trash className="h-3 w-3" />
                       </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="absolute bottom-1 left-1 text-xs"
+                        onClick={() => setMainImageIndex(index)}
+                      >
+                        {mainImageIndex === index
+                          ? "Main Image"
+                          : "Set as Main"}
+                      </Button>
                     </div>
                   ))}
                   <Input
                     type="file"
                     accept="image/*"
+                    multiple
                     onChange={handleImageUpload}
                   />
                 </div>

@@ -26,12 +26,22 @@ export default async function handler(req, res) {
     sizes,
     colors,
     images,
+    mainImageIndex,
   } = req.body;
 
-  if (!name || !price || !category || !sku || !description || !brand || !images || !inventory || !sizes || !colors) {
-    return res
-      .status(400)
-      .json({ error: "Fill the Required Fields!" });
+  if (
+    !name ||
+    !price ||
+    !category ||
+    !sku ||
+    !description ||
+    !brand ||
+    !images ||
+    !inventory ||
+    !sizes ||
+    !colors
+  ) {
+    return res.status(400).json({ error: "Fill the Required Fields!" });
   }
 
   const slug = slugify(name, { lower: true, strict: true });
@@ -65,9 +75,10 @@ export default async function handler(req, res) {
 
   // Insert images
   if (images?.length > 0) {
-    const imageRows = images.map((url) => ({
+    const imageRows = images.map((url, index) => ({
       product_id: product.id,
       image_url: url,
+      is_main: index === mainImageIndex, // ✅ true for selected image
     }));
 
     const { error: imageInsertError } = await supabase
