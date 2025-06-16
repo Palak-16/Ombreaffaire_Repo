@@ -40,8 +40,8 @@ type Product = {
   status: "In Stock" | "Low Stock" | "Out of Stock";
 };
 
-
 export default function ProductsPage() {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -49,9 +49,7 @@ export default function ProductsPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/admin/products`
-        );
+        const res = await fetch(`${apiUrl}/api/admin/products`);
         const data = await res.json();
         setProducts(data.products); // expected response shape
       } catch (err) {
@@ -76,16 +74,19 @@ export default function ProductsPage() {
     );
     if (!confirm) return;
 
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/admin/products/${productId}`,
-      {
+    try {
+      const res = await fetch(`${apiUrl}/api/admin/products/${productId}`, {
         method: "DELETE",
-      }
-    );
+      });
 
-    if (res.ok) {
+      if (!res.ok) {
+        throw new Error("Failed to delete product");
+      }
+
+      // ✅ Only update frontend state if delete was successful
       setProducts((prev) => prev.filter((p) => p.id !== productId));
-    } else {
+    } catch (err) {
+      console.error("Delete error:", err);
       alert("Failed to delete product");
     }
   };

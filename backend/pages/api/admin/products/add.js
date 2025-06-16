@@ -27,6 +27,7 @@ export default async function handler(req, res) {
     colors,
     images,
     mainImageIndex,
+    sizeChart
   } = req.body;
 
   if (
@@ -44,6 +45,23 @@ export default async function handler(req, res) {
   }
 
   const slug = slugify(name, { lower: true, strict: true });
+
+  console.log("📦 Final product payload:", {
+  name,
+  slug,
+  sku,
+  description,
+  category,
+  brand,
+  material,
+  weight,
+  price,
+  compare_price,
+  cost,
+  inventory,
+  track_inventory,
+  published
+});
 
   const { data: product, error } = await supabase
     .from("products")
@@ -63,11 +81,15 @@ export default async function handler(req, res) {
       inventory,
       track_inventory,
       published,
+      
     })
     .select()
     .single();
 
-  if (error) return res.status(500).json({ error: "Failed to create product" });
+ if (error) {
+  console.error("Product insert error:", error);
+  return res.status(500).json({ error: error.message || "Failed to create product" });
+}
 
   // Insert images
   console.log("Images to insert:", images);
@@ -104,6 +126,19 @@ export default async function handler(req, res) {
     }));
     await supabase.from("product_colors").insert(colorRows);
   }
+  if (sizeChart && brand) {
+  const sizeChartRows = sizeChart.map(row => ({
+    brand,
+    size: row.size,
+    uk: row.uk,
+    bust: row.bust,
+    waist: row.waist,
+    hip: row.hip
+  }));
+
+  await supabase.from("size_charts").insert(sizeChartRows);
+}
+
 
   return res
     .status(200)

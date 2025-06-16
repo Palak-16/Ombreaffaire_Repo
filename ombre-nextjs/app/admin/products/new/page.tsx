@@ -60,6 +60,17 @@ export default function NewProductPage() {
   >([]);
   const [newColorLabel, setNewColorLabel] = useState("");
   const [newColorHex, setNewColorHex] = useState("#000000");
+  const [existingSizeChart, setExistingSizeChart] = useState([]);
+
+  const [sizeChartRows, setSizeChartRows] = useState([
+    { size: "XXS", uk: "4", bust: "", waist: "", hip: "" },
+    { size: "XS", uk: "6", bust: "", waist: "", hip: "" },
+    { size: "S", uk: "8", bust: "", waist: "", hip: "" },
+    { size: "M", uk: "10", bust: "", waist: "", hip: "" },
+    { size: "L", uk: "12", bust: "", waist: "", hip: "" },
+    { size: "XL", uk: "14", bust: "", waist: "", hip: "" },
+     { size: "XL", uk: "16", bust: "", waist: "", hip: "" },
+  ]);
 
   const handleAddColor = async () => {
     if (!newColorLabel.trim()) return;
@@ -98,6 +109,27 @@ export default function NewProductPage() {
     };
     fetchColors();
   }, []);
+
+  useEffect(() => {
+    if (!brand) return;
+
+    const fetchSizeChart = async () => {
+      try {
+        const res = await fetch(
+          `${apiUrl}/api/admin/sizechart?brand=${encodeURIComponent(brand)}`
+        );
+        const data = await res.json();
+        if (res.ok && data.sizeChart) {
+          setSizeChartRows(data.sizeChart);
+          setExistingSizeChart(data.sizeChart); // Optional: for future comparison
+        }
+      } catch (err) {
+        console.error("Size chart fetch failed", err);
+      }
+    };
+
+    fetchSizeChart();
+  }, [brand]);
 
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -153,6 +185,7 @@ export default function NewProductPage() {
           description,
           category,
           brand,
+          sizeChart: sizeChartRows,
           price: parseFloat(price),
           compare_price: parseFloat(compareAtPrice),
           cost: parseFloat(cost),
@@ -170,6 +203,13 @@ export default function NewProductPage() {
 
       const data = await res.json();
       if (res.ok) {
+        // ✅ Save size chart to size_charts table
+        await fetch(`${apiUrl}/api/admin/sizechart`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ brand, chart_data: sizeChartRows }),
+        });
+
         router.push("/admin/products");
       } else {
         alert(data.error || "Error saving product");
@@ -272,9 +312,7 @@ export default function NewProductPage() {
                         <SelectItem value="Suit">Suit</SelectItem>
                         <SelectItem value="accessories">Jumpsuits</SelectItem>
                         <SelectItem value="Jumpsuits">Lehngas</SelectItem>
-                        <SelectItem value="Tops">
-                          Tops | Shirts
-                        </SelectItem>
+                        <SelectItem value="Tops">Tops | Shirts</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -495,6 +533,69 @@ export default function NewProductPage() {
                     value={weight}
                     onChange={(e) => setWeight(e.target.value)}
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label>Brand-Specific Size Chart</Label>
+                  <div className="overflow-auto">
+                    <table className="w-full text-sm text-left border border-gray-300">
+                      <thead>
+                        <tr>
+                          <th className="border p-2">Size</th>
+                          <th className="border p-2">UK</th>
+                          <th className="border p-2">Bust</th>
+                          <th className="border p-2">Waist</th>
+                          <th className="border p-2">Hip</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sizeChartRows.map((row, index) => (
+                          <tr key={index}>
+                            <td className="border p-2">{row.size}</td>
+                            <td className="border p-2">
+                              <Input
+                                value={row.uk}
+                                onChange={(e) => {
+                                  const rows = [...sizeChartRows];
+                                  rows[index].uk = e.target.value;
+                                  setSizeChartRows(rows);
+                                }}
+                              />
+                            </td>
+                            <td className="border p-2">
+                              <Input
+                                value={row.bust}
+                                onChange={(e) => {
+                                  const rows = [...sizeChartRows];
+                                  rows[index].bust = e.target.value;
+                                  setSizeChartRows(rows);
+                                }}
+                              />
+                            </td>
+                            <td className="border p-2">
+                              <Input
+                                value={row.waist}
+                                onChange={(e) => {
+                                  const rows = [...sizeChartRows];
+                                  rows[index].waist = e.target.value;
+                                  setSizeChartRows(rows);
+                                }}
+                              />
+                            </td>
+                            <td className="border p-2">
+                              <Input
+                                value={row.hip}
+                                onChange={(e) => {
+                                  const rows = [...sizeChartRows];
+                                  rows[index].hip = e.target.value;
+                                  setSizeChartRows(rows);
+                                }}
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </CardContent>
             </Card>

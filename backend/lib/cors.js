@@ -17,7 +17,7 @@ const cors = Cors({
       return callback(new Error('Not allowed by CORS'));
     }
   },
-  methods: ['POST', 'GET', 'OPTIONS'],
+  methods: ['POST', 'GET', 'OPTIONS', 'PUT', 'DELETE'],
 });
 
 export function runMiddleware(req, res, fn) {
