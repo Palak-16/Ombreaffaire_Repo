@@ -1,92 +1,94 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { Edit, Eye, MoreHorizontal, Plus, Search, Trash2 } from "lucide-react"
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Edit, Eye, MoreHorizontal, Plus, Search, Trash2 } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
-// Mock product data
-const products = [
-  {
-    id: "PROD-001",
-    name: "Flowing Ombré Dress",
-    image: "/flowing-ombre-dress.png",
-    category: "Dresses",
-    price: "$99.99",
-    stock: 45,
-    status: "In Stock",
-  },
-  {
-    id: "PROD-002",
-    name: "Soft Cream Blazer",
-    image: "/soft-cream-blazer.png",
-    category: "Outerwear",
-    price: "$129.99",
-    stock: 32,
-    status: "In Stock",
-  },
-  {
-    id: "PROD-003",
-    name: "Faded Beige Maxi",
-    image: "/faded-beige-maxi.png",
-    category: "Dresses",
-    price: "$89.99",
-    stock: 18,
-    status: "Low Stock",
-  },
-  {
-    id: "PROD-004",
-    name: "Elegant Pearl Drops",
-    image: "/elegant-pearl-drops.png",
-    category: "Accessories",
-    price: "$49.99",
-    stock: 56,
-    status: "In Stock",
-  },
-  {
-    id: "PROD-005",
-    name: "Draped Beige Silk",
-    image: "/draped-beige-silk.png",
-    category: "Tops",
-    price: "$79.99",
-    stock: 0,
-    status: "Out of Stock",
-  },
-  {
-    id: "PROD-006",
-    name: "Flowing Cream Gradient Blouse",
-    image: "/flowing-cream-gradient-blouse.png",
-    category: "Tops",
-    price: "$69.99",
-    stock: 27,
-    status: "In Stock",
-  },
-  {
-    id: "PROD-007",
-    name: "Shimmering Emerald Gown",
-    image: "/shimmering-emerald-gown.png",
-    category: "Dresses",
-    price: "$149.99",
-    stock: 12,
-    status: "Low Stock",
-  },
-]
+type Product = {
+  id: string;
+  name: string;
+  sku: string;
+  image: string;
+  category: string;
+  price: string;
+  stock: number;
+  status: "In Stock" | "Low Stock" | "Out of Stock";
+};
+
 
 export default function ProductsPage() {
-  const [searchQuery, setSearchQuery] = useState("")
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/admin/products`
+        );
+        const data = await res.json();
+        setProducts(data.products); // expected response shape
+      } catch (err) {
+        console.error("Failed to fetch products", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const filteredProducts = products.filter(
     (product) =>
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+      product.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  const handleDelete = async (productId: string) => {
+    const confirm = window.confirm(
+      "Are you sure you want to delete this product?"
+    );
+    if (!confirm) return;
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/admin/products/${productId}`,
+      {
+        method: "DELETE",
+      }
+    );
+
+    if (res.ok) {
+      setProducts((prev) => prev.filter((p) => p.id !== productId));
+    } else {
+      alert("Failed to delete product");
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -103,7 +105,10 @@ export default function ProductsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Product Management</CardTitle>
-          <CardDescription>Manage your product inventory, edit details, and monitor stock levels.</CardDescription>
+          <CardDescription>
+            Manage your product inventory, edit details, and monitor stock
+            levels.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="mb-4 flex flex-col sm:flex-row items-center gap-2">
@@ -148,7 +153,9 @@ export default function ProductsPage() {
                           </div>
                           <div>
                             <div className="font-medium">{product.name}</div>
-                            <div className="text-xs text-muted-foreground">{product.id}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {product.sku}
+                            </div>
                           </div>
                         </div>
                       </TableCell>
@@ -161,8 +168,8 @@ export default function ProductsPage() {
                             product.status === "In Stock"
                               ? "bg-green-100 text-green-700"
                               : product.status === "Low Stock"
-                                ? "bg-yellow-100 text-yellow-700"
-                                : "bg-red-100 text-red-700"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : "bg-red-100 text-red-700"
                           }`}
                         >
                           {product.status}
@@ -189,7 +196,10 @@ export default function ProductsPage() {
                                 Edit
                               </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600">
+                            <DropdownMenuItem
+                              className="text-red-600"
+                              onClick={() => handleDelete(product.id)}
+                            >
                               <Trash2 className="mr-2 h-4 w-4" />
                               Delete
                             </DropdownMenuItem>
@@ -212,5 +222,5 @@ export default function ProductsPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
