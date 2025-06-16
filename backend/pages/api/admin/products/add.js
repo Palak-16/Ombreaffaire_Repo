@@ -1,4 +1,4 @@
-import supabase from "../../../../lib/supabaseClient.js";
+import supabase from "../../../../lib/supabaseClient";
 import slugify from "slugify";
 import { v4 as uuidv4 } from "uuid";
 import cors, { runMiddleware } from "../../../../lib/cors";
@@ -37,7 +37,6 @@ export default async function handler(req, res) {
     !description ||
     !brand ||
     !images ||
-    !inventory ||
     !sizes ||
     !colors
   ) {
@@ -99,7 +98,10 @@ export default async function handler(req, res) {
 
   // Insert colors
   if (colors?.length > 0) {
-    const colorRows = colors.map((c) => ({ product_id: product.id, color: c }));
+    const colorRows = colors.map((color_id) => ({
+      product_id: product.id,
+      color_id,
+    }));
     await supabase.from("product_colors").insert(colorRows);
   }
 

@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ImagePlus, Loader2, Save, Trash } from "lucide-react";
@@ -30,6 +30,8 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 
 export default function NewProductPage() {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -52,7 +54,31 @@ export default function NewProductPage() {
   const [material, setMaterial] = useState("");
   const [weight, setWeight] = useState("");
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
-  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [selectedColorIds, setSelectedColorIds] = useState<string[]>([]);
+  const [globalColors, setGlobalColors] = useState<
+    { id: string; label: string; hex: string }[]
+  >([]);
+  const [newColorLabel, setNewColorLabel] = useState("");
+  const [newColorHex, setNewColorHex] = useState("#000000");
+
+  const handleAddColor = async () => {
+    if (!newColorLabel.trim()) return;
+
+    const res = await fetch(`${apiUrl}/api/colors`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ label: newColorLabel.trim(), hex: newColorHex }),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      setGlobalColors((prev) => [...prev, data.color]);
+      setNewColorLabel("");
+      setNewColorHex("#000000");
+    } else {
+      alert(data.error || "Failed to add color");
+    }
+  };
 
   const toggleSize = (size: string) => {
     setSelectedSizes((prev) =>
@@ -60,13 +86,18 @@ export default function NewProductPage() {
     );
   };
 
-  const toggleColor = (color: string) => {
-    setSelectedColors((prev) =>
-      prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]
-    );
-  };
-
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  useEffect(() => {
+    const fetchColors = async () => {
+      try {
+        const res = await fetch(`${apiUrl}/api/colors`);
+        const data = await res.json();
+        setGlobalColors(data.colors || []);
+      } catch (err) {
+        console.error("Color fetch failed", err);
+      }
+    };
+    fetchColors();
+  }, []);
 
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -87,6 +118,7 @@ export default function NewProductPage() {
         });
 
         const data = await res.json();
+        console.log(data);
         if (res.ok) {
           setImages((prev) => [...prev, data.imageUrl]);
         } else {
@@ -128,7 +160,7 @@ export default function NewProductPage() {
           material,
           weight: parseFloat(weight),
           sizes: selectedSizes,
-          colors: selectedColors,
+          colors: selectedColorIds,
           images,
           mainImageIndex,
           published,
@@ -235,10 +267,14 @@ export default function NewProductPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="dresses">Dresses</SelectItem>
-                        <SelectItem value="tops">Tops</SelectItem>
-                        <SelectItem value="bottoms">Bottoms</SelectItem>
-                        <SelectItem value="outerwear">Outerwear</SelectItem>
-                        <SelectItem value="accessories">Accessories</SelectItem>
+                        <SelectItem value="CordSets">Cord-Sets</SelectItem>
+                        <SelectItem value="Saree">Saree</SelectItem>
+                        <SelectItem value="Suit">Suit</SelectItem>
+                        <SelectItem value="accessories">Jumpsuits</SelectItem>
+                        <SelectItem value="Jumpsuits">Lehngas</SelectItem>
+                        <SelectItem value="Tops">
+                          Tops | Shirts
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -383,7 +419,7 @@ export default function NewProductPage() {
                 <div className="space-y-2">
                   <Label>Available Sizes</Label>
                   <div className="flex flex-wrap gap-2">
-                    {["XS", "S", "M", "L", "XL", "XXL"].map((size) => (
+                    {["XXS", "XS", "S", "M", "L", "XL", "XXL"].map((size) => (
                       <label key={size} className="flex items-center space-x-2">
                         <input
                           type="checkbox"
@@ -397,26 +433,53 @@ export default function NewProductPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Available Colors</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {["Black", "White", "Gray", "Beige", "Blue", "Green"].map(
-                      (color) => (
-                        <label
-                          key={color}
-                          className="flex items-center space-x-2"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedColors.includes(color)}
-                            onChange={() => toggleColor(color)}
-                            className="rounded border-gray-300"
-                          />
-                          <span>{color}</span>
-                        </label>
-                      )
-                    )}
+                  <Label>Select Colors</Label>
+                  <div className="flex flex-wrap gap-3 mt-2">
+                    {globalColors.map((color) => {
+                      const isSelected = selectedColorIds.includes(color.id);
+                      return (
+                        <button
+                          key={color.id}
+                          type="button"
+                          onClick={() =>
+                            setSelectedColorIds((prev) =>
+                              isSelected
+                                ? prev.filter((id) => id !== color.id)
+                                : [...prev, color.id]
+                            )
+                          }
+                          className={`w-10 h-10 rounded-full border-2 ${
+                            isSelected ? "ring-2 ring-black" : "border-gray-300"
+                          }`}
+                          style={{ backgroundColor: color.hex }}
+                          title={color.label}
+                        />
+                      );
+                    })}
                   </div>
                 </div>
+                <div className="space-y-2 mt-6">
+                  <Label>Add New Color</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="text"
+                      placeholder="Color Name (e.g. Peach Blush)"
+                      value={newColorLabel}
+                      onChange={(e) => setNewColorLabel(e.target.value)}
+                      className="w-48"
+                    />
+                    <Input
+                      type="color"
+                      value={newColorHex}
+                      onChange={(e) => setNewColorHex(e.target.value)}
+                      className="w-12 p-1"
+                    />
+                    <Button type="button" onClick={handleAddColor}>
+                      Add
+                    </Button>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="material">Material</Label>
                   <Input
