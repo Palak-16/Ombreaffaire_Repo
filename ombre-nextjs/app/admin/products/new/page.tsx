@@ -69,7 +69,7 @@ export default function NewProductPage() {
     { size: "M", uk: "10", bust: "", waist: "", hip: "" },
     { size: "L", uk: "12", bust: "", waist: "", hip: "" },
     { size: "XL", uk: "14", bust: "", waist: "", hip: "" },
-     { size: "XL", uk: "16", bust: "", waist: "", hip: "" },
+    { size: "XXL", uk: "16", bust: "", waist: "", hip: "" },
   ]);
 
   const handleAddColor = async () => {
@@ -90,6 +90,10 @@ export default function NewProductPage() {
       alert(data.error || "Failed to add color");
     }
   };
+
+  const [variants, setVariants] = useState<{
+    [key: string]: { sku: string; inventory: number };
+  }>({});
 
   const toggleSize = (size: string) => {
     setSelectedSizes((prev) =>
@@ -130,6 +134,19 @@ export default function NewProductPage() {
 
     fetchSizeChart();
   }, [brand]);
+
+  useEffect(() => {
+    const newVariants: typeof variants = {};
+
+    selectedSizes.forEach((size) => {
+      selectedColorIds.forEach((colorId) => {
+        const key = `${size}_${colorId}`;
+        newVariants[key] = variants[key] || { sku: "", inventory: 0 };
+      });
+    });
+
+    setVariants(newVariants);
+  }, [selectedSizes, selectedColorIds]);
 
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -198,6 +215,15 @@ export default function NewProductPage() {
           mainImageIndex,
           published,
           track_inventory: trackInventory,
+          variants: Object.entries(variants).map(([key, val]) => {
+            const [size, color] = key.split("_");
+            return {
+              size,
+              color,
+              sku: val.sku,
+              inventory: val.inventory,
+            };
+          }),
         }),
       });
 
@@ -258,6 +284,7 @@ export default function NewProductPage() {
             <TabsTrigger value="images">Images</TabsTrigger>
             <TabsTrigger value="pricing">Pricing & Inventory</TabsTrigger>
             <TabsTrigger value="attributes">Attributes</TabsTrigger>
+            <TabsTrigger value="variants">Variants</TabsTrigger>
           </TabsList>
 
           {/* GENERAL */}
@@ -597,6 +624,89 @@ export default function NewProductPage() {
                     </table>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="variants" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Product Variants</CardTitle>
+                <CardDescription>
+                  Assign SKU and Inventory to each Size + Color combination.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {Object.keys(variants).length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    Select at least one size and one color to add variants.
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {Object.entries(variants).map(([key, val]) => {
+                      const [size, colorId] = key.split("_");
+                      const color = globalColors.find((c) => c.id === colorId);
+                      if (!color) return null;
+
+                      return (
+                        <div
+                          key={key}
+                          className="grid grid-cols-5 gap-4 items-center"
+                        >
+                          <div className="col-span-1 font-medium">{size}</div>
+                          <div className="col-span-1 font-medium">
+                            {color.label}
+                          </div>
+                          <Input
+                            placeholder="SKU"
+                            value={val.sku}
+                            onChange={(e) =>
+                              setVariants((prev) => ({
+                                ...prev,
+                                [key]: {
+                                  ...prev[key],
+                                  sku: e.target.value,
+                                },
+                              }))
+                            }
+                          />
+                          <Input
+                            placeholder="Inventory"
+                            type="number"
+                            value={val.inventory?.toString() || ""}
+                            onChange={(e) =>
+                              setVariants((prev) => ({
+                                ...prev,
+                                [key]: {
+                                  ...prev[key],
+                                  inventory:
+                                    e.target.value === ""
+                                      ? 0
+                                      : parseInt(e.target.value),
+                                },
+                              }))
+                            }
+                          />
+
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="destructive"
+                            onClick={() =>
+                              setVariants((prev) => {
+                                const copy = { ...prev };
+                                delete copy[key];
+                                return copy;
+                              })
+                            }
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

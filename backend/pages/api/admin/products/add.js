@@ -27,7 +27,7 @@ export default async function handler(req, res) {
     colors,
     images,
     mainImageIndex,
-    sizeChart
+    sizeChart,
   } = req.body;
 
   if (
@@ -47,21 +47,21 @@ export default async function handler(req, res) {
   const slug = slugify(name, { lower: true, strict: true });
 
   console.log("📦 Final product payload:", {
-  name,
-  slug,
-  sku,
-  description,
-  category,
-  brand,
-  material,
-  weight,
-  price,
-  compare_price,
-  cost,
-  inventory,
-  track_inventory,
-  published
-});
+    name,
+    slug,
+    sku,
+    description,
+    category,
+    brand,
+    material,
+    weight,
+    price,
+    compare_price,
+    cost,
+    inventory,
+    track_inventory,
+    published,
+  });
 
   const { data: product, error } = await supabase
     .from("products")
@@ -81,15 +81,16 @@ export default async function handler(req, res) {
       inventory,
       track_inventory,
       published,
-      
     })
     .select()
     .single();
 
- if (error) {
-  console.error("Product insert error:", error);
-  return res.status(500).json({ error: error.message || "Failed to create product" });
-}
+  if (error) {
+    console.error("Product insert error:", error);
+    return res
+      .status(500)
+      .json({ error: error.message || "Failed to create product" });
+  }
 
   // Insert images
   console.log("Images to insert:", images);
@@ -127,18 +128,37 @@ export default async function handler(req, res) {
     await supabase.from("product_colors").insert(colorRows);
   }
   if (sizeChart && brand) {
-  const sizeChartRows = sizeChart.map(row => ({
-    brand,
-    size: row.size,
-    uk: row.uk,
-    bust: row.bust,
-    waist: row.waist,
-    hip: row.hip
-  }));
+    const sizeChartRows = sizeChart.map((row) => ({
+      brand,
+      size: row.size,
+      uk: row.uk,
+      bust: row.bust,
+      waist: row.waist,
+      hip: row.hip,
+    }));
 
-  await supabase.from("size_charts").insert(sizeChartRows);
-}
+    await supabase.from("size_charts").insert(sizeChartRows);
+  }
 
+  // Insert variants into product_size_colors table
+  if (req.body.variants?.length > 0) {
+    const variantRows = req.body.variants.map((variant) => ({
+      product_id: product.id,
+      size: variant.size,
+      color_id: variant.color,
+      sku: variant.sku,
+      inventory: variant.inventory,
+    }));
+
+    const { error: variantError } = await supabase
+      .from("product_size_colors")
+      .insert(variantRows);
+
+    if (variantError) {
+      console.error("Failed to insert variants:", variantError);
+      return res.status(500).json({ error: "Failed to insert variants" });
+    }
+  }
 
   return res
     .status(200)
