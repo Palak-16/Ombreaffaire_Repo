@@ -285,6 +285,7 @@ export default function NewProductPage() {
             <TabsTrigger value="pricing">Pricing & Inventory</TabsTrigger>
             <TabsTrigger value="attributes">Attributes</TabsTrigger>
             <TabsTrigger value="variants">Variants</TabsTrigger>
+             <TabsTrigger value="sizechart">Size Chart</TabsTrigger>
           </TabsList>
 
           {/* GENERAL */}
@@ -561,69 +562,7 @@ export default function NewProductPage() {
                     onChange={(e) => setWeight(e.target.value)}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label>Brand-Specific Size Chart</Label>
-                  <div className="overflow-auto">
-                    <table className="w-full text-sm text-left border border-gray-300">
-                      <thead>
-                        <tr>
-                          <th className="border p-2">Size</th>
-                          <th className="border p-2">UK</th>
-                          <th className="border p-2">Bust</th>
-                          <th className="border p-2">Waist</th>
-                          <th className="border p-2">Hip</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {sizeChartRows.map((row, index) => (
-                          <tr key={index}>
-                            <td className="border p-2">{row.size}</td>
-                            <td className="border p-2">
-                              <Input
-                                value={row.uk}
-                                onChange={(e) => {
-                                  const rows = [...sizeChartRows];
-                                  rows[index].uk = e.target.value;
-                                  setSizeChartRows(rows);
-                                }}
-                              />
-                            </td>
-                            <td className="border p-2">
-                              <Input
-                                value={row.bust}
-                                onChange={(e) => {
-                                  const rows = [...sizeChartRows];
-                                  rows[index].bust = e.target.value;
-                                  setSizeChartRows(rows);
-                                }}
-                              />
-                            </td>
-                            <td className="border p-2">
-                              <Input
-                                value={row.waist}
-                                onChange={(e) => {
-                                  const rows = [...sizeChartRows];
-                                  rows[index].waist = e.target.value;
-                                  setSizeChartRows(rows);
-                                }}
-                              />
-                            </td>
-                            <td className="border p-2">
-                              <Input
-                                value={row.hip}
-                                onChange={(e) => {
-                                  const rows = [...sizeChartRows];
-                                  rows[index].hip = e.target.value;
-                                  setSizeChartRows(rows);
-                                }}
-                              />
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+                
               </CardContent>
             </Card>
           </TabsContent>
@@ -710,6 +649,77 @@ export default function NewProductPage() {
               </CardContent>
             </Card>
           </TabsContent>
+          <TabsContent value="sizechart" className="space-y-4">
+  <Card>
+    <CardHeader>
+      <CardTitle>Brand-Specific Size Chart</CardTitle>
+    </CardHeader>
+    <CardContent className="space-y-2">
+      <div className="overflow-auto">
+        <table className="w-full text-sm text-left border border-gray-300">
+          <thead>
+            <tr>
+              <th className="border p-2">Size</th>
+              <th className="border p-2">UK</th>
+              <th className="border p-2">Bust</th>
+              <th className="border p-2">Waist</th>
+              <th className="border p-2">Hip</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sizeChartRows.map((row, index) => (
+              <tr key={index}>
+                <td className="border p-2">{row.size}</td>
+                <td className="border p-2">
+                  <Input
+                    value={row.uk}
+                    onChange={(e) => {
+                      const rows = [...sizeChartRows];
+                      rows[index].uk = e.target.value;
+                      setSizeChartRows(rows);
+                    }}
+                  />
+                </td>
+                <td className="border p-2">
+                  <Input
+                    value={row.bust}
+                    onChange={(e) => {
+                      const rows = [...sizeChartRows];
+                      rows[index].bust = e.target.value;
+                      setSizeChartRows(rows);
+                    }}
+                  />
+                </td>
+                <td className="border p-2">
+                  <Input
+                    value={row.waist}
+                    onChange={(e) => {
+                      const rows = [...sizeChartRows];
+                      rows[index].waist = e.target.value;
+                      setSizeChartRows(rows);
+                    }}
+                  />
+                </td>
+                <td className="border p-2">
+                  <Input
+                    value={row.hip}
+                    onChange={(e) => {
+                      const rows = [...sizeChartRows];
+                      rows[index].hip = e.target.value;
+                      setSizeChartRows(rows);
+                    }}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </CardContent>
+  </Card>
+</TabsContent>
+
+           
         </Tabs>
       </form>
     </div>

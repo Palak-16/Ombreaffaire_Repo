@@ -46,22 +46,6 @@ export default async function handler(req, res) {
 
   const slug = slugify(name, { lower: true, strict: true });
 
-  console.log("📦 Final product payload:", {
-    name,
-    slug,
-    sku,
-    description,
-    category,
-    brand,
-    material,
-    weight,
-    price,
-    compare_price,
-    cost,
-    inventory,
-    track_inventory,
-    published,
-  });
 
   const { data: product, error } = await supabase
     .from("products")
@@ -92,8 +76,6 @@ export default async function handler(req, res) {
       .json({ error: error.message || "Failed to create product" });
   }
 
-  // Insert images
-  console.log("Images to insert:", images);
 
   // Insert images
   if (images?.length > 0) {
