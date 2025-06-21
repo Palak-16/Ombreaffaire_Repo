@@ -129,7 +129,7 @@ export default async function handler(req, res) {
   
   // Insert product_color_images
 if (product_color_images?.length > 0) {
-  const colorImageRows = product_color_images.map(({ color_id, image_urls }) => ({
+  const colorImageRows = product_color_images.map(({ color_id, image_urls, main_index }) => ({
     product_id: product.id,
     color_id,
     image_urls, // array of URLs

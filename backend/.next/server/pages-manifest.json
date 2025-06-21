@@ -2,6 +2,8 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/api/colors": "pages/api/colors.js",
-  "/api/admin/products/upload-image": "pages/api/admin/products/upload-image.js"
+  "/api/admin/sizechart": "pages/api/admin/sizechart.js",
+  "/api/admin/products/[id]": "pages/api/admin/products/[id].js",
+  "/api/admin/products/add": "pages/api/admin/products/add.js",
+  "/api/admin/products": "pages/api/admin/products.js"
 }

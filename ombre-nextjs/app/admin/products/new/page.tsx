@@ -29,6 +29,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 
+
+
 export default function NewProductPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -220,9 +222,10 @@ export default function NewProductPage() {
           published,
           track_inventory: trackInventory,
           product_color_images: Object.entries(colorImages).map(
-            ([color_id, urls]) => ({
+            ([color_id, data]) => ({
               color_id,
-              image_urls: urls,
+              image_urls: data.urls,
+              main_index: data.mainIndex,
             })
           ),
 
