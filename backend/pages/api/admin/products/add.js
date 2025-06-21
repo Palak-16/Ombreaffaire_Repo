@@ -28,6 +28,8 @@ export default async function handler(req, res) {
     images,
     mainImageIndex,
     sizeChart,
+    product_color_images,
+
   } = req.body;
 
   if (
@@ -77,24 +79,7 @@ export default async function handler(req, res) {
   }
 
 
-  // Insert images
-  if (images?.length > 0) {
-    const imageRows = images.map((url, index) => ({
-      product_id: product.id,
-      image_url: url,
-      is_main: index === mainImageIndex, // ✅ true for selected image
-    }));
-
-    const { error: imageInsertError } = await supabase
-      .from("product_images")
-      .insert(imageRows);
-
-    if (imageInsertError) {
-      console.error("Error inserting images:", imageInsertError);
-      return res.status(500).json({ error: "Failed to insert product images" });
-    }
-  }
-
+ 
   // Insert sizes
   if (sizes?.length > 0) {
     const sizeRows = sizes.map((s) => ({ product_id: product.id, size: s }));
@@ -141,6 +126,26 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Failed to insert variants" });
     }
   }
+  
+  // Insert product_color_images
+if (product_color_images?.length > 0) {
+  const colorImageRows = product_color_images.map(({ color_id, image_urls }) => ({
+    product_id: product.id,
+    color_id,
+    image_urls, // array of URLs
+    main_index,
+  }));
+
+  const { error: colorImageError } = await supabase
+    .from("product_color_images")
+    .insert(colorImageRows);
+
+  if (colorImageError) {
+    console.error("Failed to insert product_color_images:", colorImageError);
+    return res.status(500).json({ error: "Failed to insert color-specific images" });
+  }
+}
+
 
   return res
     .status(200)

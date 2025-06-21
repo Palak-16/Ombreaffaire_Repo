@@ -55,6 +55,10 @@ export default function NewProductPage() {
   const [weight, setWeight] = useState("");
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedColorIds, setSelectedColorIds] = useState<string[]>([]);
+  const [colorImages, setColorImages] = useState<{
+    [colorId: string]: { urls: string[]; mainIndex: number };
+  }>({});
+
   const [globalColors, setGlobalColors] = useState<
     { id: string; label: string; hex: string }[]
   >([]);
@@ -215,6 +219,13 @@ export default function NewProductPage() {
           mainImageIndex,
           published,
           track_inventory: trackInventory,
+          product_color_images: Object.entries(colorImages).map(
+            ([color_id, urls]) => ({
+              color_id,
+              image_urls: urls,
+            })
+          ),
+
           variants: Object.entries(variants).map(([key, val]) => {
             const [size, color] = key.split("_");
             return {
@@ -233,7 +244,10 @@ export default function NewProductPage() {
         await fetch(`${apiUrl}/api/admin/sizechart`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ brand:brand.trim().toLowerCase(), chart_data: sizeChartRows }),
+          body: JSON.stringify({
+            brand: brand.trim().toLowerCase(),
+            chart_data: sizeChartRows,
+          }),
         });
 
         router.push("/admin/products");
@@ -281,11 +295,11 @@ export default function NewProductPage() {
         <Tabs defaultValue="general" className="space-y-4">
           <TabsList>
             <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="images">Images</TabsTrigger>
             <TabsTrigger value="pricing">Pricing & Inventory</TabsTrigger>
             <TabsTrigger value="attributes">Attributes</TabsTrigger>
+            <TabsTrigger value="colorImages">Color Images</TabsTrigger>
             <TabsTrigger value="variants">Variants</TabsTrigger>
-             <TabsTrigger value="sizechart">Size Chart</TabsTrigger>
+            <TabsTrigger value="sizechart">Size Chart</TabsTrigger>
           </TabsList>
 
           {/* GENERAL */}
@@ -366,56 +380,132 @@ export default function NewProductPage() {
           </TabsContent>
 
           {/* IMAGES */}
-          <TabsContent value="images" className="space-y-4">
+          <TabsContent value="colorImages" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Product Images</CardTitle>
+                <CardTitle>Images by Color</CardTitle>
                 <CardDescription>
-                  Upload images for this product.
+                  Upload images for each selected color. Only one color’s images
+                  will be shown at a time.
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-4">
-                  {images.map((image, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={image}
-                        alt="Product"
-                        className={`h-32 w-32 rounded-md object-cover border-2 ${
-                          mainImageIndex === index
-                            ? "border-blue-500"
-                            : "border-gray-300"
-                        }`}
+              <CardContent className="space-y-6">
+                {selectedColorIds.map((colorId) => {
+                  const color = globalColors.find((c) => c.id === colorId);
+                  if (!color) return null;
+
+                  return (
+                    <div key={colorId}>
+                      <Label className="block mb-2">{color.label}</Label>
+                      <div className="flex flex-wrap gap-4 mb-2">
+                        {(colorImages[colorId]?.urls || []).map(
+                          (url, index) => (
+                            <div key={index} className="relative group">
+                              <img
+                                src={url}
+                                alt={`Color ${color.label}`}
+                                className={`h-24 w-24 rounded object-cover border ${
+                                  colorImages[colorId]?.mainIndex === index
+                                    ? "border-blue-500"
+                                    : "border-gray-300"
+                                }`}
+                              />
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="destructive"
+                                className="absolute -top-2 -right-2 h-6 w-6"
+                                onClick={() => {
+                                  const updated = [
+                                    ...(colorImages[colorId]?.urls || []),
+                                  ];
+                                  updated.splice(index, 1);
+                                  setColorImages((prev) => ({
+                                    ...prev,
+                                    [colorId]: {
+                                      urls: updated,
+                                      mainIndex:
+                                        prev[colorId]?.mainIndex === index
+                                          ? 0
+                                          : Math.max(
+                                              0,
+                                              prev[colorId]?.mainIndex > index
+                                                ? prev[colorId]?.mainIndex - 1
+                                                : prev[colorId]?.mainIndex
+                                            ),
+                                    },
+                                  }));
+                                }}
+                              >
+                                <Trash className="h-3 w-3" />
+                              </Button>
+
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="absolute bottom-1 left-1 text-xs"
+                                onClick={() =>
+                                  setColorImages((prev) => ({
+                                    ...prev,
+                                    [colorId]: {
+                                      ...prev[colorId],
+                                      mainIndex: index,
+                                    },
+                                  }))
+                                }
+                              >
+                                {colorImages[colorId]?.mainIndex === index
+                                  ? "Main Image"
+                                  : "Set as Main"}
+                              </Button>
+                            </div>
+                          )
+                        )}
+                      </div>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={async (e) => {
+                          const files = e.target.files;
+                          if (!files) return;
+                          setIsImageUploading(true);
+                          try {
+                            for (const file of files) {
+                              const formData = new FormData();
+                              formData.append("file", file);
+                              const res = await fetch(
+                                `${apiUrl}/api/admin/products/upload-image`,
+                                {
+                                  method: "POST",
+                                  body: formData,
+                                }
+                              );
+                              const data = await res.json();
+                              if (res.ok) {
+                                setColorImages((prev) => {
+                                  const current = prev[colorId]?.urls || [];
+                                  return {
+                                    ...prev,
+                                    [colorId]: {
+                                      urls: [...current, data.imageUrl],
+                                      mainIndex: prev[colorId]?.mainIndex ?? 0,
+                                    },
+                                  };
+                                });
+                              }
+                            }
+                          } catch (err) {
+                            alert("Image upload error");
+                          } finally {
+                            setIsImageUploading(false);
+                          }
+                        }}
                       />
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute -top-2 -right-2 h-6 w-6"
-                        onClick={() => removeImage(index)}
-                      >
-                        <Trash className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="absolute bottom-1 left-1 text-xs"
-                        onClick={() => setMainImageIndex(index)}
-                      >
-                        {mainImageIndex === index
-                          ? "Main Image"
-                          : "Set as Main"}
-                      </Button>
                     </div>
-                  ))}
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageUpload}
-                  />
-                </div>
+                  );
+                })}
               </CardContent>
             </Card>
           </TabsContent>
@@ -562,7 +652,6 @@ export default function NewProductPage() {
                     onChange={(e) => setWeight(e.target.value)}
                   />
                 </div>
-                
               </CardContent>
             </Card>
           </TabsContent>
@@ -650,76 +739,74 @@ export default function NewProductPage() {
             </Card>
           </TabsContent>
           <TabsContent value="sizechart" className="space-y-4">
-  <Card>
-    <CardHeader>
-      <CardTitle>Brand-Specific Size Chart</CardTitle>
-    </CardHeader>
-    <CardContent className="space-y-2">
-      <div className="overflow-auto">
-        <table className="w-full text-sm text-left border border-gray-300">
-          <thead>
-            <tr>
-              <th className="border p-2">Size</th>
-              <th className="border p-2">UK</th>
-              <th className="border p-2">Bust</th>
-              <th className="border p-2">Waist</th>
-              <th className="border p-2">Hip</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sizeChartRows.map((row, index) => (
-              <tr key={index}>
-                <td className="border p-2">{row.size}</td>
-                <td className="border p-2">
-                  <Input
-                    value={row.uk}
-                    onChange={(e) => {
-                      const rows = [...sizeChartRows];
-                      rows[index].uk = e.target.value;
-                      setSizeChartRows(rows);
-                    }}
-                  />
-                </td>
-                <td className="border p-2">
-                  <Input
-                    value={row.bust}
-                    onChange={(e) => {
-                      const rows = [...sizeChartRows];
-                      rows[index].bust = e.target.value;
-                      setSizeChartRows(rows);
-                    }}
-                  />
-                </td>
-                <td className="border p-2">
-                  <Input
-                    value={row.waist}
-                    onChange={(e) => {
-                      const rows = [...sizeChartRows];
-                      rows[index].waist = e.target.value;
-                      setSizeChartRows(rows);
-                    }}
-                  />
-                </td>
-                <td className="border p-2">
-                  <Input
-                    value={row.hip}
-                    onChange={(e) => {
-                      const rows = [...sizeChartRows];
-                      rows[index].hip = e.target.value;
-                      setSizeChartRows(rows);
-                    }}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </CardContent>
-  </Card>
-</TabsContent>
-
-           
+            <Card>
+              <CardHeader>
+                <CardTitle>Brand-Specific Size Chart</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="overflow-auto">
+                  <table className="w-full text-sm text-left border border-gray-300">
+                    <thead>
+                      <tr>
+                        <th className="border p-2">Size</th>
+                        <th className="border p-2">UK</th>
+                        <th className="border p-2">Bust</th>
+                        <th className="border p-2">Waist</th>
+                        <th className="border p-2">Hip</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sizeChartRows.map((row, index) => (
+                        <tr key={index}>
+                          <td className="border p-2">{row.size}</td>
+                          <td className="border p-2">
+                            <Input
+                              value={row.uk}
+                              onChange={(e) => {
+                                const rows = [...sizeChartRows];
+                                rows[index].uk = e.target.value;
+                                setSizeChartRows(rows);
+                              }}
+                            />
+                          </td>
+                          <td className="border p-2">
+                            <Input
+                              value={row.bust}
+                              onChange={(e) => {
+                                const rows = [...sizeChartRows];
+                                rows[index].bust = e.target.value;
+                                setSizeChartRows(rows);
+                              }}
+                            />
+                          </td>
+                          <td className="border p-2">
+                            <Input
+                              value={row.waist}
+                              onChange={(e) => {
+                                const rows = [...sizeChartRows];
+                                rows[index].waist = e.target.value;
+                                setSizeChartRows(rows);
+                              }}
+                            />
+                          </td>
+                          <td className="border p-2">
+                            <Input
+                              value={row.hip}
+                              onChange={(e) => {
+                                const rows = [...sizeChartRows];
+                                rows[index].hip = e.target.value;
+                                setSizeChartRows(rows);
+                              }}
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </form>
     </div>
