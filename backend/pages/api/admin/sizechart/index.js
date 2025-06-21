@@ -30,7 +30,7 @@ export default async function handler(req, res) {
   }
 
   if (method === "GET") {
-    const brand = req.query.brand;
+    const brand =  req.query.brand?.trim().toLowerCase();
     if (!brand) {
       return res.status(400).json({ error: "Brand is required" });
     }

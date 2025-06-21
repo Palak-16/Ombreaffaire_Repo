@@ -201,7 +201,7 @@ export default function NewProductPage() {
           sku,
           description,
           category,
-          brand,
+          brand: brand.trim().toLowerCase(),
           sizeChart: sizeChartRows,
           price: parseFloat(price),
           compare_price: parseFloat(compareAtPrice),
@@ -233,7 +233,7 @@ export default function NewProductPage() {
         await fetch(`${apiUrl}/api/admin/sizechart`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ brand, chart_data: sizeChartRows }),
+          body: JSON.stringify({ brand:brand.trim().toLowerCase(), chart_data: sizeChartRows }),
         });
 
         router.push("/admin/products");
