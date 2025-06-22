@@ -361,11 +361,11 @@ export default function NewProductPage() {
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="dresses">Dresses</SelectItem>
+                        <SelectItem value="Dresses">Dresses</SelectItem>
                         <SelectItem value="CordSets">Cord-Sets</SelectItem>
                         <SelectItem value="Saree">Saree</SelectItem>
                         <SelectItem value="Suit">Suit</SelectItem>
-                        <SelectItem value="accessories">Jumpsuits</SelectItem>
+                        <SelectItem value="Accessories">Jumpsuits</SelectItem>
                         <SelectItem value="Jumpsuits">Lehngas</SelectItem>
                         <SelectItem value="Tops">Tops | Shirts</SelectItem>
                       </SelectContent>
