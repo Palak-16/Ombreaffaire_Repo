@@ -29,25 +29,41 @@ export default async function handler(req, res) {
     mainImageIndex,
     sizeChart,
     product_color_images,
-
   } = req.body;
+
+  function isHtmlEmpty(html) {
+    if (!html) return true;
+    const text = html.replace(/<[^>]+>/g, "").trim();
+    return text.length === 0;
+  }
 
   if (
     !name ||
     !price ||
     !category ||
     !sku ||
-    !description ||
+    isHtmlEmpty(description) || // ✅ updated here
     !brand ||
-    !images ||
-    !sizes ||
-    !colors
+    // !images?.length ||
+    !sizes?.length ||
+    !colors?.length ||
+    !product_color_images
   ) {
+    console.error("Missing required fields:", {
+      name,
+      price,
+      category,
+      sku,
+      description,
+      brand,
+      images,
+      sizes,
+      colors,
+    });
     return res.status(400).json({ error: "Fill the Required Fields!" });
   }
 
   const slug = slugify(name, { lower: true, strict: true });
-
 
   const { data: product, error } = await supabase
     .from("products")
@@ -78,8 +94,6 @@ export default async function handler(req, res) {
       .json({ error: error.message || "Failed to create product" });
   }
 
-
- 
   // Insert sizes
   if (sizes?.length > 0) {
     const sizeRows = sizes.map((s) => ({ product_id: product.id, size: s }));
@@ -126,26 +140,29 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Failed to insert variants" });
     }
   }
-  
+
   // Insert product_color_images
-if (product_color_images?.length > 0) {
-  const colorImageRows = product_color_images.map(({ color_id, image_urls, main_index }) => ({
-    product_id: product.id,
-    color_id,
-    image_urls, // array of URLs
-    main_index,
-  }));
+  if (product_color_images?.length > 0) {
+    const colorImageRows = product_color_images.map(
+      ({ color_id, image_urls, main_index }) => ({
+        product_id: product.id,
+        color_id,
+        image_urls, // array of URLs
+        main_index,
+      })
+    );
 
-  const { error: colorImageError } = await supabase
-    .from("product_color_images")
-    .insert(colorImageRows);
+    const { error: colorImageError } = await supabase
+      .from("product_color_images")
+      .insert(colorImageRows);
 
-  if (colorImageError) {
-    console.error("Failed to insert product_color_images:", colorImageError);
-    return res.status(500).json({ error: "Failed to insert color-specific images" });
+    if (colorImageError) {
+      console.error("Failed to insert product_color_images:", colorImageError);
+      return res
+        .status(500)
+        .json({ error: "Failed to insert color-specific images" });
+    }
   }
-}
-
 
   return res
     .status(200)

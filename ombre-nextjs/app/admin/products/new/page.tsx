@@ -28,6 +28,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
+import LexicalEditor from "@/components/ui/LexicalEditor";
+import ToolbarPlugin from '@/components/ui/ToolbarPlugin';
+
 
 
 
@@ -106,6 +109,9 @@ export default function NewProductPage() {
       prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
     );
   };
+  const isHtmlEmpty = (html: string) => {
+  return !html || html.replace(/<[^>]+>/g, "").trim().length === 0;
+};
 
   useEffect(() => {
     const fetchColors = async () => {
@@ -197,6 +203,13 @@ export default function NewProductPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+     // 🚫 Prevent empty required fields
+  if (!name || !sku || !category || !brand || isHtmlEmpty(description)) {
+    alert("Fill the Required Fields!");
+    setIsSubmitting(false);
+    return;
+  }
 
     try {
       const res = await fetch(`${apiUrl}/api/admin/products/add`, {
@@ -334,11 +347,8 @@ export default function NewProductPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                  />
+                 <LexicalEditor value={description} onChange={setDescription} />
+
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
