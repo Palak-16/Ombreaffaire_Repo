@@ -34,6 +34,7 @@ type Product = {
   name: string;
   sku: string;
   image: string;
+  main_image_url: string;
   category: string;
   price: string;
   stock: number;

@@ -1,8 +1,5 @@
 {
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
-  "/_document": "pages/_document.js",
-  "/api/admin/products": "pages/api/admin/products.js",
-  "/api/admin/products/add": "pages/api/admin/products/add.js",
-  "/api/admin/sizechart": "pages/api/admin/sizechart.js"
+  "/_document": "pages/_document.js"
 }

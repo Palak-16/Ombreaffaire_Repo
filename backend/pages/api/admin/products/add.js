@@ -163,6 +163,27 @@ export default async function handler(req, res) {
         .json({ error: "Failed to insert color-specific images" });
     }
   }
+  // ✅ Update main_image_url from first color's main image
+  if (product_color_images?.length > 0) {
+    const firstColor = product_color_images[0];
+    const { image_urls, main_index } = firstColor;
+
+    if (Array.isArray(image_urls) && image_urls.length > 0) {
+      const mainImage = image_urls[main_index ?? 0]; // fallback to first image
+
+      if (mainImage) {
+        const { error: updateError } = await supabase
+          .from("products")
+          .update({ main_image_url: mainImage })
+          .eq("id", product.id);
+
+        if (updateError) {
+          console.error("Failed to update main_image_url:", updateError);
+          // Optional: do not fail the whole request
+        }
+      }
+    }
+  }
 
   return res
     .status(200)
