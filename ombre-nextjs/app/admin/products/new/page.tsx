@@ -27,19 +27,9 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-// import { Separator } from "@/components/ui/separator";
-// import LexicalEditor from "@/components/ui/LexicalEditor";
-// import ToolbarPlugin from '@/components/ui/ToolbarPlugin';
-import dynamic from "next/dynamic";
-
-const LexicalEditor = dynamic(() => import("@/components/ui/LexicalEditor"), {
-  ssr: false,
-});
-  
 
 export default function NewProductPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-
 
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -74,7 +64,7 @@ export default function NewProductPage() {
   const [newColorLabel, setNewColorLabel] = useState("");
   const [newColorHex, setNewColorHex] = useState("#000000");
   const [existingSizeChart, setExistingSizeChart] = useState([]);
-const [activeTab, setActiveTab] = useState("general");
+  const [activeTab, setActiveTab] = useState("general");
 
   const [sizeChartRows, setSizeChartRows] = useState([
     { size: "XXS", uk: "4", bust: "", waist: "", hip: "" },
@@ -116,9 +106,9 @@ const [activeTab, setActiveTab] = useState("general");
   };
   const isHtmlEmpty = (html: string) => {
     console.log("DESCRIPTION BEFORE SUBMIT:", html); // Add this
-  const stripped = html.replace(/<[^>]+>/g, "").trim();
-  return stripped.length === 0;
-};
+    const stripped = html.replace(/<[^>]+>/g, "").trim();
+    return stripped.length === 0;
+  };
 
   useEffect(() => {
     const fetchColors = async () => {
@@ -211,16 +201,13 @@ const [activeTab, setActiveTab] = useState("general");
     e.preventDefault();
     setIsSubmitting(true);
 
-     // Wait 100ms to allow Lexical to flush content
-     await new Promise((r) => setTimeout(r, 100));
-
-     // 🚫 Prevent empty required fields
-  if (!name || !sku || !category || !brand || isHtmlEmpty(description)) {
-    alert("Fill the Required Fields!");
-    setIsSubmitting(false);
-    return;
-  }
-   console.log("SUBMITTING WITH:", description);
+    // 🚫 Prevent empty required fields
+    if (!name || !sku || !category || !brand || isHtmlEmpty(description)) {
+      alert("Fill the Required Fields!");
+      setIsSubmitting(false);
+      return;
+    }
+    console.log("SUBMITTING WITH:", description);
 
     try {
       const res = await fetch(`${apiUrl}/api/admin/products/add`, {
@@ -319,7 +306,11 @@ const [activeTab, setActiveTab] = useState("general");
       </div>
 
       <form onSubmit={handleSubmit}>
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-4"
+        >
           <TabsList>
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="pricing">Pricing & Inventory</TabsTrigger>
@@ -358,8 +349,11 @@ const [activeTab, setActiveTab] = useState("general");
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="description">Description</Label>
-                 <LexicalEditor key="editor" value={description} onChange={setDescription} />
-
+                  <Textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Enter product description"
+                  />
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
@@ -401,7 +395,7 @@ const [activeTab, setActiveTab] = useState("general");
                 </div>
               </CardContent>
             </Card>
-</div>
+          </div>
 
           {/* IMAGES */}
           <TabsContent value="colorImages" className="space-y-4">
