@@ -84,7 +84,7 @@ export default function LexicalEditor({ value, onChange }: Props) {
       <ListPlugin />
       <RichTextPlugin
         contentEditable={
-          <ContentEditable className="border p-2 min-h-[150px] rounded bg-white" />
+          <ContentEditable className="prose border p-2 min-h-[150px] rounded bg-white" />
         }
         placeholder={
           <div className="absolute top-2 left-3 text-gray-400 pointer-events-none">
