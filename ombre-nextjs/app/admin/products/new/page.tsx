@@ -30,13 +30,16 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import LexicalEditor from "@/components/ui/LexicalEditor";
 import ToolbarPlugin from '@/components/ui/ToolbarPlugin';
-
+import dynamic from "next/dynamic";
 
 
 
 export default function NewProductPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-
+const LexicalEditor = dynamic(() => import("@/components/ui/LexicalEditor"), {
+  ssr: false,
+});
+  
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
