@@ -95,5 +95,16 @@
   .font-inter {
     font-family: var(--font-inter);
   }
+
  
 }
+ .note-editable ol {
+  list-style-type: decimal;
+  margin-left: 1.25rem;
+}
+
+.note-editable ul {
+  list-style-type: disc;
+  margin-left: 1.25rem;
+}
+

@@ -28,6 +28,10 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 
+import dynamic from "next/dynamic";
+const SummernoteEditor = dynamic(() => import("@/components/ui/SummernoteEditor"), { ssr: false });
+
+
 export default function NewProductPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -349,11 +353,8 @@ export default function NewProductPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Enter product description"
-                  />
+                  <SummernoteEditor value={description} onChange={setDescription} />
+
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">

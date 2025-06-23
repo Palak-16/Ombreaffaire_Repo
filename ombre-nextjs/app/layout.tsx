@@ -1,28 +1,36 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Inter, Playfair_Display } from "next/font/google"
-import "./globals.css"
-import "./custom-sheet.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { CartProvider } from "@/hooks/use-cart"
-import { FavoritesProvider } from "@/hooks/use-favorites"
+import type React from "react";
+import type { Metadata } from "next";
+import { Inter, Playfair_Display } from "next/font/google";
+import "./globals.css";
+import "./custom-sheet.css";
+import { ThemeProvider } from "@/components/theme-provider";
+import { CartProvider } from "@/hooks/use-cart";
+import { FavoritesProvider } from "@/hooks/use-favorites";
+import Script from "next/script"; // ✅ Add this
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
-const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" })
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
 
 export const metadata: Metadata = {
   title: "OMBRÉ affaire | Elegant Fashion",
   description: "Discover the latest fashion trends at OMBRÉ affaire",
-  generator: 'v0.dev'
-}
+  generator: "v0.dev",
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* ✅ Load Summernote CSS via CDN */}
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.18/summernote-lite.min.css"
+        />
+      </head>
       <body>
         <div className={`${inter.variable} ${playfair.variable} font-sans`}>
           <ThemeProvider attribute="class" defaultTheme="light">
@@ -33,7 +41,17 @@ export default function RootLayout({
             </CartProvider>
           </ThemeProvider>
         </div>
+
+        {/* ✅ Load jQuery + Summernote JS */}
+        <Script
+          src="https://code.jquery.com/jquery-3.6.0.min.js"
+          strategy="beforeInteractive"
+        />
+        <Script
+          src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.18/summernote-lite.min.js"
+          strategy="beforeInteractive"
+        />
       </body>
     </html>
-  )
+  );
 }

@@ -162,9 +162,9 @@ export default function ProductsPage() {
 
                             {/* ✅ TEMPORARY: Render description to verify list styles */}
                             <div
-                              className="prose prose-sm mt-1 max-w-none"
+                              className="prose"
                               dangerouslySetInnerHTML={{
-                                __html: (product as any).description,
+                                __html: product.description,
                               }}
                             />
                           </div>
