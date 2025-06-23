@@ -74,6 +74,7 @@ export default function NewProductPage() {
   const [newColorLabel, setNewColorLabel] = useState("");
   const [newColorHex, setNewColorHex] = useState("#000000");
   const [existingSizeChart, setExistingSizeChart] = useState([]);
+const [activeTab, setActiveTab] = useState("general");
 
   const [sizeChartRows, setSizeChartRows] = useState([
     { size: "XXS", uk: "4", bust: "", waist: "", hip: "" },
@@ -312,7 +313,7 @@ export default function NewProductPage() {
       </div>
 
       <form onSubmit={handleSubmit}>
-        <Tabs defaultValue="general" className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="pricing">Pricing & Inventory</TabsTrigger>
@@ -323,7 +324,7 @@ export default function NewProductPage() {
           </TabsList>
 
           {/* GENERAL */}
-          <TabsContent value="general" className="space-y-4">
+          <div className={activeTab === "general" ? "block" : "hidden"}>
             <Card>
               <CardHeader>
                 <CardTitle>Product Information</CardTitle>
@@ -394,7 +395,7 @@ export default function NewProductPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+</div>
 
           {/* IMAGES */}
           <TabsContent value="colorImages" className="space-y-4">
