@@ -19,6 +19,8 @@ import { QuoteNode } from "@lexical/rich-text";
 import { ParagraphNode, TextNode } from "lexical";
 import { $convertToMarkdownString } from "@lexical/markdown";
 import dynamic from "next/dynamic";
+import { useRef } from "react";
+
 
 // ✅ Types
 import { useEffect } from "react";
@@ -63,16 +65,20 @@ export default function LexicalEditor({ value, onChange }: Props) {
   // Exports HTML from editorState
   function HTMLExportPlugin() {
     const [editor] = useLexicalComposerContext();
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     return (
       <OnChangePlugin
         onChange={(editorState: EditorState) => {
           editorState.read(() => {
             const html = $generateHtmlFromNodes(editor, null);
-            setTimeout(() => {
-              onChange(html);
-            }, 100); // wait 100ms before updating parent state
-            // send updated HTML to parent
+            // debounce: clear previous
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+          // delay state update to let Lexical settle
+          timeoutRef.current = setTimeout(() => {
+            onChange(html);
+          }, 100); // 100ms delay
           });
         }}
       />
