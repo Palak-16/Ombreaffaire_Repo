@@ -9,6 +9,16 @@ const config = {
     "./src/**/*.{ts,tsx}",
     "*.{js,ts,jsx,tsx,mdx}",
   ],
+  safelist: [
+  'prose',
+  'prose-ul',
+  'prose-ol',
+  'prose-li',
+  'list-disc',
+  'list-decimal',
+  'list-inside',
+],
+
   prefix: "",
   theme: {
     container: {
@@ -79,7 +89,7 @@ const config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate"),[require('@tailwindcss/typography')],],
+  plugins: [require("tailwindcss-animate"),require('@tailwindcss/typography'),],
   
 } satisfies Config
 
