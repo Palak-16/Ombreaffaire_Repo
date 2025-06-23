@@ -358,7 +358,7 @@ const [activeTab, setActiveTab] = useState("general");
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="description">Description</Label>
-                 <LexicalEditor value={description} onChange={setDescription} />
+                 <LexicalEditor key="editor" value={description} onChange={setDescription} />
 
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">

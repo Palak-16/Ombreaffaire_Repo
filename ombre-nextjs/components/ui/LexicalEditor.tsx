@@ -65,23 +65,20 @@ export default function LexicalEditor({ value, onChange }: Props) {
 
   // Exports HTML from editorState
   function HTMLExportPlugin({ onChange }: { onChange: (value: string) => void }) {
+  const [editor] = useLexicalComposerContext();
 
-    const [editor] = useLexicalComposerContext();
-    const htmlRef = useRef("");
-    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  useEffect(() => {
+    return editor.registerUpdateListener(({ editorState }) => {
+      editorState.read(() => {
+        const html = $generateHtmlFromNodes(editor, null);
+        onChange(html);
+      });
+    });
+  }, [editor, onChange]);
 
-    return (
-      <OnChangePlugin
-      onChange={(editorState: EditorState) => {
-        editorState.read(() => {
-          const html = $generateHtmlFromNodes(editor, null);
-          htmlRef.current = html;
-          onChange(html);
-        });
-      }}
-    />
-    );
-  }
+  return null;
+}
+
 
   return (
     <LexicalComposer initialConfig={initialConfig}>

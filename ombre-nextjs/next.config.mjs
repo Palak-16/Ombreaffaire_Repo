@@ -11,4 +11,10 @@ const nextConfig = {
   },
 }
 
+module.exports = {
+  productionBrowserSourceMaps: true,
+  swcMinify: false, // ⛔ Turn off minification
+};
+
+
 export default nextConfig
