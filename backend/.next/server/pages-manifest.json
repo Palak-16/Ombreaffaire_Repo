@@ -4,6 +4,7 @@
   "/_document": "pages/_document.js",
   "/api/colors": "pages/api/colors.js",
   "/api/admin/sizechart": "pages/api/admin/sizechart.js",
+  "/api/admin/brand": "pages/api/admin/brand.js",
   "/api/admin/products/upload-image": "pages/api/admin/products/upload-image.js",
   "/api/admin/products/add": "pages/api/admin/products/add.js",
   "/api/admin/products": "pages/api/admin/products.js"

@@ -27,9 +27,11 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-
 import dynamic from "next/dynamic";
 const SummernoteEditor = dynamic(() => import("@/components/ui/SummernoteEditor"), { ssr: false });
+const BrandSelector = dynamic(() => import("@/components/ui/BrandSelector"), {
+  ssr: false,
+});
 
 
 export default function NewProductPage() {
@@ -379,11 +381,8 @@ export default function NewProductPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="brand">Brand</Label>
-                    <Input
-                      id="brand"
-                      value={brand}
-                      onChange={(e) => setBrand(e.target.value)}
-                    />
+                    <BrandSelector value={brand} onChange={setBrand} />
+
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
