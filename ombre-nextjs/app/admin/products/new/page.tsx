@@ -115,6 +115,7 @@ const [activeTab, setActiveTab] = useState("general");
     );
   };
   const isHtmlEmpty = (html: string) => {
+    console.log("DESCRIPTION BEFORE SUBMIT:", html); // Add this
   return !html || html.replace(/<[^>]+>/g, "").trim().length === 0;
 };
 

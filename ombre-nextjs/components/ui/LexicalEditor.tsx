@@ -23,8 +23,6 @@ import dynamic from "next/dynamic";
 // ✅ Types
 import { useEffect } from "react";
 
-
-
 type Props = {
   value: string;
   onChange: (value: string) => void;
@@ -71,7 +69,10 @@ export default function LexicalEditor({ value, onChange }: Props) {
         onChange={(editorState: EditorState) => {
           editorState.read(() => {
             const html = $generateHtmlFromNodes(editor, null);
-            onChange(html); // send updated HTML to parent
+            setTimeout(() => {
+              onChange(html);
+            }, 100); // wait 100ms before updating parent state
+            // send updated HTML to parent
           });
         }}
       />
