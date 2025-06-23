@@ -10,7 +10,7 @@ export default async function handler(req, res) {
 
   const { data, error } = await supabase
     .from("products")
-    .select("id, sku, name, slug, category, price, inventory, published, main_image_url")
+    .select("id, sku, name, description, slug, category, price, inventory, published, main_image_url")
     .order("created_at", { ascending: false });
 
   if (error) return res.status(500).json({ error: "Failed to fetch products" });
@@ -23,6 +23,7 @@ export default async function handler(req, res) {
     price: `₹${parseFloat(p.price).toFixed(2)}`,
     stock: p.inventory,
     sku: p.sku,
+    description : p.description || "",
     status:
       p.inventory === 0
         ? "Out of Stock"

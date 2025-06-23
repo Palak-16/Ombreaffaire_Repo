@@ -31,6 +31,7 @@ import {
 
 type Product = {
   id: string;
+  description: string; // Assuming description is part of the product data
   name: string;
   sku: string;
   image: string;
@@ -158,6 +159,14 @@ export default function ProductsPage() {
                             <div className="text-xs text-muted-foreground">
                               {product.sku}
                             </div>
+
+                            {/* ✅ TEMPORARY: Render description to verify list styles */}
+                            <div
+                              className="prose prose-sm mt-1 max-w-none"
+                              dangerouslySetInnerHTML={{
+                                __html: (product as any).description,
+                              }}
+                            />
                           </div>
                         </div>
                       </TableCell>
