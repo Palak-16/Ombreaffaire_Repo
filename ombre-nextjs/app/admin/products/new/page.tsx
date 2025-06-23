@@ -116,7 +116,8 @@ const [activeTab, setActiveTab] = useState("general");
   };
   const isHtmlEmpty = (html: string) => {
     console.log("DESCRIPTION BEFORE SUBMIT:", html); // Add this
-  return !html || html.replace(/<[^>]+>/g, "").trim().length === 0;
+  const stripped = html.replace(/<[^>]+>/g, "").trim();
+  return stripped.length === 0;
 };
 
   useEffect(() => {
@@ -210,12 +211,16 @@ const [activeTab, setActiveTab] = useState("general");
     e.preventDefault();
     setIsSubmitting(true);
 
+     // Wait 100ms to allow Lexical to flush content
+     await new Promise((r) => setTimeout(r, 100));
+
      // 🚫 Prevent empty required fields
   if (!name || !sku || !category || !brand || isHtmlEmpty(description)) {
     alert("Fill the Required Fields!");
     setIsSubmitting(false);
     return;
   }
+   console.log("SUBMITTING WITH:", description);
 
     try {
       const res = await fetch(`${apiUrl}/api/admin/products/add`, {

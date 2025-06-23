@@ -30,6 +30,7 @@ type Props = {
   onChange: (value: string) => void;
 };
 
+
 export default function LexicalEditor({ value, onChange }: Props) {
   const initialConfig = {
     namespace: "LexicalEditor",
@@ -63,25 +64,22 @@ export default function LexicalEditor({ value, onChange }: Props) {
   };
 
   // Exports HTML from editorState
-  function HTMLExportPlugin() {
+  function HTMLExportPlugin({ onChange }: { onChange: (value: string) => void }) {
+
     const [editor] = useLexicalComposerContext();
+    const htmlRef = useRef("");
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     return (
       <OnChangePlugin
-        onChange={(editorState: EditorState) => {
-          editorState.read(() => {
-            const html = $generateHtmlFromNodes(editor, null);
-            // debounce: clear previous
-          if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
-          // delay state update to let Lexical settle
-          timeoutRef.current = setTimeout(() => {
-            onChange(html);
-          }, 100); // 100ms delay
-          });
-        }}
-      />
+      onChange={(editorState: EditorState) => {
+        editorState.read(() => {
+          const html = $generateHtmlFromNodes(editor, null);
+          htmlRef.current = html;
+          onChange(html);
+        });
+      }}
+    />
     );
   }
 
@@ -101,7 +99,7 @@ export default function LexicalEditor({ value, onChange }: Props) {
         ErrorBoundary={() => <div>Something went wrong.</div>}
       />
       <HistoryPlugin />
-      <HTMLExportPlugin />
+      <HTMLExportPlugin onChange={onChange} />
     </LexicalComposer>
   );
 }
