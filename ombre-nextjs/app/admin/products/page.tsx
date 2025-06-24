@@ -160,13 +160,13 @@ export default function ProductsPage() {
                               {product.sku}
                             </div>
 
-                            {/* ✅ TEMPORARY: Render description to verify list styles */}
+                            {/* ✅ TEMPORARY: Render description to verify list styles
                             <div
                               className="prose"
                               dangerouslySetInnerHTML={{
                                 __html: product.description,
                               }}
-                            />
+                            /> */}
                           </div>
                         </div>
                       </TableCell>
@@ -195,12 +195,7 @@ export default function ProductsPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild>
-                              <Link href={`/admin/products/${product.id}`}>
-                                <Eye className="mr-2 h-4 w-4" />
-                                View
-                              </Link>
-                            </DropdownMenuItem>
+                            
                             <DropdownMenuItem asChild>
                               <Link href={`/admin/products/${product.id}/edit`}>
                                 <Edit className="mr-2 h-4 w-4" />

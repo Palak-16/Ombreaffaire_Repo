@@ -1,414 +1,883 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import Image from "next/image"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Loader2, ArrowLeft, Plus, X } from "lucide-react"
-import { Separator } from "@/components/ui/separator"
+import { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft, ImagePlus, Loader2, Save, Trash } from "lucide-react";
 
-// Sample product data
-const productData = {
-  id: "1",
-  name: "Ombré Silk Dress",
-  price: 129.99,
-  description:
-    "A stunning silk dress featuring a beautiful ombré effect that transitions from cream to beige. This elegant piece is perfect for special occasions or evening events. The flowing silhouette and delicate fabric create a graceful, feminine look.",
-  features: [
-    "Made from 100% silk",
-    "Gradual ombré effect from cream to beige",
-    "Flowing silhouette",
-    "Hidden side zipper",
-    "Fully lined",
-    "Dry clean only",
-  ],
-  images: [
-    "/flowing-ombre-dress.png",
-    "/flowing-beige-ombre-back.png",
-    "/beige-ombre-silk-detail.png",
-    "/flowing-ombre-silk.png",
-  ],
-  sizes: ["XS", "S", "M", "L", "XL"],
-  colors: [
-    { name: "Beige Ombré", value: "beige" },
-    { name: "Rose Ombré", value: "rose" },
-    { name: "Blue Ombré", value: "blue" },
-  ],
-  category: "Dresses",
-  inventory: 24,
-  sku: "OMB-SILK-001",
-  isNew: true,
-  isFeatured: true,
-  isSale: false,
-}
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import dynamic from "next/dynamic";
+const SummernoteEditor = dynamic(
+  () => import("@/components/ui/SummernoteEditor"),
+  { ssr: false }
+);
+const BrandSelector = dynamic(() => import("@/components/ui/BrandSelector"), {
+  ssr: false,
+});
 
-export default function EditProductPage({ params }: { params: { id: string } }) {
-  const router = useRouter()
-  const isNewProduct = params.id === "new"
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [product, setProduct] = useState<any>(
-    isNewProduct
-      ? {
-          name: "",
-          price: "",
-          description: "",
-          features: [""],
-          images: [],
-          sizes: [],
-          colors: [],
-          category: "",
-          inventory: "",
-          sku: "",
-          isNew: false,
-          isFeatured: false,
-          isSale: false,
-        }
-      : productData,
-  )
+export default function EditProductPage() {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
-  // Simulate fetching product data
+  const router = useRouter();
+  const params = useParams();
+  const productId = params?.id as string;
   useEffect(() => {
-    if (!isNewProduct) {
-      setIsLoading(true)
-      // In a real app, you would fetch the product data from an API
-      setTimeout(() => {
-        setIsLoading(false)
-      }, 500)
+    const fetchProduct = async () => {
+      if (!params?.id || productId === "new") return;
+
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/admin/products/${productId}`
+        );
+        const data = await res.json();
+        if (res.ok) {
+          setName(data.name);
+          setSku(data.sku);
+          setDescription(data.description?.html || data.description || "");
+          setCategory(data.category);
+          setBrand(data.brand);
+          setPublished(data.published);
+          setImages(data.images || []);
+          setMainImageIndex(data.mainImageIndex || 0);
+          setPrice(data.price?.toString() || "");
+          setCompareAtPrice(data.compare_price?.toString() || "");
+          setCost(data.cost?.toString() || "");
+          setInventory(data.inventory?.toString() || "");
+          setMaterial(data.material);
+          setWeight(data.weight?.toString() || "");
+          setSelectedSizes(data.sizes || []);
+          setSelectedColorIds(data.colors || []);
+          setColorImages(data.product_color_images || {});
+          setVariants(data.variants || {});
+          setTrackInventory(data.track_inventory || false);
+          setSizeChartRows(data.sizeChart || []);
+        } else {
+          console.error(data.error);
+        }
+      } catch (error) {
+        console.error("Failed to load product", error);
+      }
+    };
+
+    fetchProduct();
+  }, [productId]);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [name, setName] = useState("");
+  const [sku, setSku] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
+  const [brand, setBrand] = useState("");
+  const [published, setPublished] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
+  const [isImageUploading, setIsImageUploading] = useState(false);
+  const [mainImageIndex, setMainImageIndex] = useState(0);
+
+  const [price, setPrice] = useState("");
+  const [compareAtPrice, setCompareAtPrice] = useState("");
+  const [cost, setCost] = useState("");
+  const [inventory, setInventory] = useState("");
+  const [trackInventory, setTrackInventory] = useState(false);
+
+  const [material, setMaterial] = useState("");
+  const [weight, setWeight] = useState("");
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+  const [selectedColorIds, setSelectedColorIds] = useState<string[]>([]);
+  const [colorImages, setColorImages] = useState<{
+    [colorId: string]: { urls: string[]; mainIndex: number };
+  }>({});
+
+  const [globalColors, setGlobalColors] = useState<
+    { id: string; label: string; hex: string }[]
+  >([]);
+  const [newColorLabel, setNewColorLabel] = useState("");
+  const [newColorHex, setNewColorHex] = useState("#000000");
+  const [existingSizeChart, setExistingSizeChart] = useState([]);
+  const [activeTab, setActiveTab] = useState("general");
+
+  const [sizeChartRows, setSizeChartRows] = useState([
+    { size: "XXS", uk: "4", bust: "", waist: "", hip: "" },
+    { size: "XS", uk: "6", bust: "", waist: "", hip: "" },
+    { size: "S", uk: "8", bust: "", waist: "", hip: "" },
+    { size: "M", uk: "10", bust: "", waist: "", hip: "" },
+    { size: "L", uk: "12", bust: "", waist: "", hip: "" },
+    { size: "XL", uk: "14", bust: "", waist: "", hip: "" },
+    { size: "XXL", uk: "16", bust: "", waist: "", hip: "" },
+  ]);
+
+  const handleAddColor = async () => {
+    if (!newColorLabel.trim()) return;
+
+    const res = await fetch(`${apiUrl}/api/colors`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ label: newColorLabel.trim(), hex: newColorHex }),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      setGlobalColors((prev) => [...prev, data.color]);
+      setNewColorLabel("");
+      setNewColorHex("#000000");
+    } else {
+      alert(data.error || "Failed to add color");
     }
-  }, [isNewProduct])
+  };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setProduct({ ...product, [name]: value })
-  }
+  const [variants, setVariants] = useState<{
+    [key: string]: { sku: string; inventory: number };
+  }>({});
 
-  const handleCheckboxChange = (name: string, checked: boolean) => {
-    setProduct({ ...product, [name]: checked })
-  }
+  const toggleSize = (size: string) => {
+    setSelectedSizes((prev) =>
+      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
+    );
+  };
+  const isHtmlEmpty = (html: string) => {
+    console.log("DESCRIPTION BEFORE SUBMIT:", html); // Add this
+    const stripped = html.replace(/<[^>]+>/g, "").trim();
+    return stripped.length === 0;
+  };
 
-  const handleFeatureChange = (index: number, value: string) => {
-    const updatedFeatures = [...product.features]
-    updatedFeatures[index] = value
-    setProduct({ ...product, features: updatedFeatures })
-  }
+  useEffect(() => {
+    const fetchColors = async () => {
+      try {
+        const res = await fetch(`${apiUrl}/api/colors`);
+        const data = await res.json();
+        setGlobalColors(data.colors || []);
+      } catch (err) {
+        console.error("Color fetch failed", err);
+      }
+    };
+    fetchColors();
+  }, []);
 
-  const addFeature = () => {
-    setProduct({ ...product, features: [...product.features, ""] })
-  }
+  useEffect(() => {
+    if (!brand) return;
 
-  const removeFeature = (index: number) => {
-    const updatedFeatures = [...product.features]
-    updatedFeatures.splice(index, 1)
-    setProduct({ ...product, features: updatedFeatures })
-  }
+    const fetchSizeChart = async () => {
+      try {
+        const res = await fetch(
+          `${apiUrl}/api/admin/sizechart?brand=${encodeURIComponent(brand)}`
+        );
+        const data = await res.json();
+        if (res.ok && data.sizeChart) {
+          setSizeChartRows(data.sizeChart);
+          setExistingSizeChart(data.sizeChart); // Optional: for future comparison
+          // console.log("Fetched sizeChart:", data.sizeChart);
+        }
+      } catch (err) {
+        console.error("Size chart fetch failed", err);
+      }
+    };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSaving(true)
+    fetchSizeChart();
+  }, [brand]);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsSaving(false)
-      router.push("/admin/products")
-    }, 1500)
-  }
+  useEffect(() => {
+    const newVariants: typeof variants = {};
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    )
-  }
+    selectedSizes.forEach((size) => {
+      selectedColorIds.forEach((colorId) => {
+        const key = `${size}_${colorId}`;
+        newVariants[key] = variants[key] || { sku: "", inventory: 0 };
+      });
+    });
+
+    setVariants(newVariants);
+  }, [selectedSizes, selectedColorIds]);
+
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsImageUploading(true);
+
+    try {
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await fetch(`${apiUrl}/api/admin/products/upload-image`, {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await res.json();
+        console.log(data);
+        if (res.ok) {
+          setImages((prev) => [...prev, data.imageUrl]);
+        } else {
+          alert("Image upload failed");
+        }
+      }
+    } catch (err) {
+      alert("Image upload error");
+    } finally {
+      setIsImageUploading(false);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    const newImages = [...images];
+    newImages.splice(index, 1);
+    setImages(newImages);
+  };
+
+  // Mock function to handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    // 🚫 Prevent empty required fields
+    if (!name || !sku || !category || !brand || isHtmlEmpty(description)) {
+      alert("Fill the Required Fields!");
+      setIsSubmitting(false);
+      return;
+    }
+    console.log("SUBMITTING WITH:", description);
+
+    try {
+      const res = await fetch(`${apiUrl}/api/admin/products/${productId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          sku,
+          description,
+          category,
+          brand: brand.trim().toLowerCase(),
+          sizeChart: sizeChartRows,
+          price: parseFloat(price),
+          compare_price: parseFloat(compareAtPrice),
+          cost: parseFloat(cost),
+          inventory: parseInt(inventory),
+          material,
+          weight: parseFloat(weight),
+          sizes: selectedSizes,
+          colors: selectedColorIds,
+          images,
+          // mainImageIndex,
+          published,
+          track_inventory: trackInventory,
+          product_color_images: Object.entries(colorImages).map(
+            ([color_id, data]) => ({
+              color_id,
+              image_urls: data.urls,
+              main_index: data.mainIndex,
+            })
+          ),
+
+          variants: Object.entries(variants).map(([key, val]) => {
+            const [size, color] = key.split("_");
+            return {
+              size,
+              color,
+              sku: val.sku,
+              inventory: val.inventory,
+            };
+          }),
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        // ✅ Save size chart to size_charts table
+        await fetch(`${apiUrl}/api/admin/sizechart`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            brand: brand.trim().toLowerCase(),
+            chart_data: sizeChartRows,
+          }),
+        });
+
+        router.push("/admin/products");
+      } else {
+        alert(data.error || "Error saving product");
+      }
+    } catch (err) {
+      alert("Failed to save product");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <Button variant="ghost" size="sm" asChild className="mb-2">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="icon" asChild>
             <Link href="/admin/products">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Products
+              <ArrowLeft className="h-4 w-4" />
+              <span className="sr-only">Back</span>
             </Link>
           </Button>
-          <h1 className="text-3xl font-bold">{isNewProduct ? "Add New Product" : "Edit Product"}</h1>
+          <h1 className="text-2xl font-bold">Edit Product</h1>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => router.push("/admin/products")}>
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit} disabled={isSaving}>
-            {isSaving ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              "Save Product"
-            )}
-          </Button>
-        </div>
+        <Button
+          onClick={handleSubmit}
+          disabled={isSubmitting || isImageUploading}
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Save className="mr-2 h-4 w-4" />
+              Save Product
+            </>
+          )}
+        </Button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Basic Information</CardTitle>
-            <CardDescription>Enter the basic details about the product.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="name">Product Name</Label>
-                <Input id="name" name="name" value={product.name} onChange={handleInputChange} required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="sku">SKU</Label>
-                <Input id="sku" name="sku" value={product.sku} onChange={handleInputChange} required />
-              </div>
-            </div>
+      <form onSubmit={handleSubmit}>
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-4"
+        >
+          <TabsList>
+            <TabsTrigger value="general">General</TabsTrigger>
+            <TabsTrigger value="pricing">Pricing & Inventory</TabsTrigger>
+            <TabsTrigger value="attributes">Attributes</TabsTrigger>
+            <TabsTrigger value="colorImages">Color Images</TabsTrigger>
+            <TabsTrigger value="variants">Variants</TabsTrigger>
+            <TabsTrigger value="sizechart">Size Chart</TabsTrigger>
+          </TabsList>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="price">Price ($)</Label>
-                <Input
-                  id="price"
-                  name="price"
-                  type="number"
-                  step="0.01"
-                  value={product.price}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Select value={product.category} onValueChange={(value) => setProduct({ ...product, category: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Dresses">Dresses</SelectItem>
-                    <SelectItem value="Tops">Tops</SelectItem>
-                    <SelectItem value="Bottoms">Bottoms</SelectItem>
-                    <SelectItem value="Accessories">Accessories</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="inventory">Inventory</Label>
-                <Input
-                  id="inventory"
-                  name="inventory"
-                  type="number"
-                  value={product.inventory}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                name="description"
-                value={product.description}
-                onChange={handleInputChange}
-                rows={5}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Features</Label>
-              <div className="space-y-2">
-                {product.features.map((feature: string, index: number) => (
-                  <div key={index} className="flex gap-2">
+          {/* GENERAL */}
+          <div className={activeTab === "general" ? "block" : "hidden"}>
+            <Card>
+              <CardHeader>
+                <CardTitle>Product Information</CardTitle>
+                <CardDescription>Basic product details.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Product Name</Label>
                     <Input
-                      value={feature}
-                      onChange={(e) => handleFeatureChange(index, e.target.value)}
-                      placeholder={`Feature ${index + 1}`}
+                      id="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
                     />
-                    <Button type="button" variant="outline" size="icon" onClick={() => removeFeature(index)}>
-                      <X className="h-4 w-4" />
-                    </Button>
                   </div>
-                ))}
-                <Button type="button" variant="outline" size="sm" onClick={addFeature}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Feature
-                </Button>
-              </div>
-            </div>
-
-            <Separator />
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="isNew"
-                  checked={product.isNew}
-                  onCheckedChange={(checked) => handleCheckboxChange("isNew", checked === true)}
-                />
-                <Label htmlFor="isNew">Mark as New Arrival</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="isFeatured"
-                  checked={product.isFeatured}
-                  onCheckedChange={(checked) => handleCheckboxChange("isFeatured", checked === true)}
-                />
-                <Label htmlFor="isFeatured">Feature on Homepage</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="isSale"
-                  checked={product.isSale}
-                  onCheckedChange={(checked) => handleCheckboxChange("isSale", checked === true)}
-                />
-                <Label htmlFor="isSale">On Sale</Label>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Product Images</CardTitle>
-            <CardDescription>
-              Upload images of the product. The first image will be used as the main image.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {!isNewProduct &&
-                product.images.map((image: string, index: number) => (
-                  <div key={index} className="relative aspect-square border rounded-md overflow-hidden">
-                    <Image
-                      src={image || "/placeholder.svg"}
-                      alt={`Product image ${index + 1}`}
-                      fill
-                      className="object-cover"
+                  <div className="space-y-2">
+                    <Label htmlFor="sku">SKU</Label>
+                    <Input
+                      id="sku"
+                      value={sku}
+                      onChange={(e) => setSku(e.target.value)}
                     />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2 h-6 w-6"
-                      onClick={() => {
-                        const updatedImages = [...product.images]
-                        updatedImages.splice(index, 1)
-                        setProduct({ ...product, images: updatedImages })
-                      }}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <SummernoteEditor
+                    key={description ? "loaded" : "empty"}
+                    value={description}
+                    onChange={(html) => setDescription(html)}
+                  />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Category</Label>
+                    <Select
+                      value={category}
+                      onValueChange={(val) => setCategory(val)}
                     >
-                      <X className="h-3 w-3" />
-                    </Button>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Dresses">Dresses</SelectItem>
+                        <SelectItem value="CordSets">Cord-Sets</SelectItem>
+                        <SelectItem value="Saree">Saree</SelectItem>
+                        <SelectItem value="Suit">Suit</SelectItem>
+                        <SelectItem value="Accessories">Jumpsuits</SelectItem>
+                        <SelectItem value="Jumpsuits">Lehngas</SelectItem>
+                        <SelectItem value="Tops">Tops | Shirts</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                ))}
-              <div className="aspect-square border border-dashed rounded-md flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors">
-                <Plus className="h-8 w-8 text-muted-foreground mb-2" />
-                <span className="text-sm text-muted-foreground">Add Image</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Variants</CardTitle>
-            <CardDescription>Define the available sizes and colors for this product.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label>Available Sizes</Label>
-              <div className="flex flex-wrap gap-2">
-                {["XS", "S", "M", "L", "XL", "XXL"].map((size) => (
-                  <div key={size} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`size-${size}`}
-                      checked={product.sizes.includes(size)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setProduct({ ...product, sizes: [...product.sizes, size] })
-                        } else {
-                          setProduct({
-                            ...product,
-                            sizes: product.sizes.filter((s: string) => s !== size),
-                          })
-                        }
-                      }}
-                    />
-                    <Label htmlFor={`size-${size}`}>{size}</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="brand">Brand</Label>
+                    <BrandSelector value={brand} onChange={setBrand} />
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="published"
+                    checked={published}
+                    onCheckedChange={setPublished}
+                  />
+                  <Label htmlFor="published">Published</Label>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-            <div className="space-y-2">
-              <Label>Available Colors</Label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {!isNewProduct &&
-                  product.colors.map((color: any, index: number) => (
-                    <div key={index} className="flex items-center space-x-2 border rounded-md p-3">
-                      <div
-                        className="h-6 w-6 rounded-full"
-                        style={{
-                          backgroundColor:
-                            color.value === "beige" ? "#f5f5dc" : color.value === "rose" ? "#ffc0cb" : "#add8e6",
+          {/* IMAGES */}
+          <TabsContent value="colorImages" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Images by Color</CardTitle>
+                <CardDescription>
+                  Upload images for each selected color. Only one color’s images
+                  will be shown at a time.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {selectedColorIds.map((colorId: string) => {
+                  const color = globalColors.find((c) => c.id === colorId);
+                  if (!color) return null;
+
+                  return (
+                    <div key={colorId}>
+                      <Label className="block mb-2">{color.label}</Label>
+                      <div className="flex flex-wrap gap-4 mb-2">
+                        {(colorImages[colorId]?.urls || []).map(
+                          (url, index) => (
+                            <div key={index} className="relative group">
+                              <img
+                                src={url}
+                                alt={`Color ${color.label}`}
+                                className={`h-24 w-24 rounded object-cover border ${
+                                  colorImages[colorId]?.mainIndex === index
+                                    ? "border-blue-500"
+                                    : "border-gray-300"
+                                }`}
+                              />
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="destructive"
+                                className="absolute -top-2 -right-2 h-6 w-6"
+                                onClick={() => {
+                                  const updated = [
+                                    ...(colorImages[colorId]?.urls || []),
+                                  ];
+                                  updated.splice(index, 1);
+                                  setColorImages((prev) => ({
+                                    ...prev,
+                                    [colorId]: {
+                                      urls: updated,
+                                      mainIndex:
+                                        prev[colorId]?.mainIndex === index
+                                          ? 0
+                                          : Math.max(
+                                              0,
+                                              prev[colorId]?.mainIndex > index
+                                                ? prev[colorId]?.mainIndex - 1
+                                                : prev[colorId]?.mainIndex
+                                            ),
+                                    },
+                                  }));
+                                }}
+                              >
+                                <Trash className="h-3 w-3" />
+                              </Button>
+
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="absolute bottom-1 left-1 text-xs"
+                                onClick={() =>
+                                  setColorImages((prev) => ({
+                                    ...prev,
+                                    [colorId]: {
+                                      ...prev[colorId],
+                                      mainIndex: index,
+                                    },
+                                  }))
+                                }
+                              >
+                                {colorImages[colorId]?.mainIndex === index
+                                  ? "Main Image"
+                                  : "Set as Main"}
+                              </Button>
+                            </div>
+                          )
+                        )}
+                      </div>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={async (e) => {
+                          const files = e.target.files;
+                          if (!files) return;
+                          setIsImageUploading(true);
+                          try {
+                            for (const file of files) {
+                              const formData = new FormData();
+                              formData.append("file", file);
+                              const res = await fetch(
+                                `${apiUrl}/api/admin/products/upload-image`,
+                                {
+                                  method: "POST",
+                                  body: formData,
+                                }
+                              );
+                              const data = await res.json();
+
+                              console.log("Fetched product data:", data);
+
+                              if (res.ok) {
+                                setColorImages((prev) => {
+                                  const current = prev[colorId]?.urls || [];
+                                  return {
+                                    ...prev,
+                                    [colorId]: {
+                                      urls: [...current, data.imageUrl],
+                                      mainIndex: prev[colorId]?.mainIndex ?? 0,
+                                    },
+                                  };
+                                });
+                              }
+                            }
+                          } catch (err) {
+                            alert("Image upload error");
+                          } finally {
+                            setIsImageUploading(false);
+                          }
                         }}
                       />
-                      <span>{color.name}</span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="ml-auto h-8 w-8"
-                        onClick={() => {
-                          const updatedColors = [...product.colors]
-                          updatedColors.splice(index, 1)
-                          setProduct({ ...product, colors: updatedColors })
-                        }}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
                     </div>
-                  ))}
-                <div className="border border-dashed rounded-md p-3 flex items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors">
-                  <Plus className="h-4 w-4 mr-2" />
-                  <span>Add Color</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => router.push("/admin/products")}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isSaving}>
-            {isSaving ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              "Save Product"
-            )}
-          </Button>
-        </div>
+          {/* PRICING */}
+          <TabsContent value="pricing" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Pricing & Inventory</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="price">Price</Label>
+                    <Input
+                      id="price"
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="compareAtPrice">Compare at Price</Label>
+                    <Input
+                      id="compareAtPrice"
+                      value={compareAtPrice}
+                      onChange={(e) => setCompareAtPrice(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="cost">Cost</Label>
+                    <Input
+                      id="cost"
+                      value={cost}
+                      onChange={(e) => setCost(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="inventory">Inventory</Label>
+                    <Input
+                      id="inventory"
+                      value={inventory}
+                      onChange={(e) => setInventory(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="trackInventory"
+                    checked={trackInventory}
+                    onCheckedChange={setTrackInventory}
+                  />
+                  <Label htmlFor="trackInventory">Track Inventory</Label>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ATTRIBUTES */}
+          <TabsContent value="attributes" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Attributes</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Available Sizes</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {["XXS", "XS", "S", "M", "L", "XL", "XXL"].map((size) => (
+                      <label key={size} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedSizes.includes(size)}
+                          onChange={() => toggleSize(size)}
+                          className="rounded border-gray-300"
+                        />
+                        <span>{size}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Select Colors</Label>
+                  <div className="flex flex-wrap gap-3 mt-2">
+                    {globalColors.map((color) => {
+                      const isSelected = selectedColorIds.includes(color.id);
+                      return (
+                        <button
+                          key={color.id}
+                          type="button"
+                          onClick={() =>
+                            setSelectedColorIds((prev) =>
+                              isSelected
+                                ? prev.filter((id) => id !== color.id)
+                                : [...prev, color.id]
+                            )
+                          }
+                          className={`w-10 h-10 rounded-full border-2 ${
+                            isSelected ? "ring-2 ring-black" : "border-gray-300"
+                          }`}
+                          style={{ backgroundColor: color.hex }}
+                          title={color.label}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="space-y-2 mt-6">
+                  <Label>Add New Color</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="text"
+                      placeholder="Color Name (e.g. Peach Blush)"
+                      value={newColorLabel}
+                      onChange={(e) => setNewColorLabel(e.target.value)}
+                      className="w-48"
+                    />
+                    <Input
+                      type="color"
+                      value={newColorHex}
+                      onChange={(e) => setNewColorHex(e.target.value)}
+                      className="w-12 p-1"
+                    />
+                    <Button type="button" onClick={handleAddColor}>
+                      Add
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="material">Material</Label>
+                  <Input
+                    id="material"
+                    value={material}
+                    onChange={(e) => setMaterial(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="weight">Weight (grams)</Label>
+                  <Input
+                    id="weight"
+                    value={weight}
+                    onChange={(e) => setWeight(e.target.value)}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="variants" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Product Variants</CardTitle>
+                <CardDescription>
+                  Assign SKU and Inventory to each Size + Color combination.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {Object.keys(variants).length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    Select at least one size and one color to add variants.
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {Object.entries(variants).map(([key, val]) => {
+                      const [size, colorId] = key.split("_");
+                      const color = globalColors.find((c) => c.id === colorId);
+                      if (!color) return null;
+
+                      return (
+                        <div
+                          key={key}
+                          className="grid grid-cols-5 gap-4 items-center"
+                        >
+                          <div className="col-span-1 font-medium">{size}</div>
+                          <div className="col-span-1 font-medium">
+                            {color.label}
+                          </div>
+                          <Input
+                            placeholder="SKU"
+                            value={val.sku}
+                            onChange={(e) =>
+                              setVariants((prev) => ({
+                                ...prev,
+                                [key]: {
+                                  ...prev[key],
+                                  sku: e.target.value,
+                                },
+                              }))
+                            }
+                          />
+                          <Input
+                            placeholder="Inventory"
+                            type="number"
+                            value={val.inventory?.toString() || ""}
+                            onChange={(e) =>
+                              setVariants((prev) => ({
+                                ...prev,
+                                [key]: {
+                                  ...prev[key],
+                                  inventory:
+                                    e.target.value === ""
+                                      ? 0
+                                      : parseInt(e.target.value),
+                                },
+                              }))
+                            }
+                          />
+
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="destructive"
+                            onClick={() =>
+                              setVariants((prev) => {
+                                const copy = { ...prev };
+                                delete copy[key];
+                                return copy;
+                              })
+                            }
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="sizechart" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Brand-Specific Size Chart</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="overflow-auto">
+                  <table className="w-full text-sm text-left border border-gray-300">
+                    <thead>
+                      <tr>
+                        <th className="border p-2">Size</th>
+                        <th className="border p-2">UK</th>
+                        <th className="border p-2">Bust</th>
+                        <th className="border p-2">Waist</th>
+                        <th className="border p-2">Hip</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sizeChartRows.map((row, index) => (
+                        <tr key={index}>
+                          <td className="border p-2">{row.size}</td>
+                          <td className="border p-2">
+                            <Input
+                              value={row.uk}
+                              onChange={(e) => {
+                                const rows = [...sizeChartRows];
+                                rows[index].uk = e.target.value;
+                                setSizeChartRows(rows);
+                              }}
+                            />
+                          </td>
+                          <td className="border p-2">
+                            <Input
+                              value={row.bust}
+                              onChange={(e) => {
+                                const rows = [...sizeChartRows];
+                                rows[index].bust = e.target.value;
+                                setSizeChartRows(rows);
+                              }}
+                            />
+                          </td>
+                          <td className="border p-2">
+                            <Input
+                              value={row.waist}
+                              onChange={(e) => {
+                                const rows = [...sizeChartRows];
+                                rows[index].waist = e.target.value;
+                                setSizeChartRows(rows);
+                              }}
+                            />
+                          </td>
+                          <td className="border p-2">
+                            <Input
+                              value={row.hip}
+                              onChange={(e) => {
+                                const rows = [...sizeChartRows];
+                                rows[index].hip = e.target.value;
+                                setSizeChartRows(rows);
+                              }}
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </form>
     </div>
-  )
+  );
 }
