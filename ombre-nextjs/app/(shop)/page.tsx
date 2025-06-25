@@ -22,6 +22,12 @@ export default function Home() {
     compare_price?: number;
     main_image_url: string;
   };
+  type Category = {
+  id: string;
+  slug: string;
+  name: string;
+  image_url: string;
+};
 
   const { addItem } = useCart();
   const { addFavorite } = useFavorites();
@@ -37,6 +43,19 @@ export default function Home() {
 
     fetchProducts();
   }, [activeTab]);
+
+  const [categories, setCategories] = useState<Category[]>([]);
+
+useEffect(() => {
+  const fetchCategories = async () => {
+    const res = await fetch(`${apiUrl}/api/categories`);
+    const data = await res.json();
+    setCategories(data.categories || []);
+  };
+
+  fetchCategories();
+}, []);
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -73,75 +92,36 @@ export default function Home() {
 
       {/* Categories Section */}
       <section className="py-12 px-4 md:px-6 lg:px-8">
-        <div className="container mx-auto">
-          <h2 className="text-3xl font-bold mb-8 text-center">
-            Shop by Category
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="relative rounded-lg overflow-hidden group">
-              <Image
-                src="/flowing-silhouettes.png"
-                alt="Dresses"
-                width={600}
-                height={400}
-                className="w-full h-80 object-cover transition-transform duration-300 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-black/30 flex items-end p-6">
-                <div>
-                  <h3 className="text-white text-2xl font-bold mb-2">
-                    Dresses
-                  </h3>
-                  <Button variant="secondary" asChild>
-                    <Link href="/category/dresses">
-                      Explore <ChevronRight className="ml-1 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            </div>
-            <div className="relative rounded-lg overflow-hidden group">
-              <Image
-                src="/sophisticated-silhouettes.png"
-                alt="Tops"
-                width={600}
-                height={400}
-                className="w-full h-80 object-cover transition-transform duration-300 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-black/30 flex items-end p-6">
-                <div>
-                  <h3 className="text-white text-2xl font-bold mb-2">Tops</h3>
-                  <Button variant="secondary" asChild>
-                    <Link href="/category/tops">
-                      Explore <ChevronRight className="ml-1 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            </div>
-            <div className="relative rounded-lg overflow-hidden group">
-              <Image
-                src="/sophisticated-bottoms-display.png"
-                alt="Bottoms"
-                width={600}
-                height={400}
-                className="w-full h-80 object-cover transition-transform duration-300 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-black/30 flex items-end p-6">
-                <div>
-                  <h3 className="text-white text-2xl font-bold mb-2">
-                    Bottoms
-                  </h3>
-                  <Button variant="secondary" asChild>
-                    <Link href="/category/bottoms">
-                      Explore <ChevronRight className="ml-1 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              </div>
+  <div className="container mx-auto">
+    <h2 className="text-3xl font-bold mb-8 text-center">
+      Shop by Category
+    </h2>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {categories.map((cat) => (
+        <div key={cat.id} className="relative rounded-lg overflow-hidden group">
+          <Image
+            src={cat.image_url}
+            alt={cat.name}
+            width={600}
+            height={400}
+            className="w-full h-80 object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-black/30 flex items-end p-6">
+            <div>
+              <h3 className="text-white text-2xl font-bold mb-2">{cat.name}</h3>
+              <Button variant="secondary" asChild>
+                <Link href={`/category/${cat.slug}`}>
+                  Explore <ChevronRight className="ml-1 h-4 w-4" />
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
-      </section>
+      ))}
+    </div>
+  </div>
+</section>
+
 
       {/* Products Section */}
       <section className="py-12 px-4 md:px-6 lg:px-8 bg-muted/30">
