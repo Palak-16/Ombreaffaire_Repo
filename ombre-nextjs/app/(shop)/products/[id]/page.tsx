@@ -24,6 +24,7 @@ type Product = {
   sizes: { size: string; inventory: number }[];
   imagesByColor: { [colorId: string]: string[] }; // <-- new
   features: string[];
+  mainImageByColor: string;
 };
 
 export default function ProductPage() {
@@ -33,14 +34,27 @@ export default function ProductPage() {
   const [selectedSize, setSelectedSize] = useState("M");
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
-  const [activeImage, setActiveImage] = useState(0);
+  
   const { addItem } = useCart();
   const { toggleItem, isFavorite } = useFavorites();
 
   // Add this inside the component
   const [product, setProduct] = useState<Product | null>(null);
+  
 
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  
+  const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
+
+useEffect(() => {
+  if (product && selectedColor) {
+    const mainImage = product.mainImageByColor?.[selectedColor];
+    const imageList = product.imagesByColor?.[selectedColor] || [];
+
+    const index = imageList.findIndex((img) => img === mainImage);
+    setActiveImageIndex(index >= 0 ? index : 0);
+  }
+}, [selectedColor, product]);
+
 
   useEffect(() => {
     setActiveImageIndex(0); // reset to first image when color changes

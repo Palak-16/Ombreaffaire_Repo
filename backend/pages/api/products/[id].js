@@ -58,38 +58,36 @@ export default async function handler(req, res) {
     inventory: row.inventory,
   }));
 
-  // 4. Fetch image data (array of image URLs)
-  // Build map from color_id to hex (used on frontend)
-// 4. Fetch image data (color-specific)
-const { data: imageData, error: imageError } = await supabase
+  // 4. Fetch image data (color-specific images with main image index)
+const { data: imageData } = await supabase
   .from("product_color_images")
-  .select("color_id, image_urls")
+  .select("color_id, image_urls, main_index")
   .eq("product_id", id);
 
-if (imageError) {
-  console.error("Image fetch error:", imageError);
-}
-
-// Build map from color_id to hex (used on frontend)
+// Build color_id → hex map
 const idToHexMap = {};
 colors.forEach((c) => {
   idToHexMap[c.id] = c.value;
 });
 
+// Build image maps
 const imagesByColor = {};
-imageData?.forEach(({ color_id, image_urls }) => {
+const mainImageByColor = {};
+
+imageData?.forEach(({ color_id, image_urls, main_index }) => {
   const hex = idToHexMap[color_id];
   if (hex) {
     imagesByColor[hex] = image_urls;
+    mainImageByColor[hex] = image_urls?.[main_index] || image_urls?.[0] || null;
   }
 });
-
 
 
   // 5. Final response object
   return res.status(200).json({
     ...product,
     imagesByColor,
+    mainImageByColor,
     colors: colors.map(({ id, ...rest }) => rest),
     sizes,
     features: ["Handmade", "Washable", "Sustainable"], // Optional: replace with real DB field later
