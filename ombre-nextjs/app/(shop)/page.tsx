@@ -63,7 +63,7 @@ useEffect(() => {
       <section className="relative">
         <div className="absolute inset-0 bg-gradient-to-r from-background/80 to-transparent z-10" />
         <Image
-          src="/sophisticated-style-launch.png"
+          src="/InShot_20250625_174557709 (1).jpg"
           alt="Hero Image"
           width={1920}
           height={1080}
@@ -104,7 +104,8 @@ useEffect(() => {
             alt={cat.name}
             width={600}
             height={400}
-            className="w-full h-80 object-cover transition-transform duration-300 group-hover:scale-105"
+            className="w-full h-80 object-scale-down aspect-[3/4] transition-transform duration-300 group-hover:scale-105"
+            // object-scale-down aspect-[3/4]
           />
           <div className="absolute inset-0 bg-black/30 flex items-end p-6">
             <div>
