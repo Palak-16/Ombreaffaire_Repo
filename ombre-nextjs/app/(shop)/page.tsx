@@ -23,11 +23,11 @@ export default function Home() {
     main_image_url: string;
   };
   type Category = {
-  id: string;
-  slug: string;
-  name: string;
-  image_url: string;
-};
+    id: string;
+    slug: string;
+    name: string;
+    image_url: string;
+  };
 
   const { addItem } = useCart();
   const { addFavorite } = useFavorites();
@@ -46,16 +46,15 @@ export default function Home() {
 
   const [categories, setCategories] = useState<Category[]>([]);
 
-useEffect(() => {
-  const fetchCategories = async () => {
-    const res = await fetch(`${apiUrl}/api/categories`);
-    const data = await res.json();
-    setCategories(data.categories || []);
-  };
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const res = await fetch(`${apiUrl}/api/categories`);
+      const data = await res.json();
+      setCategories(data.categories || []);
+    };
 
-  fetchCategories();
-}, []);
-
+    fetchCategories();
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -91,38 +90,70 @@ useEffect(() => {
       </section>
 
       {/* Categories Section */}
-      <section className="py-12 px-4 md:px-6 lg:px-8">
-  <div className="container mx-auto">
-    <h2 className="text-3xl font-bold mb-8 text-center">
-      Shop by Category
-    </h2>
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {categories.map((cat) => (
-        <div key={cat.id} className="relative rounded-lg overflow-hidden group">
-          <Image
-            src={cat.image_url}
-            alt={cat.name}
-            width={600}
-            height={400}
-            className="w-full h-80 object-scale-down aspect-[3/4] transition-transform duration-300 group-hover:scale-105"
-            // object-scale-down aspect-[3/4]
-          />
-          <div className="absolute inset-0 bg-black/30 flex items-end p-6">
-            <div>
-              <h3 className="text-white text-2xl font-bold mb-2">{cat.name}</h3>
-              <Button variant="secondary" asChild>
-                <Link href={`/category/${cat.slug}`}>
-                  Explore <ChevronRight className="ml-1 h-4 w-4" />
-                </Link>
-              </Button>
+      <section className="py-12 px-4 md:px-6 lg:px-8 relative">
+        <div className="container mx-auto">
+          <h2 className="text-3xl font-bold mb-8 text-center">
+            Shop by Category
+          </h2>
+
+          <div className="relative">
+            {/* Left Arrow */}
+            <button
+              onClick={() => {
+                const scroller = document.getElementById("category-carousel");
+                scroller?.scrollBy({ left: -960, behavior: "smooth" }); // 3 * 320px
+              }}
+              className="absolute left-0 top-1/2 z-10 -translate-y-1/2 bg-white shadow-md rounded-full p-2"
+            >
+              ←
+            </button>
+
+            {/* Right Arrow */}
+            <button
+              onClick={() => {
+                const scroller = document.getElementById("category-carousel");
+                scroller?.scrollBy({ left: 960, behavior: "smooth" }); // 3 * 320px
+              }}
+              className="absolute right-0 top-1/2 z-10 -translate-y-1/2 bg-white shadow-md rounded-full p-2"
+            >
+              →
+            </button>
+
+            {/* Scrollable Container */}
+            <div
+              id="category-carousel"
+              className="flex overflow-x-auto gap-6 scroll-smooth no-scrollbar px-8"
+            >
+              {categories.map((cat) => (
+                <div
+                  key={cat.id}
+                  className="min-w-[300px] max-w-[300px] rounded-lg overflow-hidden group relative flex-shrink-0"
+                >
+                  <Image
+                    src={cat.image_url}
+                    alt={cat.name}
+                    width={600}
+                    height={400}
+                    className="w-full h-80 object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-black/30 flex items-end p-6">
+                    <div>
+                      <h3 className="text-white text-2xl font-bold mb-2 capitalize">
+                        {cat.name}
+                      </h3>
+                      <Button variant="secondary" asChild>
+                        <Link href={`/category/${cat.slug}`}>
+                          Explore <ChevronRight className="ml-1 h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
-      ))}
-    </div>
-  </div>
-</section>
-
+      </section>
 
       {/* Products Section */}
       <section className="py-12 px-4 md:px-6 lg:px-8 bg-muted/30">

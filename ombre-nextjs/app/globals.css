@@ -107,4 +107,11 @@
   list-style-type: disc;
   margin-left: 1.25rem;
 }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 
