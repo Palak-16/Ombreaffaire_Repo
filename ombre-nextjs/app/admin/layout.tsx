@@ -13,6 +13,7 @@ import {
   Settings,
   LogOut,
   Menu,
+  List,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -110,6 +111,7 @@ function AdminSidebar({
     { name: "Products", href: "/admin/products", icon: Package },
     { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
     { name: "Customers", href: "/admin/customers", icon: Users },
+    { name: "Categories", href: "/admin/categories", icon: List },
   ];
 
   return (

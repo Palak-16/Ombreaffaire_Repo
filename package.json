@@ -10,6 +10,7 @@
     "quill": "^2.0.3",
     "react-quill": "^0.0.2",
     "react-select": "^5.10.1",
-    "summernote": "^0.9.1"
+    "summernote": "^0.9.1",
+    "uuid": "^11.1.0"
   }
 }
