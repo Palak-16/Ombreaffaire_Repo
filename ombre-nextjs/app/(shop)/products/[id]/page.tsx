@@ -20,9 +20,9 @@ type Product = {
   price: number;
   description: string;
   category: string;
-  images: string[];
   colors: { name: string; value: string }[];
   sizes: { size: string; inventory: number }[];
+  imagesByColor: { [colorId: string]: string[] }; // <-- new
   features: string[];
 };
 
@@ -31,13 +31,20 @@ export default function ProductPage() {
 
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState("M");
-  const [selectedColor, setSelectedColor] = useState("beige");
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+
   const [activeImage, setActiveImage] = useState(0);
   const { addItem } = useCart();
   const { toggleItem, isFavorite } = useFavorites();
 
   // Add this inside the component
   const [product, setProduct] = useState<Product | null>(null);
+
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  useEffect(() => {
+    setActiveImageIndex(0); // reset to first image when color changes
+  }, [selectedColor]);
 
   const [loading, setLoading] = useState(true);
   const favorite = product ? isFavorite(product.id) : false;
@@ -52,6 +59,7 @@ export default function ProductPage() {
         const res = await fetch(`${apiUrl}/api/products/${id}`);
         const data = await res.json();
         setProduct(data);
+        
       } catch (err) {
         console.error("Failed to load product", err);
       } finally {
@@ -60,6 +68,13 @@ export default function ProductPage() {
     };
     fetchProduct();
   }, [id]);
+
+  useEffect(() => {
+  if (product && !selectedColor && product.colors.length > 0) {
+    setSelectedColor(product.colors[0].value); // default to first color’s hex
+  }
+}, [product, selectedColor]);
+
 
   const [relatedProducts, setRelatedProducts] = useState([]);
 
@@ -108,6 +123,11 @@ export default function ProductPage() {
     );
   }
 
+  // Get images for selectedColor
+  const imagesForColor = product?.imagesByColor?.[selectedColor] || [
+    "/placeholder.svg",
+  ];
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Breadcrumbs */}
@@ -139,7 +159,7 @@ export default function ProductPage() {
         <div className="space-y-4">
           <div className="aspect-[3/4] w-full overflow-hidden rounded-lg bg-muted">
             <Image
-              src={product?.images?.[activeImage] || "/placeholder.svg"}
+              src={imagesForColor[activeImageIndex]}
               alt={product.name}
               width={600}
               height={800}
@@ -147,14 +167,14 @@ export default function ProductPage() {
             />
           </div>
           <div className="grid grid-cols-4 gap-4">
-            {product?.images.map((image, index) => (
+            {imagesForColor.map((image, index) => (
               <div
                 key={index}
                 className={cn(
                   "aspect-[3/4] overflow-hidden rounded-lg bg-muted cursor-pointer",
-                  activeImage === index ? "ring-2 ring-primary" : ""
+                  activeImageIndex === index ? "ring-2 ring-primary" : ""
                 )}
-                onClick={() => setActiveImage(index)}
+                onClick={() => setActiveImageIndex(index)}
               >
                 <Image
                   src={image || "/placeholder.svg"}
