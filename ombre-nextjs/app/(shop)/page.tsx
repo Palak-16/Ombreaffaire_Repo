@@ -1,131 +1,42 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { ArrowRight, ChevronRight, Heart, ShoppingBag } from "lucide-react"
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, ChevronRight, Heart, ShoppingBag } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Input } from "@/components/ui/input"
-import { useCart } from "@/hooks/use-cart"
-import { useFavorites } from "@/hooks/use-favorites"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { useCart } from "@/hooks/use-cart";
+import { useFavorites } from "@/hooks/use-favorites";
 
 export default function Home() {
-  const { addItem } = useCart()
-  const { addFavorite } = useFavorites()
-  const [activeTab, setActiveTab] = useState("new-arrivals")
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  type Product = {
+    id: string;
+    name: string;
+    category: string;
+    price: number;
+    compare_price?: number;
+    main_image_url: string;
+  };
 
+  const { addItem } = useCart();
+  const { addFavorite } = useFavorites();
+  const [activeTab, setActiveTab] = useState("featured");
+  const [products, setProducts] = useState<Product[]>([]);
   // Featured products data
-  const featuredProducts = [
-    {
-      id: "1",
-      name: "Flowing Ombré Dress",
-      price: 129.99,
-      image: "/flowing-ombre-dress.png",
-      category: "Dresses",
-    },
-    {
-      id: "2",
-      name: "Soft Cream Blazer",
-      price: 149.99,
-      image: "/soft-cream-blazer.png",
-      category: "Outerwear",
-    },
-    {
-      id: "3",
-      name: "Faded Beige Maxi",
-      price: 89.99,
-      image: "/faded-beige-maxi.png",
-      category: "Bottoms",
-    },
-    {
-      id: "4",
-      name: "Flowing Cream Gradient Blouse",
-      price: 79.99,
-      image: "/flowing-cream-gradient-blouse.png",
-      category: "Tops",
-    },
-  ]
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const res = await fetch(`${apiUrl}/api/products?tab=${activeTab}`);
+      const data = await res.json();
+      setProducts(data.products || []);
+    };
 
-  // New arrivals data
-  const newArrivals = [
-    {
-      id: "5",
-      name: "Elegant Pearl Drops",
-      price: 49.99,
-      image: "/elegant-pearl-drops.png",
-      category: "Accessories",
-    },
-    {
-      id: "6",
-      name: "Draped Beige Silk",
-      price: 79.99,
-      image: "/draped-beige-silk.png",
-      category: "Tops",
-    },
-    {
-      id: "7",
-      name: "Shimmering Emerald Gown",
-      price: 149.99,
-      image: "/shimmering-emerald-gown.png",
-      category: "Dresses",
-    },
-    {
-      id: "8",
-      name: "Flowing Ombré Silk",
-      price: 99.99,
-      image: "/flowing-ombre-silk.png",
-      category: "Dresses",
-    },
-  ]
-
-  // Best sellers data
-  const bestSellers = [
-    {
-      id: "9",
-      name: "Flowing Beige Ombré Back",
-      price: 119.99,
-      image: "/flowing-beige-ombre-back.png",
-      category: "Dresses",
-    },
-    {
-      id: "10",
-      name: "Beige Ombré Silk Detail",
-      price: 89.99,
-      image: "/beige-ombre-silk-detail.png",
-      category: "Tops",
-    },
-    {
-      id: "11",
-      name: "Flowing Ombré Silk",
-      price: 99.99,
-      image: "/flowing-ombre-silk.png",
-      category: "Dresses",
-    },
-    {
-      id: "12",
-      name: "Soft Cream Blazer",
-      price: 149.99,
-      image: "/soft-cream-blazer.png",
-      category: "Outerwear",
-    },
-  ]
-
-  // Get products based on active tab
-  const getActiveProducts = () => {
-    switch (activeTab) {
-      case "new-arrivals":
-        return newArrivals
-      case "best-sellers":
-        return bestSellers
-      case "featured":
-        return featuredProducts
-      default:
-        return newArrivals
-    }
-  }
+    fetchProducts();
+  }, [activeTab]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -142,9 +53,12 @@ export default function Home() {
         />
         <div className="absolute inset-0 flex items-center z-20 p-6 md:p-12">
           <div className="max-w-md">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Sophisticated Style for the Modern Woman</h1>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              Sophisticated Style for the Modern Woman
+            </h1>
             <p className="text-lg mb-6">
-              Discover our new collection of elegant, flowing silhouettes in soft, gradient tones.
+              Discover our new collection of elegant, flowing silhouettes in
+              soft, gradient tones.
             </p>
             <div className="flex flex-wrap gap-4">
               <Button asChild size="lg">
@@ -160,7 +74,9 @@ export default function Home() {
       {/* Categories Section */}
       <section className="py-12 px-4 md:px-6 lg:px-8">
         <div className="container mx-auto">
-          <h2 className="text-3xl font-bold mb-8 text-center">Shop by Category</h2>
+          <h2 className="text-3xl font-bold mb-8 text-center">
+            Shop by Category
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="relative rounded-lg overflow-hidden group">
               <Image
@@ -172,7 +88,9 @@ export default function Home() {
               />
               <div className="absolute inset-0 bg-black/30 flex items-end p-6">
                 <div>
-                  <h3 className="text-white text-2xl font-bold mb-2">Dresses</h3>
+                  <h3 className="text-white text-2xl font-bold mb-2">
+                    Dresses
+                  </h3>
                   <Button variant="secondary" asChild>
                     <Link href="/category/dresses">
                       Explore <ChevronRight className="ml-1 h-4 w-4" />
@@ -210,7 +128,9 @@ export default function Home() {
               />
               <div className="absolute inset-0 bg-black/30 flex items-end p-6">
                 <div>
-                  <h3 className="text-white text-2xl font-bold mb-2">Bottoms</h3>
+                  <h3 className="text-white text-2xl font-bold mb-2">
+                    Bottoms
+                  </h3>
                   <Button variant="secondary" asChild>
                     <Link href="/category/bottoms">
                       Explore <ChevronRight className="ml-1 h-4 w-4" />
@@ -228,22 +148,26 @@ export default function Home() {
         <div className="container mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center mb-8">
             <h2 className="text-3xl font-bold">Our Collection</h2>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4 md:mt-0">
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="mt-4 md:mt-0"
+            >
               <TabsList>
-                <TabsTrigger value="new-arrivals">New Arrivals</TabsTrigger>
-                <TabsTrigger value="best-sellers">Best Sellers</TabsTrigger>
+                <TabsTrigger value="new">New Arrivals</TabsTrigger>
+                <TabsTrigger value="bestsellers">Best Sellers</TabsTrigger>
                 <TabsTrigger value="featured">Featured</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {getActiveProducts().map((product) => (
+            {products.map((product) => (
               <Card key={product.id} className="overflow-hidden group">
                 <div className="relative">
                   <Link href={`/products/${product.id}`}>
                     <Image
-                      src={product.image || "/placeholder.svg"}
+                      src={product.main_image_url || "/placeholder.svg"}
                       alt={product.name}
                       width={500}
                       height={500}
@@ -272,11 +196,23 @@ export default function Home() {
                   </div>
                 </div>
                 <CardContent className="p-4">
-                  <Link href={`/products/${product.id}`} className="hover:underline">
+                  <Link
+                    href={`/products/${product.id}`}
+                    className="hover:underline"
+                  >
                     <h3 className="font-medium mb-1">{product.name}</h3>
                   </Link>
-                  <p className="text-muted-foreground text-sm mb-2">{product.category}</p>
-                  <p className="font-medium">${product.price.toFixed(2)}</p>
+                  <p className="text-muted-foreground text-sm mb-2">
+                    {product.category}
+                  </p>
+                  <p className="font-medium">
+                    ₹{product.price.toFixed(0)}
+                    {product.compare_price && (
+                      <span className="ml-2 line-through text-sm text-muted-foreground">
+                        ₹{product.compare_price.toFixed(0)}
+                      </span>
+                    )}
+                  </p>
                 </CardContent>
               </Card>
             ))}
@@ -297,22 +233,32 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold mb-4">About OMBRÉ affaire</h2>
+              <h2 className="text-2xl md:text-3xl font-bold mb-4">
+                About OMBRÉ affaire
+              </h2>
               <p className="text-muted-foreground mb-6">
-                OMBRÉ affaire was founded with a vision to create elegant, contemporary fashion that transitions
-                seamlessly from day to night, just like the gradual blend of colors in an ombré design.
+                OMBRÉ affaire was founded with a vision to create elegant,
+                contemporary fashion that transitions seamlessly from day to
+                night, just like the gradual blend of colors in an ombré design.
               </p>
               <p className="text-muted-foreground mb-6">
-                Our pieces are crafted with attention to detail, using high-quality fabrics and sustainable practices.
-                Each collection tells a story of sophistication and grace, designed for the modern woman who appreciates
-                timeless style with a contemporary twist.
+                Our pieces are crafted with attention to detail, using
+                high-quality fabrics and sustainable practices. Each collection
+                tells a story of sophistication and grace, designed for the
+                modern woman who appreciates timeless style with a contemporary
+                twist.
               </p>
               <Button asChild>
                 <Link href="/about-us">Learn More</Link>
               </Button>
             </div>
             <div className="relative h-[400px] rounded-lg overflow-hidden">
-              <Image src="/beige-atelier.png" alt="About OMBRÉ affaire" fill className="object-cover" />
+              <Image
+                src="/beige-atelier.png"
+                alt="About OMBRÉ affaire"
+                fill
+                className="object-cover"
+              />
             </div>
           </div>
         </div>
@@ -331,8 +277,12 @@ export default function Home() {
             />
             <div className="absolute inset-0 bg-black/40 flex items-center p-6 md:p-12">
               <div className="max-w-md">
-                <h2 className="text-white text-3xl md:text-4xl font-bold mb-4">Summer Sale</h2>
-                <p className="text-white text-lg mb-6">Up to 40% off on selected items. Limited time offer.</p>
+                <h2 className="text-white text-3xl md:text-4xl font-bold mb-4">
+                  Summer Sale
+                </h2>
+                <p className="text-white text-lg mb-6">
+                  Up to 40% off on selected items. Limited time offer.
+                </p>
                 <Button asChild size="lg" variant="secondary">
                   <Link href="/products">
                     Shop Now <ArrowRight className="ml-2 h-5 w-5" />
@@ -349,7 +299,8 @@ export default function Home() {
         <div className="container mx-auto max-w-4xl text-center">
           <h2 className="text-3xl font-bold mb-4">Join Our Newsletter</h2>
           <p className="text-lg mb-6">
-            Subscribe to receive updates on new arrivals, special offers, and styling tips.
+            Subscribe to receive updates on new arrivals, special offers, and
+            styling tips.
           </p>
           <form className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
             <Input type="email" placeholder="Your email address" required />
@@ -358,5 +309,5 @@ export default function Home() {
         </div>
       </section>
     </div>
-  )
+  );
 }

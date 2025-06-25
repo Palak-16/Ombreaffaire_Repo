@@ -1,6 +1,8 @@
 {
   "dependencies": {
     "@lexical/selection": "^0.32.1",
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
+    "@supabase/ssr": "^0.6.1",
     "@tailwindcss/typography": "^0.5.16",
     "bootstrap": "^5.3.7",
     "formidable": "^3.5.4",
