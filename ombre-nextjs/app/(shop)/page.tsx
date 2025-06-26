@@ -11,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/hooks/use-cart";
 import { useFavorites } from "@/hooks/use-favorites";
+import MediaRenderer from "@/components/ui/MediaRenderer";
 
 export default function Home() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
@@ -129,7 +130,7 @@ export default function Home() {
                   key={cat.id}
                   className="min-w-[300px] max-w-[300px] rounded-lg overflow-hidden group relative flex-shrink-0"
                 >
-                  <Image
+                  <MediaRenderer
                     src={cat.image_url}
                     alt={cat.name}
                     width={600}
@@ -178,8 +179,8 @@ export default function Home() {
               <Card key={product.id} className="overflow-hidden group">
                 <div className="relative">
                   <Link href={`/products/${product.id}`}>
-                    <Image
-                      src={product.main_image_url || "/placeholder.svg"}
+                    <MediaRenderer
+                      src={product.main_image_url}
                       alt={product.name}
                       width={500}
                       height={500}

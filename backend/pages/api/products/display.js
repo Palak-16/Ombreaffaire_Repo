@@ -8,8 +8,8 @@ export default async function handler(req, res) {
     const { data: products, error } = await supabase
       .from("products")
       .select("*")
-      .eq("published", true) // or any other logic (e.g. limit, sort)
-      .limit(8);
+      .eq("published", true); // or any other logic (e.g. limit, sort)
+    
 
     if (error) {
       return res.status(500).json({ error: error.message });

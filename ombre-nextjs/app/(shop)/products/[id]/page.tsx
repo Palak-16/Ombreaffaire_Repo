@@ -13,6 +13,7 @@ import { useFavorites } from "@/hooks/use-favorites";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import MediaRenderer from "@/components/ui/MediaRenderer";
 
 type Product = {
   id: string;
@@ -172,7 +173,7 @@ useEffect(() => {
         {/* Product Images */}
         <div className="space-y-4">
           <div className="aspect-[3/4] w-full overflow-hidden rounded-lg bg-muted">
-            <Image
+            <MediaRenderer
               src={imagesForColor[activeImageIndex]}
               alt={product.name}
               width={600}
@@ -190,7 +191,7 @@ useEffect(() => {
                 )}
                 onClick={() => setActiveImageIndex(index)}
               >
-                <Image
+                <MediaRenderer
                   src={image || "/placeholder.svg"}
                   alt={`${product.name} - View ${index + 1}`}
                   width={150}
