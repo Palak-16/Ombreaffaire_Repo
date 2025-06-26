@@ -28,11 +28,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import dynamic from "next/dynamic";
-const SummernoteEditor = dynamic(() => import("@/components/ui/SummernoteEditor"), { ssr: false });
+const SummernoteEditor = dynamic(
+  () => import("@/components/ui/SummernoteEditor"),
+  { ssr: false }
+);
 const BrandSelector = dynamic(() => import("@/components/ui/BrandSelector"), {
   ssr: false,
 });
-
 
 export default function NewProductPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
@@ -71,6 +73,22 @@ export default function NewProductPage() {
   const [newColorHex, setNewColorHex] = useState("#000000");
   const [existingSizeChart, setExistingSizeChart] = useState([]);
   const [activeTab, setActiveTab] = useState("general");
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
+    []
+  );
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch(`${apiUrl}/api/categories`);
+        const data = await res.json();
+        setCategories(data.categories || []);
+      } catch (err) {
+        console.error("Failed to fetch categories", err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const [sizeChartRows, setSizeChartRows] = useState([
     { size: "XXS", uk: "4", bust: "", waist: "", hip: "" },
@@ -355,8 +373,10 @@ export default function NewProductPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="description">Description</Label>
-                  <SummernoteEditor value={description} onChange={setDescription} />
-
+                  <SummernoteEditor
+                    value={description}
+                    onChange={setDescription}
+                  />
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
@@ -369,20 +389,17 @@ export default function NewProductPage() {
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Dresses">Dresses</SelectItem>
-                        <SelectItem value="CordSets">Cord-Sets</SelectItem>
-                        <SelectItem value="Saree">Saree</SelectItem>
-                        <SelectItem value="Suit">Suit</SelectItem>
-                        <SelectItem value="Accessories">Jumpsuits</SelectItem>
-                        <SelectItem value="Jumpsuits">Lehngas</SelectItem>
-                        <SelectItem value="Tops">Tops | Shirts</SelectItem>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.name}>
+                            {cat.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="brand">Brand</Label>
                     <BrandSelector value={brand} onChange={setBrand} />
-
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
