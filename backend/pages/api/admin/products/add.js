@@ -23,6 +23,9 @@ export default async function handler(req, res) {
     inventory,
     track_inventory,
     published,
+    is_featured,
+    best_seller,
+    new_arrival,
     sizes,
     colors,
     images,
@@ -83,6 +86,9 @@ export default async function handler(req, res) {
       inventory,
       track_inventory,
       published,
+      is_featured,
+      best_seller,
+      new_arrival,
     })
     .select()
     .single();

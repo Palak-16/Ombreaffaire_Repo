@@ -31,7 +31,7 @@ export default function Home() {
 
   const { addItem } = useCart();
   const { addFavorite } = useFavorites();
-  const [activeTab, setActiveTab] = useState("featured");
+  const [activeTab, setActiveTab] = useState("new");
   const [products, setProducts] = useState<Product[]>([]);
   // Featured products data
   useEffect(() => {

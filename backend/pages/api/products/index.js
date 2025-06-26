@@ -7,17 +7,17 @@ export default async function handler(req, res) {
 
   const { tab } = req.query
 
-  let query = supabase.from('products').select('*')
+  let queryBuilder = supabase.from('products').select('*')
 
   if (tab === 'featured') {
-    query = query.eq('is_featured', true)
-  } else if (tab === 'new-arrivals') {
-    query = query.order('created_at', { ascending: false }).limit(10)
-  } else if (tab === 'best-sellers') {
-    query = query.order('inventory', { ascending: true }).limit(10) // example logic
+    queryBuilder = queryBuilder.eq('is_featured', true)
+  } else if (tab === 'new') {
+    queryBuilder = queryBuilder.eq('new_arrival', true).not('new_arrival', 'is', null)
+  } else if (tab === 'bestsellers') {
+    queryBuilder = queryBuilder.eq('best_seller', true).not('best_seller', 'is', null).limit(10) // example logic
   }
 
-  const { data, error } = await query
+  const { data, error } = await queryBuilder
 
   if (error) {
     return res.status(500).json({ error: error.message })

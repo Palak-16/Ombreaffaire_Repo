@@ -115,7 +115,7 @@ export default function ProductsPage() {
       <div className="relative mb-8 overflow-hidden rounded-lg">
         <div className="absolute inset-0 bg-gradient-to-r from-background/80 to-transparent z-10" />
         <Image
-          src="/soft-drape-display.png"
+          src="/product banner.png"
           alt="Products Collection"
           width={1200}
           height={400}

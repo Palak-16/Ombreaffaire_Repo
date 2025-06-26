@@ -28,6 +28,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import dynamic from "next/dynamic";
+import { set } from "date-fns";
 const SummernoteEditor = dynamic(
   () => import("@/components/ui/SummernoteEditor"),
   { ssr: false }
@@ -48,6 +49,9 @@ export default function NewProductPage() {
   const [category, setCategory] = useState("");
   const [brand, setBrand] = useState("");
   const [published, setPublished] = useState(false);
+  const [is_featured, setFeatured] = useState(false);
+  const [new_arrival, setNew_arrival] = useState(false);
+  const [best_seller, setBest_seller] = useState(false);
   const [images, setImages] = useState<string[]>([]);
   const [isImageUploading, setIsImageUploading] = useState(false);
   const [mainImageIndex, setMainImageIndex] = useState(0);
@@ -255,6 +259,9 @@ export default function NewProductPage() {
           images,
           mainImageIndex,
           published,
+          new_arrival,
+          is_featured,
+          best_seller,
           track_inventory: trackInventory,
           product_color_images: Object.entries(colorImages).map(
             ([color_id, data]) => ({
@@ -409,6 +416,30 @@ export default function NewProductPage() {
                     onCheckedChange={setPublished}
                   />
                   <Label htmlFor="published">Published</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="is_featured"
+                    checked={is_featured}
+                    onCheckedChange={setFeatured}
+                  />
+                  <Label htmlFor="is_featured">Featured</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="new_arrival"
+                    checked={new_arrival}
+                    onCheckedChange={setNew_arrival}
+                  />
+                  <Label htmlFor="new_arrival">New Arrival</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="best_seller"
+                    checked={best_seller}
+                    onCheckedChange={setBest_seller}
+                  />
+                  <Label htmlFor="best_seller">Best Seller</Label>
                 </div>
               </CardContent>
             </Card>
