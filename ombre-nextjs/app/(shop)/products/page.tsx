@@ -27,6 +27,17 @@ import { Label } from "@/components/ui/label";
 import ProductCard from "@/components/product-card";
 
 import { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from 'next/navigation';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"; // path based on your structure
+
 
 type Product = {
   id: string;
@@ -59,13 +70,23 @@ export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedPriceRange, setSelectedPriceRange] = useState("All");
   const [sortBy, setSortBy] = useState("Newest");
+  const [totalPages, setTotalPages] = useState(1);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const currentPage = parseInt(searchParams.get('page') || '1');
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch(`${apiUrl}/api/products/display`);
+        const res = await fetch(`${apiUrl}/api/products/display?page=${currentPage}&limit=12`);
         const data = await res.json();
         setProducts(data.products || []);
+        setTotalPages(data.totalPages);
+        console.log("Fetched data:", data); // check for products and totalPages
+        console.log("total page:", totalPages); // check current page
+        console.log("current page:", currentPage); // check current page  
+
       } catch (err) {
         console.error("Error fetching products:", err);
       } finally {
@@ -73,7 +94,11 @@ export default function ProductsPage() {
       }
     };
     fetchProducts();
-  }, []);
+  }, [currentPage]);
+
+   const goToPage = (pageNum: number) => {
+    router.push(`/products?page=${pageNum}`);
+  };
 
   // Filter products based on search query, category, and price range
   const filteredProducts = products.filter((product) => {
@@ -108,6 +133,26 @@ export default function ProductsPage() {
     // Here we'll just use the default order for simplicity
     return 0;
   });
+function getPageRange(current: number, total: number) {
+  const delta = 2;
+  const range: (number | string)[] = [];
+
+  for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+    range.push(i);
+  }
+
+  if (current - delta > 2) {
+    range.unshift("...");
+  }
+  if (current + delta < total - 1) {
+    range.push("...");
+  }
+
+  range.unshift(1);
+  if (total > 1) range.push(total);
+
+  return range;
+}
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -243,6 +288,41 @@ export default function ProductsPage() {
           <ProductCard key={product.id} product={product} />
         ))}
       </div>
+       {/* Pagination */}
+       {totalPages > 1 && (
+  <Pagination className="mt-8">
+    <PaginationContent>
+      {currentPage > 1 && (
+        <PaginationItem>
+          <PaginationPrevious onClick={() => goToPage(currentPage - 1)} />
+        </PaginationItem>
+      )}
+
+      {getPageRange(currentPage, totalPages).map((page, index) =>
+        page === "..." ? (
+          <PaginationItem key={index}>
+            <PaginationEllipsis />
+          </PaginationItem>
+        ) : (
+          <PaginationItem key={page}>
+            <PaginationLink
+              isActive={page === currentPage}
+              onClick={() => goToPage(Number(page))}
+            >
+              {page}
+            </PaginationLink>
+          </PaginationItem>
+        )
+      )}
+
+      {currentPage < totalPages && (
+        <PaginationItem>
+          <PaginationNext onClick={() => goToPage(currentPage + 1)} />
+        </PaginationItem>
+      )}
+    </PaginationContent>
+  </Pagination>
+)}
 
       {/* Empty State */}
       {sortedProducts.length === 0 && (

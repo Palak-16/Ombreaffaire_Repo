@@ -10,11 +10,11 @@ export default async function handler(req, res) {
   let queryBuilder = supabase.from('products').select('*')
 
   if (tab === 'featured') {
-    queryBuilder = queryBuilder.eq('is_featured', true)
+    queryBuilder = queryBuilder.eq('is_featured', true).limit(8)
   } else if (tab === 'new') {
-    queryBuilder = queryBuilder.eq('new_arrival', true).not('new_arrival', 'is', null)
+    queryBuilder = queryBuilder.eq('new_arrival', true).not('new_arrival', 'is', null).limit(8)
   } else if (tab === 'bestsellers') {
-    queryBuilder = queryBuilder.eq('best_seller', true).not('best_seller', 'is', null).limit(10) // example logic
+    queryBuilder = queryBuilder.eq('best_seller', true).not('best_seller', 'is', null).limit(8) // example logic
   }
 
   const { data, error } = await queryBuilder

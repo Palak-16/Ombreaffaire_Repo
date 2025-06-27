@@ -4,19 +4,25 @@ import cors, { runMiddleware } from "../../../lib/cors";
 export default async function handler(req, res) {
   await runMiddleware(req, res, cors);
 
+  const { page = 1, limit = 12 } = req.query;
+  const from = (page - 1) * limit;
+  const to = from + parseInt(limit) - 1;
+
   try {
-    const { data: products, error } = await supabase
+    const { data, error, count } = await supabase
       .from("products")
-      .select("*")
-      .eq("published", true); // or any other logic (e.g. limit, sort)
-    
+      .select("*", { count: "exact" })
+      .range(from, to)
+      .order("created_at", { ascending: false });
 
     if (error) {
       return res.status(500).json({ error: error.message });
     }
 
+    const totalPages = Math.ceil(count / limit); // ✅ fixed
+
     const enriched = await Promise.all(
-      products.map(async (product) => {
+      data.map(async (product) => {
         const { data: imageRow } = await supabase
           .from("product_color_images")
           .select("image_urls, main_index")
@@ -40,7 +46,13 @@ export default async function handler(req, res) {
       })
     );
 
-    return res.status(200).json({ products: enriched });
+    console.log("count:", count);
+    console.log("totalPages:", totalPages);
+
+    return res.status(200).json({
+      products: enriched,
+      totalPages, // ✅ pass it back to frontend
+    });
   } catch (e) {
     console.error("Display API error:", e);
     return res.status(500).json({ error: "Internal Server Error" });

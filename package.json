@@ -8,6 +8,7 @@
     "formidable": "^3.5.4",
     "jquery": "^3.7.1",
     "quill": "^2.0.3",
+    "react-pagination": "^1.0.0",
     "react-quill": "^0.0.2",
     "react-select": "^5.10.1",
     "summernote": "^0.9.1",
