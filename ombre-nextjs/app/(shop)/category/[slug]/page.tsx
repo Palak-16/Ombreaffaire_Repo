@@ -50,7 +50,9 @@ export default function CategoryPage() {
       try {
         const catRes = await fetch(`${apiUrl}/api/categories`);
         const catJson = await catRes.json();
-        const current = catJson.categories.find((c: Category) => c.slug === slug);
+        const current = catJson.categories.find(
+          (c: Category) => c.slug === slug
+        );
         if (!current) return;
 
         setCategory(current);
@@ -67,10 +69,22 @@ export default function CategoryPage() {
 
     fetchData();
   }, [slug]);
+  const allSizes = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "XXXL"];
 
-  // Dummy data for UI-only filter rendering
-  const allSizes = ["S", "M", "L", "XL"];
-  const allColors = ["Black", "White", "Red", "Blue"];
+  useEffect(() => {
+    const fetchColors = async () => {
+      try {
+        const res = await fetch(`${apiUrl}/api/colors`);
+        const json = await res.json();
+        setAllColors(json.colors.map((c: any) => c.label)); // or use id + label if needed
+      } catch (err) {
+        console.error("Failed to load colors:", err);
+      }
+    };
+    fetchColors();
+  }, []);
+
+  const [allColors, setAllColors] = useState<string[]>([]);
 
   return (
     <div>
@@ -101,7 +115,10 @@ export default function CategoryPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Breadcrumbs */}
         <nav className="flex items-center text-sm mb-8">
-          <Link href="/" className="text-muted-foreground hover:text-foreground">
+          <Link
+            href="/"
+            className="text-muted-foreground hover:text-foreground"
+          >
             Home
           </Link>
           <ChevronRight className="h-4 w-4 mx-2 text-muted-foreground" />
@@ -120,11 +137,21 @@ export default function CategoryPage() {
               </SheetTrigger>
               <SheetContent side="left" className="w-full sm:max-w-md">
                 <SheetHeader>
+                  <SheetTrigger asChild>
+                  <button
+                    className="absolute top-4 right-4 text-gray-500 hover:text-black"
+                    aria-label="Close"
+                  >
+                    ✕
+                  </button>
+                </SheetTrigger>
                   <SheetTitle>Filter Products</SheetTitle>
                   <SheetDescription>
                     Refine your product selection
                   </SheetDescription>
                 </SheetHeader>
+                
+
                 <div className="py-4 space-y-6">
                   {/* Size Filter */}
                   <div>
@@ -146,11 +173,17 @@ export default function CategoryPage() {
                   {/* Color Filter */}
                   <div>
                     <h3 className="text-sm font-medium mb-4">Color</h3>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
                       {allColors.map((color) => (
-                        <div key={color} className="flex items-center space-x-2">
-                          <Checkbox id={`color-${color}`} />
-                          <Label htmlFor={`color-${color}`} className="text-sm">
+                        <div
+                          key={color}
+                          className="flex items-center space-x-2"
+                        >
+                          <Checkbox id={`desktop-color-${color}`} />
+                          <Label
+                            htmlFor={`desktop-color-${color}`}
+                            className="text-sm"
+                          >
                             {color}
                           </Label>
                         </div>
@@ -176,7 +209,10 @@ export default function CategoryPage() {
                   {allSizes.map((size) => (
                     <div key={size} className="flex items-center space-x-2">
                       <Checkbox id={`desktop-size-${size}`} />
-                      <Label htmlFor={`desktop-size-${size}`} className="text-sm">
+                      <Label
+                        htmlFor={`desktop-size-${size}`}
+                        className="text-sm"
+                      >
                         {size}
                       </Label>
                     </div>
@@ -189,11 +225,14 @@ export default function CategoryPage() {
               {/* Color Filter */}
               <div>
                 <h3 className="text-sm font-medium mb-4">Color</h3>
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
                   {allColors.map((color) => (
                     <div key={color} className="flex items-center space-x-2">
                       <Checkbox id={`desktop-color-${color}`} />
-                      <Label htmlFor={`desktop-color-${color}`} className="text-sm">
+                      <Label
+                        htmlFor={`desktop-color-${color}`}
+                        className="text-sm"
+                      >
                         {color}
                       </Label>
                     </div>
@@ -219,8 +258,12 @@ export default function CategoryPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="newest">Newest</SelectItem>
-                    <SelectItem value="price-low-high">Price: Low to High</SelectItem>
-                    <SelectItem value="price-high-low">Price: High to Low</SelectItem>
+                    <SelectItem value="price-low-high">
+                      Price: Low to High
+                    </SelectItem>
+                    <SelectItem value="price-high-low">
+                      Price: High to Low
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
