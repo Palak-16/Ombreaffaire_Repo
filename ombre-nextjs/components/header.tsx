@@ -23,14 +23,6 @@ const navLinks = [
   { name: "All Products", href: "/products" },
 ]
 
-const categoryLinks = [
-  { name: "Dresses", href: "/category/dresses" },
-  { name: "Tops", href: "/category/tops" },
-  { name: "Bottoms", href: "/category/bottoms" },
-  { name: "Sarees", href: "/category/sarees" },
-  { name: "Accessories", href: "/category/accessories" },
-  { name: "Co-ords", href: "/category/cordsets" },
-]
 
 
 export default function Header() {
@@ -40,6 +32,24 @@ export default function Header() {
   const { items: favoriteItems } = useFavorites()
   const { isLoggedIn } = useAuth();
   const user = getUserFromToken();
+  type Category = { id: string | number; name: string; slug: string };
+  const [dbCategories, setDbCategories] = useState<Category[]>([]);
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+useEffect(() => {
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(`${apiUrl}/api/categories`); // adjust if route differs
+      const json = await res.json();
+      setDbCategories(json.categories || []);
+    } catch (err) {
+      console.error("Failed to fetch categories:", err);
+    }
+  };
+
+  fetchCategories();
+}, []);
+
 
 
   useEffect(() => {
@@ -86,20 +96,21 @@ export default function Header() {
     <button className="text-sm font-medium text-foreground hover:text-foreground/80 transition-colors">
       Categories ▾
     </button>
-    <div className="absolute hidden group-hover:block bg-white shadow-md border mt-2 z-10">
-      <ul className="min-w-[180px] py-2">
-        {categoryLinks.map((cat) => (
-          <li key={cat.name}>
-            <Link
-              href={cat.href}
-              className="block px-4 py-2 text-sm text-foreground hover:bg-gray-100"
-            >
-              {cat.name}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
+   <div className="absolute hidden group-hover:block bg-white shadow-md border mt-2 z-10 rounded">
+  <ul className="min-w-[180px] py-2 px-3 flex flex-col gap-y-2">
+    {dbCategories.map((category) => (
+      <li key={category.id}>
+        <Link
+          href={`/category/${category.slug}`}
+          className="text-sm text-foreground hover:text-black transition-colors"
+        >
+          {category.name}
+        </Link>
+      </li>
+    ))}
+  </ul>
+</div>
+
   </div>
 </nav>
 
@@ -180,17 +191,21 @@ export default function Header() {
     </li>
   ))}
   <li className="border-t pt-4 text-sm font-semibold text-muted-foreground">Categories</li>
-  {categoryLinks.map((link) => (
-    <li key={link.name}>
+<ul className="space-y-4">
+  {dbCategories.map((category) => (
+    <li key={category.id}>
       <Link
-        href={link.href}
-        className="text-base font-medium text-foreground hover:text-foreground/80 transition-colors"
+        href={`/category/${category.slug}`}
+        className="block text-base font-medium text-foreground hover:text-foreground/80 transition-colors"
         onClick={() => setIsMobileMenuOpen(false)}
       >
-        {link.name}
+        {category.name}
       </Link>
     </li>
   ))}
+</ul>
+
+
   <li>
     <Link
       href="/favorites"
