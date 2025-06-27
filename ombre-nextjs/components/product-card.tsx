@@ -61,7 +61,8 @@ export default function ProductCard({ product }: ProductCardProps) {
       <div className="aspect-[3/4] w-full overflow-hidden rounded-lg bg-muted">
         <Link href={`/products/${product.id}`}>
           <Image
-            src={product.main_image_url || "/placeholder.svg"}
+  src={product.main_image_url || product.image || "/placeholder.svg"}
+
             alt={product.name}
             width={300}
             height={400}
