@@ -5,7 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet"
 import { Badge } from "@/components/ui/badge"
 import { useCart } from "@/hooks/use-cart"
 import { useFavorites } from "@/hooks/use-favorites"
@@ -14,14 +14,24 @@ import { useAuth } from "@/hooks/use-auth"
 import { getUserFromToken } from "@/utils/getUserFromToken"
 
 
-const categories = [
-  { name: "New Arrivals", href: "/category/new-arrivals" },
+const navLinks = [
+  { name: "Home", href: "/" },
+  { name: "New Arrivals", href: "/products?filter=new" },
+  { name: "Best Sellers", href: "/products?filter=best" },
+  { name: "Featured", href: "/products?filter=featured" },
+  { name: "Sale", href: "/products?filter=sale" },
+  { name: "All Products", href: "/products" },
+]
+
+const categoryLinks = [
   { name: "Dresses", href: "/category/dresses" },
   { name: "Tops", href: "/category/tops" },
   { name: "Bottoms", href: "/category/bottoms" },
+  { name: "Sarees", href: "/category/sarees" },
   { name: "Accessories", href: "/category/accessories" },
-  { name: "Sale", href: "/category/sale" },
+  { name: "Co-ords", href: "/category/cordsets" },
 ]
+
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -60,18 +70,39 @@ export default function Header() {
             </Link>
           </div>
 
-          {/* Desktop navigation */}
-          <nav className="hidden md:flex md:space-x-8">
-            {categories.map((category) => (
-              <Link
-                key={category.name}
-                href={category.href}
-                className="text-sm font-medium text-foreground hover:text-foreground/80 transition-colors"
-              >
-                {category.name}
-              </Link>
-            ))}
-          </nav>
+         <nav className="hidden md:flex md:space-x-6 items-center">
+  {navLinks.map((link) => (
+    <Link
+      key={link.name}
+      href={link.href}
+      className="text-sm font-medium text-foreground hover:text-foreground/80 transition-colors"
+    >
+      {link.name}
+    </Link>
+  ))}
+
+  {/* Categories Dropdown */}
+  <div className="relative group">
+    <button className="text-sm font-medium text-foreground hover:text-foreground/80 transition-colors">
+      Categories ▾
+    </button>
+    <div className="absolute hidden group-hover:block bg-white shadow-md border mt-2 z-10">
+      <ul className="min-w-[180px] py-2">
+        {categoryLinks.map((cat) => (
+          <li key={cat.name}>
+            <Link
+              href={cat.href}
+              className="block px-4 py-2 text-sm text-foreground hover:bg-gray-100"
+            >
+              {cat.name}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</nav>
+
 
           {/* Actions */}
           <div className="flex items-center space-x-4">
@@ -122,6 +153,9 @@ export default function Header() {
       {/* Mobile menu */}
       <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
         <SheetContent side="left" className="w-full sm:max-w-md">
+          <SheetHeader>
+    <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
+  </SheetHeader>
           <div className="flex h-full flex-col">
             <div className="flex items-center justify-between border-b px-4 py-4">
               <Link href="/" className="flex items-center" onClick={() => setIsMobileMenuOpen(false)}>
@@ -134,27 +168,40 @@ export default function Header() {
             </div>
             <nav className="flex-1 overflow-auto py-6">
               <ul className="space-y-6 px-6">
-                {categories.map((category) => (
-                  <li key={category.name}>
-                    <Link
-                      href={category.href}
-                      className="text-base font-medium text-foreground hover:text-foreground/80 transition-colors"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      {category.name}
-                    </Link>
-                  </li>
-                ))}
-                <li>
-                  <Link
-                    href="/favorites"
-                    className="text-base font-medium text-foreground hover:text-foreground/80 transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Favorites
-                  </Link>
-                </li>
-              </ul>
+  {navLinks.map((link) => (
+    <li key={link.name}>
+      <Link
+        href={link.href}
+        className="text-base font-medium text-foreground hover:text-foreground/80 transition-colors"
+        onClick={() => setIsMobileMenuOpen(false)}
+      >
+        {link.name}
+      </Link>
+    </li>
+  ))}
+  <li className="border-t pt-4 text-sm font-semibold text-muted-foreground">Categories</li>
+  {categoryLinks.map((link) => (
+    <li key={link.name}>
+      <Link
+        href={link.href}
+        className="text-base font-medium text-foreground hover:text-foreground/80 transition-colors"
+        onClick={() => setIsMobileMenuOpen(false)}
+      >
+        {link.name}
+      </Link>
+    </li>
+  ))}
+  <li>
+    <Link
+      href="/favorites"
+      className="text-base font-medium text-foreground hover:text-foreground/80 transition-colors"
+      onClick={() => setIsMobileMenuOpen(false)}
+    >
+      Favorites
+    </Link>
+  </li>
+</ul>
+
             </nav>
           </div>
         </SheetContent>
