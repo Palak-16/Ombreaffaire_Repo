@@ -4,38 +4,94 @@ import cors, { runMiddleware } from "../../../lib/cors";
 export default async function handler(req, res) {
   await runMiddleware(req, res, cors);
 
-  const { page = 1, limit = 12, category, search, price } = req.query;
+  const {
+    page = 1,
+    limit = 12,
+    category,
+    search,
+    price,
+    color,
+    size,
+  } = req.query;
+
   const from = (page - 1) * limit;
   const to = from + parseInt(limit) - 1;
 
-  let query = supabase
-    .from("products")
-    .select("*", { count: "exact" });
+  const colorArray = typeof color === "string" ? color.split(",").filter(Boolean) : [];
+  const sizeArray = typeof size === "string" ? size.split(",").filter(Boolean) : [];
 
-  // 🔹 Filter by category
-  if (category && category !== "All" && category !== "all") {
-    query = query.eq("category", category);
+  // ✅ Convert slug to category name
+  let categoryName = null;
+  if (category && category !== "all" && category !== "All") {
+    const { data: catMatch, error: catError } = await supabase
+      .from("categories")
+      .select("name")
+      .eq("slug", category)
+      .single();
+
+    if (catMatch) categoryName = catMatch.name;
   }
 
-  // 🔹 Filter by search
+  // 🎯 Color filter
+  let colorFilteredIds = null;
+  if (colorArray.length > 0) {
+    const { data: colorRows } = await supabase
+      .from("colors")
+      .select("id")
+      .in("label", colorArray);
+
+    const colorIds = colorRows.map((c) => c.id);
+    const { data: links } = await supabase
+      .from("product_colors")
+      .select("product_id")
+      .in("color_id", colorIds);
+
+    colorFilteredIds = links.map((i) => i.product_id);
+  }
+
+  // 🎯 Size filter
+  let sizeFilteredIds = null;
+  if (sizeArray.length > 0) {
+    const { data: links } = await supabase
+      .from("product_sizes")
+      .select("product_id")
+      .in("size", sizeArray);
+
+    sizeFilteredIds = links.map((i) => i.product_id);
+  }
+
+  // ✅ Combine filters
+  let finalFilteredIds = null;
+  if (colorFilteredIds && sizeFilteredIds) {
+    finalFilteredIds = colorFilteredIds.filter((id) =>
+      sizeFilteredIds.includes(id)
+    );
+  } else {
+    finalFilteredIds = colorFilteredIds || sizeFilteredIds;
+  }
+
+  // 🔍 Main product query
+  let query = supabase.from("products").select("*", { count: "exact" });
+
+  if (finalFilteredIds) {
+    query = query.in("id", finalFilteredIds);
+  }
+
+  if (categoryName) {
+    query = query.eq("category", categoryName);
+  }
+
   if (search) {
     query = query.ilike("name", `%${search}%`);
   }
 
-  // 🔹 Filter by price range
   if (price) {
-    if (price === "Under ₹1000") {
-      query = query.lt("price", 1000);
-    } else if (price === "₹1000 - ₹3000") {
-      query = query.gte("price", 1000).lte("price", 3000);
-    } else if (price === "₹3000 - ₹5000") {
-      query = query.gte("price", 3000).lte("price", 5000);
-    } else if (price === "Over ₹5000") {
-      query = query.gt("price", 5000);
-    }
+    if (price === "Under ₹1000") query = query.lt("price", 1000);
+    else if (price === "₹1000 - ₹3000") query = query.gte("price", 1000).lte("price", 3000);
+    else if (price === "₹3000 - ₹5000") query = query.gte("price", 3000).lte("price", 5000);
+    else if (price === "Over ₹5000") query = query.gt("price", 5000);
   }
 
-  // 🔹 Apply pagination + ordering
   query = query.range(from, to).order("created_at", { ascending: false });
 
   try {
@@ -73,10 +129,7 @@ export default async function handler(req, res) {
       })
     );
 
-    return res.status(200).json({
-      products: enriched,
-      totalPages,
-    });
+    return res.status(200).json({ products: enriched, totalPages });
   } catch (e) {
     console.error("Display API error:", e);
     return res.status(500).json({ error: "Internal Server Error" });

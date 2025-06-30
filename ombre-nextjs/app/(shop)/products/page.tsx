@@ -40,6 +40,7 @@ const sortOptions = ["Newest", "Price: Low to High", "Price: High to Low"];
 const allSizes = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "XXXL"];
 
 export default function ProductsPage() {
+  
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -58,6 +59,8 @@ export default function ProductsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const currentPage = parseInt(searchParams.get("page") || "1");
   const selectedCategorySlug = searchParams.get("category") || "all";
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -77,6 +80,13 @@ export default function ProductsPage() {
         if (priceQuery !== "All") {
           url.searchParams.set("price", priceQuery);
         }
+       if (selectedSizes.length > 0) {
+  url.searchParams.set("size", selectedSizes.join(","));
+}
+if (selectedColors.length > 0) {
+  url.searchParams.set("color", selectedColors.join(","));
+}
+
 
         const res = await fetch(url.toString());
         const data = await res.json();
@@ -88,7 +98,14 @@ export default function ProductsPage() {
     };
 
     fetchProducts();
-  }, [currentPage, selectedCategorySlug, searchQuery, priceQuery]);
+  }, [
+    currentPage,
+    selectedCategorySlug,
+    searchQuery,
+    priceQuery,
+    selectedSizes,
+    selectedColors,
+  ]);
 
   useEffect(() => {
     fetch(`${apiUrl}/api/categories`)
@@ -163,7 +180,18 @@ export default function ProductsPage() {
               <div className="space-y-2">
                 {allSizes.map((size) => (
                   <div key={size} className="flex items-center space-x-2">
-                    <Checkbox id={`desktop-size-${size}`} />
+                    <Checkbox
+                      id={`desktop-size-${size}`}
+                      checked={selectedSizes.includes(size)}
+                      onCheckedChange={(checked) => {
+                        setSelectedSizes((prev) =>
+                          checked
+                            ? [...prev, size]
+                            : prev.filter((s) => s !== size)
+                        );
+                      }}
+                    />
+
                     <Label htmlFor={`desktop-size-${size}`} className="text-sm">
                       {size}
                     </Label>
@@ -177,7 +205,18 @@ export default function ProductsPage() {
               <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
                 {allColors.map((color) => (
                   <div key={color} className="flex items-center space-x-2">
-                    <Checkbox id={`desktop-color-${color}`} />
+                    <Checkbox
+                      id={`desktop-color-${color}`}
+                      checked={selectedColors.includes(color)}
+                      onCheckedChange={(checked) => {
+                        setSelectedColors((prev) =>
+                          checked
+                            ? [...prev, color]
+                            : prev.filter((c) => c !== color)
+                        );
+                      }}
+                    />
+
                     <Label
                       htmlFor={`desktop-color-${color}`}
                       className="text-sm"
@@ -248,7 +287,18 @@ export default function ProductsPage() {
                     <h3 className="text-sm font-medium">Size</h3>
                     {allSizes.map((size) => (
                       <div key={size} className="flex items-center space-x-2">
-                        <Checkbox id={`mobile-size-${size}`} />
+                        <Checkbox
+                          id={`mobile-size-${size}`}
+                          checked={selectedSizes.includes(size)}
+                          onCheckedChange={(checked) =>
+                            setSelectedSizes((prev) =>
+                              checked
+                                ? [...prev, size]
+                                : prev.filter((s) => s !== size)
+                            )
+                          }
+                        />
+
                         <Label htmlFor={`mobile-size-${size}`}>{size}</Label>
                       </div>
                     ))}
@@ -260,7 +310,18 @@ export default function ProductsPage() {
                     <h3 className="text-sm font-medium">Color</h3>
                     {allColors.map((color) => (
                       <div key={color} className="flex items-center space-x-2">
-                        <Checkbox id={`mobile-color-${color}`} />
+                        <Checkbox
+                          id={`mobile-color-${color}`}
+                          checked={selectedColors.includes(color)}
+                          onCheckedChange={(checked) =>
+                            setSelectedColors((prev) =>
+                              checked
+                                ? [...prev, color]
+                                : prev.filter((c) => c !== color)
+                            )
+                          }
+                        />
+
                         <Label htmlFor={`mobile-color-${color}`}>{color}</Label>
                       </div>
                     ))}
@@ -293,7 +354,6 @@ export default function ProductsPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-
             <div className="relative w-full max-w-md">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
