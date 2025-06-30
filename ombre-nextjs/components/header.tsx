@@ -119,7 +119,7 @@ export default function Header() {
                   {dbCategories.map((category) => (
                     <li key={category.id}>
                       <Link
-                        href={`/category/${category.slug}`}
+                        href={`/products?category=${category.slug}`}
                         className="text-sm text-foreground hover:text-black transition-colors"
                       >
                         {category.name}
