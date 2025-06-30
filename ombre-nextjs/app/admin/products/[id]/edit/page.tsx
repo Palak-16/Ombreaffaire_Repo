@@ -125,6 +125,24 @@ export default function EditProductPage() {
   const [existingSizeChart, setExistingSizeChart] = useState([]);
   const [activeTab, setActiveTab] = useState("general");
 
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
+      []
+    );
+    useEffect(() => {
+      const fetchCategories = async () => {
+        try {
+          const res = await fetch(`${apiUrl}/api/categories`);
+          const data = await res.json();
+          setCategories(data.categories || []);
+        } catch (err) {
+          console.error("Failed to fetch categories", err);
+        }
+      };
+  
+      fetchCategories();
+    }, []);
+  
+
   const [sizeChartRows, setSizeChartRows] = useState([
     { size: "XXS", uk: "4", bust: "", waist: "", hip: "" },
     { size: "XS", uk: "6", bust: "", waist: "", hip: "" },
@@ -420,25 +438,23 @@ export default function EditProductPage() {
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="category">Category</Label>
-                    <Select
-                      value={category}
-                      onValueChange={(val) => setCategory(val)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Dresses">Dresses</SelectItem>
-                        <SelectItem value="CordSets">Cord-Sets</SelectItem>
-                        <SelectItem value="Saree">Saree</SelectItem>
-                        <SelectItem value="Suit">Suit</SelectItem>
-                        <SelectItem value="Accessories">Jumpsuits</SelectItem>
-                        <SelectItem value="Jumpsuits">Lehngas</SelectItem>
-                        <SelectItem value="Tops">Tops | Shirts</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                                     <Label htmlFor="category">Category</Label>
+                                     <Select
+                                       value={category}
+                                       onValueChange={(val) => setCategory(val)}
+                                     >
+                                       <SelectTrigger>
+                                         <SelectValue placeholder="Select category" />
+                                       </SelectTrigger>
+                                       <SelectContent>
+                                         {categories.map((cat) => (
+                                           <SelectItem key={cat.id} value={cat.name}>
+                                             {cat.name}
+                                           </SelectItem>
+                                         ))}
+                                       </SelectContent>
+                                     </Select>
+                                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="brand">Brand</Label>
                     <BrandSelector value={brand} onChange={setBrand} />
