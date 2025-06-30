@@ -2,8 +2,8 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/api/admin/brand": "pages/api/admin/brand.js",
   "/api/categories": "pages/api/categories.js",
+  "/api/products/display": "pages/api/products/display.js",
   "/api/colors": "pages/api/colors.js",
-  "/api/admin/products/upload-image": "pages/api/admin/products/upload-image.js"
+  "/api/products/display-by-category": "pages/api/products/display-by-category.js"
 }
