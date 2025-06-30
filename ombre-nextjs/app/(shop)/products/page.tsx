@@ -18,6 +18,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
+  SheetClose,
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -35,11 +36,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
-const sortOptions = [
-  "Newest",
-  "Price: Low to High",
-  "Price: High to Low",
-];
+const sortOptions = ["Newest", "Price: Low to High", "Price: High to Low"];
 const allSizes = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "XXXL"];
 
 export default function ProductsPage() {
@@ -56,7 +53,7 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [allColors, setAllColors] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedPriceRange, setSelectedPriceRange] = useState("All");
+  const [priceQuery, setPriceQuery] = useState("All");
   const [sortBy, setSortBy] = useState("Newest");
   const [totalPages, setTotalPages] = useState(1);
   const currentPage = parseInt(searchParams.get("page") || "1");
@@ -65,9 +62,23 @@ export default function ProductsPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch(
-          `${apiUrl}/api/products/display?page=${currentPage}&limit=12&category=${selectedCategorySlug}`
-        );
+        const url = new URL(`${apiUrl}/api/products/display`);
+        url.searchParams.set("page", currentPage.toString());
+        url.searchParams.set("limit", "12");
+
+        if (searchQuery.trim()) {
+          url.searchParams.set("search", searchQuery.trim());
+        }
+
+        if (selectedCategorySlug !== "all") {
+          url.searchParams.set("category", selectedCategorySlug);
+        }
+
+        if (priceQuery !== "All") {
+          url.searchParams.set("price", priceQuery);
+        }
+
+        const res = await fetch(url.toString());
         const data = await res.json();
         setProducts(data.products || []);
         setTotalPages(data.totalPages || 1);
@@ -77,16 +88,16 @@ export default function ProductsPage() {
     };
 
     fetchProducts();
-  }, [currentPage, selectedCategorySlug]);
+  }, [currentPage, selectedCategorySlug, searchQuery, priceQuery]);
 
   useEffect(() => {
     fetch(`${apiUrl}/api/categories`)
-      .then(res => res.json())
-      .then(json => setCategories(json.categories || []));
+      .then((res) => res.json())
+      .then((json) => setCategories(json.categories || []));
 
     fetch(`${apiUrl}/api/colors`)
-      .then(res => res.json())
-      .then(json => setAllColors(json.colors.map((c) => c.label)));
+      .then((res) => res.json())
+      .then((json) => setAllColors(json.colors.map((c) => c.label)));
   }, []);
 
   const goToPage = (pageNum: number) => {
@@ -101,7 +112,11 @@ export default function ProductsPage() {
     const delta = 2;
     const range: (number | string)[] = [];
 
-    for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+    for (
+      let i = Math.max(2, current - delta);
+      i <= Math.min(total - 1, current + delta);
+      i++
+    ) {
       range.push(i);
     }
 
@@ -127,9 +142,12 @@ export default function ProductsPage() {
         />
         <div className="absolute inset-0 flex items-center z-20 p-6 md:p-12">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">Our Collection</h1>
+            <h1 className="text-3xl md:text-4xl font-bold mb-2">
+              Our Collection
+            </h1>
             <p className="text-sm md:text-base max-w-md">
-              Discover our curated selection of elegant pieces designed for the modern woman.
+              Discover our curated selection of elegant pieces designed for the
+              modern woman.
             </p>
           </div>
         </div>
@@ -146,7 +164,9 @@ export default function ProductsPage() {
                 {allSizes.map((size) => (
                   <div key={size} className="flex items-center space-x-2">
                     <Checkbox id={`desktop-size-${size}`} />
-                    <Label htmlFor={`desktop-size-${size}`} className="text-sm">{size}</Label>
+                    <Label htmlFor={`desktop-size-${size}`} className="text-sm">
+                      {size}
+                    </Label>
                   </div>
                 ))}
               </div>
@@ -158,17 +178,122 @@ export default function ProductsPage() {
                 {allColors.map((color) => (
                   <div key={color} className="flex items-center space-x-2">
                     <Checkbox id={`desktop-color-${color}`} />
-                    <Label htmlFor={`desktop-color-${color}`} className="text-sm">{color}</Label>
+                    <Label
+                      htmlFor={`desktop-color-${color}`}
+                      className="text-sm"
+                    >
+                      {color}
+                    </Label>
                   </div>
                 ))}
               </div>
             </div>
             <Separator />
+
+            <div>
+              <h3 className="text-sm font-medium mb-4">Price Range</h3>
+              <div className="space-y-2">
+                {[
+                  "All",
+                  "Under ₹1000",
+                  "₹1000 - ₹3000",
+                  "₹3000 - ₹5000",
+                  "Over ₹5000",
+                ].map((range) => (
+                  <div key={range} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`price-${range}`}
+                      checked={priceQuery === range}
+                      onCheckedChange={() => setPriceQuery(range)}
+                    />
+                    <Label htmlFor={`price-${range}`} className="text-sm">
+                      {range}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
         <div className="flex-1">
-          <div className="flex justify-between items-center mb-6">
+          {/* Mobile Filter Drawer */}
+          <div className="lg:hidden mb-6">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" className="w-full">
+                  <Filter className="mr-2 h-4 w-4" /> Filters
+                </Button>
+              </SheetTrigger>
+              <SheetContent
+                side="left"
+                className="w-full max-w-[100vw] h-full overflow-y-auto"
+              >
+                <div className="flex justify-between items-center px-4 pt-4">
+                  <div>
+                    <SheetTitle className="text-lg font-semibold">
+                      Filter Products
+                    </SheetTitle>
+                    <SheetDescription className="text-sm">
+                      Refine your selection below.
+                    </SheetDescription>
+                  </div>
+                  <SheetClose asChild>
+                    <button className="text-xl font-bold px-2">×</button>
+                  </SheetClose>
+                </div>
+                <div className="py-6 space-y-6">
+                  {/* Size Filter */}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-medium">Size</h3>
+                    {allSizes.map((size) => (
+                      <div key={size} className="flex items-center space-x-2">
+                        <Checkbox id={`mobile-size-${size}`} />
+                        <Label htmlFor={`mobile-size-${size}`}>{size}</Label>
+                      </div>
+                    ))}
+                  </div>
+                  <Separator />
+
+                  {/* Color Filter */}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-medium">Color</h3>
+                    {allColors.map((color) => (
+                      <div key={color} className="flex items-center space-x-2">
+                        <Checkbox id={`mobile-color-${color}`} />
+                        <Label htmlFor={`mobile-color-${color}`}>{color}</Label>
+                      </div>
+                    ))}
+                  </div>
+                  <Separator />
+
+                  {/* Price Filter */}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-medium">Price Range</h3>
+                    {[
+                      "All",
+                      "Under ₹1000",
+                      "₹1000 - ₹3000",
+                      "₹3000 - ₹5000",
+                      "Over ₹5000",
+                    ].map((range) => (
+                      <div key={range} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`mobile-price-${range}`}
+                          checked={priceQuery === range}
+                          onCheckedChange={() => setPriceQuery(range)}
+                        />
+                        <Label htmlFor={`mobile-price-${range}`}>{range}</Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+
             <div className="relative w-full max-w-md">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
@@ -180,14 +305,21 @@ export default function ProductsPage() {
               />
             </div>
             <div className="flex items-center gap-2">
-              <Select value={selectedCategorySlug} onValueChange={(val) => router.push(`/products?category=${val}`)}>
+              <Select
+                value={selectedCategorySlug}
+                onValueChange={(val) =>
+                  router.push(`/products?category=${val}`)
+                }
+              >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All</SelectItem>
                   {categories.map((cat) => (
-                    <SelectItem key={cat.slug} value={cat.slug}>{cat.name}</SelectItem>
+                    <SelectItem key={cat.slug} value={cat.slug}>
+                      {cat.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -198,7 +330,9 @@ export default function ProductsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   {sortOptions.map((option) => (
-                    <SelectItem key={option} value={option}>{option}</SelectItem>
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -226,16 +360,23 @@ export default function ProductsPage() {
               <PaginationContent>
                 {currentPage > 1 && (
                   <PaginationItem>
-                    <PaginationPrevious onClick={() => goToPage(currentPage - 1)} />
+                    <PaginationPrevious
+                      onClick={() => goToPage(currentPage - 1)}
+                    />
                   </PaginationItem>
                 )}
 
                 {getPageRange(currentPage, totalPages).map((page, index) =>
                   page === "..." ? (
-                    <PaginationItem key={index}><PaginationEllipsis /></PaginationItem>
+                    <PaginationItem key={index}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
                   ) : (
                     <PaginationItem key={page}>
-                      <PaginationLink isActive={page === currentPage} onClick={() => goToPage(Number(page))}>
+                      <PaginationLink
+                        isActive={page === currentPage}
+                        onClick={() => goToPage(Number(page))}
+                      >
                         {page}
                       </PaginationLink>
                     </PaginationItem>
