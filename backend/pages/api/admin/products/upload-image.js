@@ -37,6 +37,8 @@ export default async function handler(req, res) {
   const form = new IncomingForm({
     uploadDir: tempDir,
     keepExtensions: true,
+
+    maxFileSize: 50 * 1024 * 1024, // 50 MB in bytes ✅
   });
   form.parse(req, async (err, fields, files) => {
     if (err) {
@@ -50,7 +52,7 @@ export default async function handler(req, res) {
     }
 
     try {
-     const fileData = await fsPromises.readFile(file.filepath);
+      const fileData = await fsPromises.readFile(file.filepath);
 
       const fileName = `products/${uuidv4()}_${file.originalFilename}`;
 
