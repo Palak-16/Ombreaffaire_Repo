@@ -84,6 +84,16 @@ export default async function handler(req, res) {
   if (search) {
     query = query.ilike("name", `%${search}%`);
   }
+  // ✅ Apply homepage filters
+if (req.query.filter === "new") {
+  query = query.eq('new_arrival', true)
+} else if (req.query.filter === "best") {
+  query = query.eq("best_seller", true);
+} else if (req.query.filter === "featured") {
+  query = query.eq("is_featured", true);
+}
+ 
+
 
   if (price) {
     if (price === "Under ₹1000") query = query.lt("price", 1000);

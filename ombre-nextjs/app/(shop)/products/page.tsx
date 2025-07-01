@@ -61,6 +61,7 @@ export default function ProductsPage() {
   const selectedCategorySlug = searchParams.get("category") || "all";
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const filter = searchParams.get("filter") || null;
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -80,6 +81,9 @@ export default function ProductsPage() {
         if (priceQuery !== "All") {
           url.searchParams.set("price", priceQuery);
         }
+        if (filter) {
+        url.searchParams.set("filter", filter);  // ✅ Add this
+      }
        if (selectedSizes.length > 0) {
   url.searchParams.set("size", selectedSizes.join(","));
 }
