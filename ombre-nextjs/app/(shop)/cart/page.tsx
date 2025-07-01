@@ -62,30 +62,7 @@ export default function CartPage() {
   }
 
   // Recommended products
-  const recommendedProducts = [
-    {
-      id: "5",
-      name: "Gradient Evening Gown",
-      price: 199.99,
-      image: "/shimmering-emerald-gown.png",
-      category: "Dresses",
-    },
-    {
-      id: "6",
-      name: "Pearl Drop Earrings",
-      price: 49.99,
-      image: "/elegant-pearl-drops.png",
-      category: "Accessories",
-    },
-    {
-      id: "7",
-      name: "Silk Scarf",
-      price: 39.99,
-      image: "/draped-beige-silk.png",
-      category: "Accessories",
-    },
-  ]
-
+ 
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Breadcrumbs */}
@@ -142,7 +119,7 @@ export default function CartPage() {
                               {item.name}
                             </Link>
                           </h3>
-                          <p className="ml-4">${item.price.toFixed(2)}</p>
+                          <p className="ml-4">₹{item.price.toFixed(2)}</p>
                         </div>
                         <p className="mt-1 text-sm text-muted-foreground">
                           {item.color} / {item.size}
@@ -194,34 +171,6 @@ export default function CartPage() {
               </ul>
             </div>
 
-            {/* Recommended Products */}
-            <div className="mt-8">
-              <h2 className="text-xl font-medium mb-4">You May Also Like</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {recommendedProducts.map((product) => (
-                  <div key={product.id} className="group">
-                    <div className="aspect-[3/4] w-full overflow-hidden rounded-lg bg-muted">
-                      <Link href={`/products/${product.id}`}>
-                        <Image
-                          src={product.image || "/placeholder.svg"}
-                          alt={product.name}
-                          width={300}
-                          height={400}
-                          className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
-                        />
-                      </Link>
-                    </div>
-                    <div className="mt-2">
-                      <h3 className="text-sm font-medium">
-                        <Link href={`/products/${product.id}`}>{product.name}</Link>
-                      </h3>
-                      <p className="mt-1 text-sm text-muted-foreground">{product.category}</p>
-                      <p className="mt-1 text-sm font-medium">${product.price.toFixed(2)}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
 
           {/* Order Summary */}
@@ -232,24 +181,24 @@ export default function CartPage() {
               <div className="space-y-4">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>₹{subtotal.toFixed(2)}</span>
                 </div>
 
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Shipping</span>
-                  <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
+                  <span>{shipping === 0 ? "Free" : `₹${shipping.toFixed(2)}`}</span>
                 </div>
 
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Tax</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>₹{tax.toFixed(2)}</span>
                 </div>
 
                 <Separator />
 
                 <div className="flex justify-between font-medium">
                   <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>₹{total.toFixed(2)}</span>
                 </div>
               </div>
 
@@ -279,7 +228,7 @@ export default function CartPage() {
                   <div className="flex">
                     <ShoppingBag className="h-5 w-5 text-muted-foreground mr-2" />
                     <p>
-                      <span className="font-medium">Free shipping</span> on orders over $100
+                      <span className="font-medium">Free shipping</span> on orders over ₹100
                     </p>
                   </div>
                 </div>

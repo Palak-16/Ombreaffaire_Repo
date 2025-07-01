@@ -25,7 +25,7 @@ type Product = {
   sizes: { size: string; inventory: number }[];
   imagesByColor: { [colorId: string]: string[] }; // <-- new
   features: string[];
-  mainImageByColor: string;
+  mainImageByColor: { [colorId: string]: string };
 };
 
 export default function ProductPage() {
@@ -102,26 +102,32 @@ useEffect(() => {
   }, [product]);
 
   const handleAddToCart = () => {
+    if (!product) return;
     addItem({
       id: product.id,
       name: product.name,
       price: product.price,
-      image: product.images[0],
+      image: selectedColor ? product.imagesByColor?.[selectedColor]?.[0] : "/placeholder.svg",
       quantity: quantity,
       size: selectedSize,
-      color: selectedColor,
+      color: selectedColor ?? "",
     });
   };
 
   const handleToggleFavorite = () => {
+    if (!product) return;
     toggleItem({
       id: product.id,
       name: product.name,
       price: product.price,
-      image: product.images[0],
+      image: selectedColor
+        ? product.mainImageByColor?.[selectedColor] ||
+          product.imagesByColor?.[selectedColor]?.[0] ||
+          "/placeholder.svg"
+        : "/placeholder.svg",
       category: product.category,
       size: selectedSize,
-      color: selectedColor,
+      color: selectedColor ?? undefined,
     });
   };
 
@@ -139,9 +145,10 @@ useEffect(() => {
   }
 
   // Get images for selectedColor
-  const imagesForColor = product?.imagesByColor?.[selectedColor] || [
-    "/placeholder.svg",
-  ];
+  const imagesForColor =
+    selectedColor && product?.imagesByColor?.[selectedColor]
+      ? product.imagesByColor[selectedColor]
+      : ["/placeholder.svg"];
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -213,7 +220,7 @@ useEffect(() => {
           <div className="mt-8">
             <h2 className="text-sm font-medium mb-2">Color</h2>
             <RadioGroup
-              value={selectedColor}
+              value={selectedColor ?? undefined}
               onValueChange={setSelectedColor}
               className="flex gap-3"
             >
