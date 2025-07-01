@@ -176,7 +176,7 @@ export default function CheckoutPage() {
                 <>
                   <div className="max-h-60 overflow-y-auto mb-6">
                     {items.map((item) => (
-                      <div key={item.id} className="flex py-3 border-b">
+                      <div  key={`${item.id}-${item.color}-${item.size}`} className="flex py-3 border-b">
                         <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border">
                           <Image
                             src={item.image || "/placeholder.svg"}

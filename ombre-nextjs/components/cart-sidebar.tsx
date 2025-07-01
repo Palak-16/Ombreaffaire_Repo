@@ -42,7 +42,7 @@ export function CartSidebar() {
         <>
           <ul className="flex-1 overflow-auto py-6 px-4 space-y-6">
             {items.map((item) => (
-              <li key={item.id} className="flex space-x-4">
+              <li  key={`${item.id}-${item.color}-${item.size}`} className="flex space-x-4">
                 <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border">
                   <Image
                     src={item.image || "/placeholder.svg"}
@@ -85,7 +85,7 @@ export function CartSidebar() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => removeItem(item.id)}
+                      onClick={() => removeItem(item.id, item.size, item.color)}
                       className="text-sm text-muted-foreground hover:text-foreground"
                     >
                       Remove

@@ -30,9 +30,10 @@ export default function CartPage() {
     }
   }
 
-  const handleRemoveItem = (id: string) => {
-    removeItem(id)
-  }
+  const handleRemoveItem = (id: string, size: string, color: string) => {
+  removeItem(id, size, color);
+};
+
 
   const handleMoveToFavorites = (item: any) => {
     addToFavorites({
@@ -41,8 +42,11 @@ export default function CartPage() {
       price: item.price,
       image: item.image,
       category: "Clothing", // Default category
+      size: item.size,
+      color: item.color,
     })
-    removeItem(item.id)
+   removeItem(item.id, item.size, item.color)
+
   }
 
   const handleApplyPromo = (e: React.FormEvent) => {
@@ -101,7 +105,7 @@ export default function CartPage() {
 
               <ul className="divide-y">
                 {items.map((item) => (
-                  <li key={item.id} className="py-6 flex">
+                  <li  key={`${item.id}-${item.color}-${item.size}`} className="py-6 flex">
                     <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border">
                       <Image
                         src={item.image || "/placeholder.svg"}
@@ -157,7 +161,7 @@ export default function CartPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleRemoveItem(item.id)}
+                            onClick={() => handleRemoveItem(item.id, item.size, item.color)}
                             className="text-sm text-muted-foreground hover:text-foreground"
                           >
                             <Trash2 className="h-4 w-4" />
