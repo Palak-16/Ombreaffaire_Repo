@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useCart } from "@/hooks/use-cart";
+import { useFavorites } from "@/hooks/use-favorites";
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -19,6 +21,8 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const cart = useCart();
+  const favorites = useFavorites();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -37,6 +41,19 @@ export default function LoginPage() {
 
       if (res.ok) {
         localStorage.setItem("token", data.token);
+        await cart.syncWithBackend();
+        await favorites.syncWithBackend();
+        const pending = localStorage.getItem("pendingAction");
+        if (pending) {
+          const { type, item } = JSON.parse(pending);
+
+          // ✅ Safe inside useEffect-like async block
+          setTimeout(() => {
+            if (type === "cart") cart.addItem(item);
+            if (type === "favorite") favorites.toggleItem(item);
+            localStorage.removeItem("pendingAction");
+          }, 0);
+        }
         alert("Login successful!");
         if (data.is_admin) {
           router.push("/admin");

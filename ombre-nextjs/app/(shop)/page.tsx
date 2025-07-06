@@ -63,7 +63,7 @@ export default function Home() {
       <section className="relative">
         <div className="absolute inset-0 bg-gradient-to-r from-background/80 to-transparent z-10" />
         <Image
-          src="/InShot_20250625_174557709 (1).jpg"
+          src="/final.jpg"
           alt="Hero Image"
           width={1920}
           height={1080}

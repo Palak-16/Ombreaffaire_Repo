@@ -53,7 +53,7 @@ export default function FavoritesPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {items.map((item) => (
-            <div key={item.id} className="border rounded-lg overflow-hidden group">
+            <div key={`${item.id}-${item.size}-${item.color}`} className="border rounded-lg overflow-hidden group">
               <div className="relative aspect-[3/4]">
                 <Link href={`/products/${item.id}`}>
                   <Image

@@ -1,24 +1,40 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { useEffect } from "react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { LogOut, User, ShoppingBag, MapPin, CreditCard, Heart, Bell } from "lucide-react"
-import ProfileTab from "@/components/account/profile-tab"
-import OrdersTab from "@/components/account/orders-tab"
-import AddressesTab from "@/components/account/addresses-tab"
-import WishlistTab from "@/components/account/wishlist-tab"
-import PaymentMethodsTab from "@/components/account/payment-methods-tab"
-import NotificationsTab from "@/components/account/notifications-tab"
-import AccountSettingsTab from "@/components/account/account-settings-tab"
-import { getUserFromToken } from "@/utils/getUserFromToken"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  LogOut,
+  User,
+  ShoppingBag,
+  MapPin,
+  CreditCard,
+  Heart,
+  Bell,
+} from "lucide-react";
+import ProfileTab from "@/components/account/profile-tab";
+import OrdersTab from "@/components/account/orders-tab";
+import AddressesTab from "@/components/account/addresses-tab";
+import WishlistTab from "@/components/account/wishlist-tab";
+import PaymentMethodsTab from "@/components/account/payment-methods-tab";
+import NotificationsTab from "@/components/account/notifications-tab";
+import AccountSettingsTab from "@/components/account/account-settings-tab";
+import { getUserFromToken } from "@/utils/getUserFromToken";
+import { useCart } from "@/hooks/use-cart";
+import { useFavorites } from "@/hooks/use-favorites";
 
 export default function AccountPage() {
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
   const user = getUserFromToken();
 
   useEffect(() => {
@@ -27,18 +43,21 @@ export default function AccountPage() {
     }
   }, [user]);
   if (!user) {
-  return (
-    <div className="h-screen flex items-center justify-center">
-      <p className="text-muted-foreground">Redirecting...</p>
-    </div>
-  );
-}
-
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Redirecting...</p>
+      </div>
+    );
+  }
+  const { clearCart } = useCart();
+  const { clearAll } = useFavorites();
 
   const handleLogout = () => {
     setIsLoading(true);
     // Clear token
     localStorage.removeItem("token");
+    clearCart();
+    clearAll(); // Clears favorites
     // Notify useAuth() and other tabs (if open)
     window.dispatchEvent(new Event("storage"));
     // Redirect to login page
@@ -53,7 +72,6 @@ export default function AccountPage() {
   const memberSince = "March 2023";
   const ordersCount = 5;
   const wishlistCount = 3;
-
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -77,7 +95,12 @@ export default function AccountPage() {
                 <p>Member since {memberSince}</p>
                 <p className="mt-1">{ordersCount} orders placed</p>
               </div>
-              <Button variant="outline" onClick={handleLogout} disabled={isLoading} className="w-full mt-4">
+              <Button
+                variant="outline"
+                onClick={handleLogout}
+                disabled={isLoading}
+                className="w-full mt-4"
+              >
                 <LogOut className="mr-2 h-4 w-4" />
                 Sign out
               </Button>
@@ -113,20 +136,33 @@ export default function AccountPage() {
                       <div className="space-y-4">
                         <div className="border-b pb-2">
                           <p className="font-medium">Order #ORD123456</p>
-                          <p className="text-sm text-muted-foreground">March 15, 2023</p>
+                          <p className="text-sm text-muted-foreground">
+                            March 15, 2023
+                          </p>
                           <p className="text-sm mt-1">
-                            Status: <span className="text-green-600">Delivered</span>
+                            Status:{" "}
+                            <span className="text-green-600">Delivered</span>
                           </p>
                         </div>
                         <div className="border-b pb-2">
                           <p className="font-medium">Order #ORD789012</p>
-                          <p className="text-sm text-muted-foreground">February 28, 2023</p>
+                          <p className="text-sm text-muted-foreground">
+                            February 28, 2023
+                          </p>
                           <p className="text-sm mt-1">
-                            Status: <span className="text-green-600">Delivered</span>
+                            Status:{" "}
+                            <span className="text-green-600">Delivered</span>
                           </p>
                         </div>
                         <Button variant="link" className="px-0" asChild>
-                          <a href="#orders" onClick={() => document.querySelector('[data-value="orders"]')?.click()}>
+                          <a
+                            href="#orders"
+                            onClick={() =>
+                              document
+                                .querySelector('[data-value="orders"]')
+                                ?.click()
+                            }
+                          >
                             View all orders
                           </a>
                         </Button>
@@ -152,11 +188,17 @@ export default function AccountPage() {
                   <CardContent>
                     {wishlistCount > 0 ? (
                       <div className="space-y-4">
-                        <p className="text-sm">You have {wishlistCount} items in your wishlist</p>
+                        <p className="text-sm">
+                          You have {wishlistCount} items in your wishlist
+                        </p>
                         <Button variant="link" className="px-0" asChild>
                           <a
                             href="#wishlist"
-                            onClick={() => document.querySelector('[data-value="wishlist"]')?.click()}
+                            onClick={() =>
+                              document
+                                .querySelector('[data-value="wishlist"]')
+                                ?.click()
+                            }
                           >
                             View wishlist
                           </a>
@@ -164,7 +206,9 @@ export default function AccountPage() {
                       </div>
                     ) : (
                       <div className="text-center py-4">
-                        <p className="text-muted-foreground">Your wishlist is empty</p>
+                        <p className="text-muted-foreground">
+                          Your wishlist is empty
+                        </p>
                         <Button variant="link" asChild className="mt-2">
                           <a href="/products">Discover products</a>
                         </Button>
@@ -189,7 +233,14 @@ export default function AccountPage() {
                       <p>United States</p>
                     </div>
                     <Button variant="link" className="px-0 mt-4" asChild>
-                      <a href="#addresses" onClick={() => document.querySelector('[data-value="addresses"]')?.click()}>
+                      <a
+                        href="#addresses"
+                        onClick={() =>
+                          document
+                            .querySelector('[data-value="addresses"]')
+                            ?.click()
+                        }
+                      >
                         Manage addresses
                       </a>
                     </Button>
@@ -213,11 +264,20 @@ export default function AccountPage() {
                         </div>
                         <div>
                           <p className="font-medium">•••• •••• •••• 3456</p>
-                          <p className="text-sm text-muted-foreground">Expires 05/25</p>
+                          <p className="text-sm text-muted-foreground">
+                            Expires 05/25
+                          </p>
                         </div>
                       </div>
                       <Button variant="link" className="px-0" asChild>
-                        <a href="#payment" onClick={() => document.querySelector('[data-value="payment"]')?.click()}>
+                        <a
+                          href="#payment"
+                          onClick={() =>
+                            document
+                              .querySelector('[data-value="payment"]')
+                              ?.click()
+                          }
+                        >
                           Manage payment methods
                         </a>
                       </Button>
@@ -243,7 +303,14 @@ export default function AccountPage() {
                         <span className="text-sm text-red-600">Disabled</span>
                       </div>
                       <Button variant="link" className="px-0" asChild>
-                        <a href="#settings" onClick={() => document.querySelector('[data-value="settings"]')?.click()}>
+                        <a
+                          href="#settings"
+                          onClick={() =>
+                            document
+                              .querySelector('[data-value="settings"]')
+                              ?.click()
+                          }
+                        >
                           Manage notifications
                         </a>
                       </Button>
@@ -283,5 +350,5 @@ export default function AccountPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

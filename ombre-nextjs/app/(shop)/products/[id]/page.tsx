@@ -12,7 +12,7 @@ import { useCart } from "@/hooks/use-cart";
 import { useFavorites } from "@/hooks/use-favorites";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import MediaRenderer from "@/components/ui/MediaRenderer";
 
 type Product = {
@@ -100,9 +100,37 @@ useEffect(() => {
         .then((data) => setRelatedProducts(data.products || []));
     }
   }, [product]);
+  // Get the token from localStorage
+  const router = useRouter();
+const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   const handleAddToCart = () => {
     if (!product) return;
+    if (!token) {
+    localStorage.setItem(
+      "pendingAction",
+      JSON.stringify({
+        type: "cart",
+        item: {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          image: selectedColor ? product.imagesByColor?.[selectedColor]?.[0] : "/placeholder.svg",
+          quantity,
+          size: selectedSize,
+          color: selectedColor ?? "",
+        },
+      })
+    );
+    router.push(`/login?redirect=/products/${product.id}`);
+    return;
+  }
+  console.log("Adding to cart with:", {
+  id: product.id,
+  size: selectedSize,
+  color: selectedColor,
+});
+
     addItem({
       id: product.id,
       name: product.name,
@@ -116,6 +144,30 @@ useEffect(() => {
 
   const handleToggleFavorite = () => {
     if (!product) return;
+     if (!token) {
+    localStorage.setItem(
+      "pendingAction",
+      JSON.stringify({
+        type: "favorite",
+        item: {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          image:
+            selectedColor
+              ? product.mainImageByColor?.[selectedColor] ||
+                product.imagesByColor?.[selectedColor]?.[0]
+              : "/placeholder.svg",
+          category: product.category,
+          size: selectedSize,
+          color: selectedColor ?? undefined,
+        },
+      })
+    );
+    router.push(`/login?redirect=/products/${product.id}`);
+    return;
+  }
+
     toggleItem({
       id: product.id,
       name: product.name,

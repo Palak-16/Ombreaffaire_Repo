@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import
 
 export default function SignupPage() {
   const [step, setStep] = useState<"form" | "otp">("form");
@@ -159,6 +160,7 @@ export default function SignupPage() {
       }
 
       localStorage.setItem("token", loginData.token);
+     
       window.dispatchEvent(new Event("storage")); // notify auth hook
       router.push("/account");
 

@@ -10,6 +10,7 @@ const allowedOrigins = [
 const cors = Cors({
   origin: function (origin, callback) {
     // allow requests with no origin (like mobile apps or curl)
+    // console.log("CORS origin:", origin); // 🔍 Debug here
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
@@ -17,7 +18,9 @@ const cors = Cors({
       return callback(new Error('Not allowed by CORS'));
     }
   },
+  
   methods: ['POST', 'GET', 'OPTIONS', 'PUT', 'DELETE'],
+  credentials: true, 
 });
 
 export function runMiddleware(req, res, fn) {
