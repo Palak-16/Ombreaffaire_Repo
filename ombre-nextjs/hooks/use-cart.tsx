@@ -55,11 +55,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [items]);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
-  const getPSCId = async (item: CartItem) => {
+  const getPSCId = async ({
+    id,
+    size,
+    color,
+  }: {
+    id: string;
+    size: string;
+    color: string;
+  }) => {
     const res = await fetch(
-      `${apiUrl}/api/resolve-psc?product=${item.id}&color=${encodeURIComponent(
-        item.color
-      )}&size=${encodeURIComponent(item.size)}`
+      `${apiUrl}/api/resolve-psc?product=${id}&color=${encodeURIComponent(
+        color
+      )}&size=${encodeURIComponent(size)}`
     );
     const data = await res.json();
     return data.id;
@@ -111,6 +119,25 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   };
   const removeItem = (id: string, size: string, color: string) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      getPSCId({ id, size, color }).then((pscId) => {
+        if (!pscId) {
+          console.warn("Could not resolve PSC ID for removal");
+          return;
+        }
+        fetch(`${apiUrl}/api/cart/remove`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ product_size_color_id: pscId }),
+        });
+      });
+    }
+
+    // Local state update
     setItems((prevItems) =>
       prevItems.filter(
         (item) =>
@@ -141,6 +168,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       id: entry.id,
       size: entry.size,
       color: entry.color,
+      color_hex: entry.colors_hex,
       quantity: entry.quantity,
       name: entry.name,
       price: entry.price,

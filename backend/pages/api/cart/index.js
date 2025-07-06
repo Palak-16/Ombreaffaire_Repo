@@ -21,7 +21,8 @@ const { data, error } = await supabase
       size,
       color_id,
       colors (
-        label
+        label,
+        hex
       ),
       products (
         name,
@@ -55,6 +56,7 @@ const items = data.map((entry) => {
     id: psc.product_id,
     size: psc.size,
     color: psc.colors?.label,
+    color_hex: psc.colors?.hex,
     quantity: entry.quantity,
     name: psc.products?.name,
     price: psc.products?.price,

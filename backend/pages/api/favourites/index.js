@@ -20,7 +20,8 @@ const { data, error } = await supabase
       size,
       color_id,
       colors (
-        label
+        label,
+        hex
       ),
       products (
         name,
@@ -51,9 +52,10 @@ const items = data.map((entry) => {
   );
 
   return {
-    id: psc.product_id,
+    product_id: psc.product_id,
     size: psc.size,
-    color: psc.colors?.label,
+    color: psc.colors?.label ?? "", // ✅ Use label not hex
+    color_hex: psc.colors?.hex ?? "",
     name: psc.products?.name,
     price: psc.products?.price,
     image: imageEntry?.image_urls?.[0] || psc.products?.main_image_url || "",

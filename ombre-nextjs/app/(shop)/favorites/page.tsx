@@ -20,7 +20,7 @@ export default function FavoritesPage() {
       size: item.size || "M", // Default size if not specified
       color: item.color || "Default", // Default color if not specified
     })
-    removeItem(item.id)
+    removeItem(item)
   }
 
   return (
@@ -67,7 +67,7 @@ export default function FavoritesPage() {
                   variant="destructive"
                   size="icon"
                   className="absolute top-2 right-2 h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => removeItem(item.id)}
+                  onClick={() => removeItem(item)}
                 >
                   <Trash2 className="h-4 w-4" />
                   <span className="sr-only">Remove from favorites</span>

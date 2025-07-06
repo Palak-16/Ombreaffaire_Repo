@@ -12,12 +12,13 @@ export type FavoriteItem = {
   category: string;
   size?: string;
   color?: string;
+  color_hex?: string;
 };
 
 type FavoritesContextType = {
   items: FavoriteItem[];
   addItem: (item: FavoriteItem) => void;
-  removeItem: (id: string) => void;
+  removeItem: (item: FavoriteItem) => void;
   toggleItem: (item: FavoriteItem) => void;
   isFavorite: (id: string) => boolean;
   clearAll: () => void;
@@ -104,7 +105,8 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
         serverItems.map((entry: any) => ({
           id: entry.product_id,
           size: entry.size,
-          color: entry.color,
+          color: entry.color, // ✅ always use label here
+          color_hex: entry.color_hex,
           name: entry.name,
           price: entry.price,
           image: entry.image,
@@ -138,20 +140,51 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const removeItem = (id: string) => {
-    setItems((prevItems) => prevItems.filter((item) => item.id !== id));
-  };
+  const removeItem = async (item: FavoriteItem) => {
+     console.log("REMOVE ITEM →", item); // ✅ log this
+  setItems((prevItems) =>
+    prevItems.filter(
+      (i) =>
+        !(i.id === item.id && i.size === item.size && i.color === item.color)
+    )
+  );
 
-  const toggleItem = (item: FavoriteItem) => {
-    const existingItem = items.find(
-      (i) => i.id === item.id && i.size === item.size && i.color === item.color
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  try {
+    const res = await fetch(
+      `${apiUrl}/api/resolve-psc?product=${item.id}&color=${encodeURIComponent(
+        item.color_hex ?? ""
+      )}&size=${encodeURIComponent(item.size ?? "")}`
     );
-    if (existingItem) {
-      removeItem(item.id);
-    } else {
-      addItem(item);
-    }
-  };
+    const { id: product_size_color_id } = await res.json();
+
+    await fetch(`${apiUrl}/api/favourites/remove`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ product_size_color_id }),
+    });
+  } catch (err) {
+    console.error("Error removing favorite from DB", err);
+  }
+};
+
+
+ const toggleItem = (item: FavoriteItem) => {
+  const existingItem = items.find(
+    (i) => i.id === item.id && i.size === item.size && i.color === item.color
+  );
+
+  if (existingItem) {
+    removeItem(item);
+  } else {
+    addItem(item);
+  }
+};
+
 
   const isFavorite = (id: string) => {
     return items.some((item) => item.id === id);
