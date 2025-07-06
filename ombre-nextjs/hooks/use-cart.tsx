@@ -12,13 +12,17 @@ export type CartItem = {
   quantity: number;
   size: string;
   color: string;
+  product_size_color_id?: string; // Added to match backend and usage
 };
 
 type CartContextType = {
   items: CartItem[];
   addItem: (item: CartItem) => void;
   removeItem: (id: string, size: string, color: string) => void;
-  updateQuantity: (id: string, quantity: number) => void;
+  updateQuantity: (
+    pscId: string,
+    quantity: number
+  ) => Promise<void>;
   clearCart: () => void;
   syncWithBackend: () => Promise<void>;
 };
@@ -30,6 +34,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   // Load cart from localStorage on mount
   useEffect(() => {
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    // Logged in: always sync with backend, ignore localStorage
+    syncWithBackend();
+  } else {
+    // Not logged in: load from localStorage
     const storedCart = localStorage.getItem("cart");
     if (storedCart) {
       try {
@@ -38,7 +49,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         console.error("Failed to parse cart from localStorage", error);
       }
     }
-  }, []);
+  }
+}, []);
+
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -73,7 +86,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return data.id;
   };
 
-  const persistToBackend = async (item: CartItem) => {
+  const persistToBackend = async (
+    item: CartItem
+  ): Promise<string | undefined> => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
@@ -89,10 +104,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         quantity: item.quantity,
       }),
     });
+
+    return pscId;
   };
 
   const addItem = (newItem: CartItem) => {
-    let updatedItem: CartItem | null = null;
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  getPSCId(newItem).then((pscId) => {
+    if (!pscId) return;
 
     setItems((prevItems) => {
       const existingItemIndex = prevItems.findIndex(
@@ -104,20 +125,38 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
       if (existingItemIndex > -1) {
         const updatedItems = [...prevItems];
-        updatedItems[existingItemIndex].quantity += newItem.quantity;
-        updatedItem = updatedItems[existingItemIndex];
+        updatedItems[existingItemIndex] = {
+          ...updatedItems[existingItemIndex],
+          quantity: updatedItems[existingItemIndex].quantity + newItem.quantity,
+          product_size_color_id: pscId,
+        };
         return updatedItems;
       } else {
-        updatedItem = newItem;
-        return [...prevItems, newItem];
+        return [
+          ...prevItems,
+          {
+            ...newItem,
+            product_size_color_id: pscId,
+          },
+        ];
       }
     });
 
-    // ✅ Only call after state has been set
-    if (updatedItem) {
-      persistToBackend(updatedItem);
-    }
-  };
+    // Send to backend
+    fetch(`${apiUrl}/api/cart/add`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        product_size_color_id: pscId,
+        quantity: newItem.quantity,
+      }),
+    });
+  });
+};
+
   const removeItem = (id: string, size: string, color: string) => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -146,11 +185,29 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const updateQuantity = (id: string, quantity: number) => {
-    setItems((prevItems) =>
-      prevItems.map((item) => (item.id === id ? { ...item, quantity } : item))
-    );
-  };
+ const updateQuantity = async (pscId: string, quantity: number) => {
+  const token = localStorage.getItem("token");
+  if (!token || !pscId) return;
+
+  setItems((prevItems) =>
+    prevItems.map((i) =>
+      i.product_size_color_id === pscId ? { ...i, quantity } : i
+    )
+  );
+
+  try {
+    await fetch(`${apiUrl}/api/cart/update`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ product_size_color_id: pscId, quantity }),
+    });
+  } catch (err) {
+    console.error("Failed to update quantity in DB", err);
+  }
+};
 
   const clearCart = () => {
     setItems([]);
@@ -165,7 +222,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const { items: serverItems = [] } = await res.json();
 
     const formatted = serverItems.map((entry: any) => ({
-      id: entry.id,
+      id: entry.product_id,
       size: entry.size,
       color: entry.color,
       color_hex: entry.colors_hex,
@@ -173,6 +230,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       name: entry.name,
       price: entry.price,
       image: entry.image,
+      product_size_color_id: entry.product_size_color_id,
     }));
 
     setItems(formatted);

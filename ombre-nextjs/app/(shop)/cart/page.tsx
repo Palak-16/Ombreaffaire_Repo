@@ -24,11 +24,11 @@ export default function CartPage() {
   const tax = subtotal * 0.08
   const total = subtotal + shipping + tax
 
-  const handleQuantityChange = (id: string, newQuantity: number) => {
-    if (newQuantity > 0) {
-      updateQuantity(id, newQuantity)
-    }
-  }
+  // const handleQuantityChange = (id: string, newQuantity: number) => {
+  //   if (newQuantity > 0) {
+  //     updateQuantity(id, newQuantity)
+  //   }
+  // }
 
   const handleRemoveItem = (id: string, size: string, color: string) => {
   removeItem(id, size, color);
@@ -135,8 +135,16 @@ export default function CartPage() {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 rounded-none"
-                            onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                          >
+                            onClick={() => {
+                          if (item.product_size_color_id && item.quantity > 1) {
+                            updateQuantity(
+                              item.product_size_color_id,
+                              item.quantity - 1
+                            );
+                          } else {
+                            console.warn("PSC ID missing for item", item);
+                          }
+                        }}>
                             <Minus className="h-3 w-3" />
                           </Button>
                           <span className="w-8 text-center">{item.quantity}</span>
@@ -144,8 +152,16 @@ export default function CartPage() {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 rounded-none"
-                            onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                          >
+                            onClick={() => {
+                          if (item.product_size_color_id) {
+                            updateQuantity(
+                              item.product_size_color_id,
+                              item.quantity + 1
+                            );
+                          } else {
+                            console.warn("PSC ID missing for item", item);
+                          }
+                        }}>
                             <Plus className="h-3 w-3" />
                           </Button>
                         </div>

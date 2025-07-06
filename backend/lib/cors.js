@@ -19,7 +19,7 @@ const cors = Cors({
     }
   },
   
-  methods: ['POST', 'GET', 'OPTIONS', 'PUT', 'DELETE'],
+  methods: ['POST', 'GET', 'OPTIONS', 'PUT', 'DELETE', 'PATCH'],
   credentials: true, 
 });
 

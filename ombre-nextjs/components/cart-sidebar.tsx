@@ -1,15 +1,18 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import Image from "next/image"
-import { ShoppingBag, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { SheetClose } from "@/components/ui/sheet"
-import { useCart } from "@/hooks/use-cart"
+import Link from "next/link";
+import Image from "next/image";
+import { ShoppingBag, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { SheetClose } from "@/components/ui/sheet";
+import { useCart } from "@/hooks/use-cart";
 
 export function CartSidebar() {
-  const { items = [], removeItem, updateQuantity } = useCart()
-  const subtotal = items.reduce((total, item) => total + item.price * item.quantity, 0)
+  const { items = [], removeItem, updateQuantity } = useCart();
+  const subtotal = items.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
 
   return (
     <div className="flex h-full flex-col">
@@ -42,7 +45,10 @@ export function CartSidebar() {
         <>
           <ul className="flex-1 overflow-auto py-6 px-4 space-y-6">
             {items.map((item) => (
-              <li  key={`${item.id}-${item.color}-${item.size}`} className="flex space-x-4">
+              <li
+                key={`${item.id}-${item.color}-${item.size}`}
+                className="flex space-x-4"
+              >
                 <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border">
                   <Image
                     src={item.image || "/placeholder.svg"}
@@ -68,7 +74,16 @@ export function CartSidebar() {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 rounded-none"
-                        onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                        onClick={() => {
+                          if (item.product_size_color_id && item.quantity > 1) {
+                            updateQuantity(
+                              item.product_size_color_id,
+                              item.quantity - 1
+                            );
+                          } else {
+                            console.warn("PSC ID missing for item", item);
+                          }
+                        }}
                       >
                         -
                       </Button>
@@ -77,7 +92,16 @@ export function CartSidebar() {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 rounded-none"
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        onClick={() => {
+                          if (item.product_size_color_id) {
+                            updateQuantity(
+                              item.product_size_color_id,
+                              item.quantity + 1
+                            );
+                          } else {
+                            console.warn("PSC ID missing for item", item);
+                          }
+                        }}
                       >
                         +
                       </Button>
@@ -101,7 +125,9 @@ export function CartSidebar() {
               <p>Subtotal</p>
               <p>${subtotal.toFixed(2)}</p>
             </div>
-            <p className="mt-0.5 text-sm text-muted-foreground">Shipping and taxes calculated at checkout.</p>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Shipping and taxes calculated at checkout.
+            </p>
             <div className="mt-6">
               <SheetClose asChild>
                 <Button className="w-full" asChild>
@@ -123,5 +149,5 @@ export function CartSidebar() {
         </>
       )}
     </div>
-  )
+  );
 }
