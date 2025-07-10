@@ -2,11 +2,11 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/api/products": "pages/api/products.js",
+  "/api/favourites": "pages/api/favourites.js",
   "/api/categories": "pages/api/categories.js",
   "/api/cart": "pages/api/cart.js",
-  "/api/favourites": "pages/api/favourites.js",
-  "/api/products/[id]": "pages/api/products/[id].js",
+  "/api/cart/add": "pages/api/cart/add.js",
   "/api/resolve-psc": "pages/api/resolve-psc.js",
-  "/api/cart/add": "pages/api/cart/add.js"
+  "/api/auth/login": "pages/api/auth/login.js",
+  "/api/products/[id]": "pages/api/products/[id].js"
 }
