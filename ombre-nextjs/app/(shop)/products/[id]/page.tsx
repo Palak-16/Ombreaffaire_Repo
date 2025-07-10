@@ -36,7 +36,8 @@ export default function ProductPage() {
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
   
-  const { addItem } = useCart();
+  const { items, addItem } = useCart();
+
   const { toggleItem, isFavorite } = useFavorites();
 
   // Add this inside the component
@@ -131,7 +132,7 @@ fetch(
   .then(d => setIsInCart(!!d.inCart))
   .catch(() => setIsInCart(false));
 
-}, [product, selectedSize, selectedColor]);
+}, [product, selectedSize, selectedColor, items]);
 
 console.log("Product:", product);
 console.log("isInCart:", isInCart);
