@@ -222,7 +222,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const { items: serverItems = [] } = await res.json();
 
     const formatted = serverItems.map((entry: any) => ({
-      id: entry.product_id,
+      id: entry.id,
       size: entry.size,
       color: entry.color,
       color_hex: entry.colors_hex,

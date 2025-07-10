@@ -104,6 +104,37 @@ useEffect(() => {
   const router = useRouter();
 const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
+const [isInCart, setIsInCart] = useState(false);
+
+useEffect(() => {
+  if (!product || !selectedSize || !selectedColor) return;
+  const token = localStorage.getItem("token");
+if (!token) {
+  setIsInCart(false);
+  return;
+}
+
+fetch(
+  `${apiUrl}/api/cart?` +
+    `product=${product.id}` +
+    `&size=${selectedSize}` +
+    `&color=${encodeURIComponent(selectedColor)}`,
+  {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,     // ← this line
+    },
+  }
+)
+  .then(r => r.json())
+  .then(d => setIsInCart(!!d.inCart))
+  .catch(() => setIsInCart(false));
+
+}, [product, selectedSize, selectedColor]);
+
+console.log("Product:", product);
+console.log("isInCart:", isInCart);
   const handleAddToCart = () => {
     if (!product) return;
     if (!token) {
@@ -367,10 +398,19 @@ const token = typeof window !== "undefined" ? localStorage.getItem("token") : nu
 
           <div className="mt-8 space-y-4">
             <div className="flex gap-4">
-              <Button size="lg" className="flex-1" onClick={handleAddToCart}>
-                <ShoppingBag className="mr-2 h-5 w-5" />
-                Add to Cart
-              </Button>
+              {isInCart ? (
+  <Button size="lg" className="flex-1" onClick={() => router.push("/cart")}>
+    <ShoppingBag className="mr-2 h-5 w-5" />
+    Go to Cart
+  </Button>
+) : (
+  <Button size="lg" className="flex-1" onClick={handleAddToCart}>
+    <ShoppingBag className="mr-2 h-5 w-5" />
+    Add to Cart
+  </Button>
+)}
+
+
               <Button
                 variant="outline"
                 size="icon"
