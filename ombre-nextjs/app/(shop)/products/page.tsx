@@ -153,7 +153,7 @@ if (selectedColors.length > 0) {
       <div className="relative mb-8 overflow-hidden rounded-lg">
         <div className="absolute inset-0 bg-gradient-to-r from-background/80 to-transparent z-10" />
         <Image
-          src="/product banner.png"
+          src="/all_product.png"
           alt="Products Collection"
           width={1200}
           height={400}
@@ -165,8 +165,7 @@ if (selectedColors.length > 0) {
               Our Collection
             </h1>
             <p className="text-sm md:text-base max-w-md">
-              Discover our curated selection of elegant pieces designed for the
-              modern woman.
+              Discover our carefully curated selection of elegant pieces designed for every shade of you.
             </p>
           </div>
         </div>

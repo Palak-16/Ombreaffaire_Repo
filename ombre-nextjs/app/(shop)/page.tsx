@@ -63,11 +63,10 @@ export default function Home() {
         <div className="absolute inset-0 flex items-center z-20 p-6 md:p-12">
           <div className="max-w-md">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Sophisticated Style for the Modern Woman
+              Versatile Style for Every Side of You
             </h1>
             <p className="text-lg mb-6">
-              Discover our new collection of elegant, flowing silhouettes in
-              soft, gradient tones.
+              Step into comfort and color with our latest collection-luxurious fabrics, thoughtful details, effortless style.
             </p>
             <div className="flex flex-wrap gap-4">
               <Button asChild size="lg">
