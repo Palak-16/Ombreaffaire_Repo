@@ -1,20 +1,22 @@
-import Image from "next/image"
-import type { Metadata } from "next"
+import Image from "next/image";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "About Us | OMBRÉ affaire",
   description: "Learn about OMBRÉ affaire's story, mission, and values.",
-}
+};
 
 export default function AboutUsPage() {
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="mx-auto max-w-3xl">
-        <h1 className="mb-8 text-center text-4xl font-bold">About OMBRÉ affaire</h1>
+        <h1 className="mb-8 text-center text-4xl font-bold">
+          About OMBRÉ affaire
+        </h1>
 
         <div className="mb-12 aspect-video overflow-hidden rounded-lg">
           <Image
-            src="/beige-atelier.png"
+            src="/about2.jpg"
             alt="OMBRÉ affaire atelier"
             width={1200}
             height={675}
@@ -26,30 +28,37 @@ export default function AboutUsPage() {
           <section>
             <h2 className="mb-4 text-2xl font-semibold">Our Story</h2>
             <p className="text-muted-foreground">
-              Founded in 2018, OMBRÉ affaire began as a small atelier in Paris with a vision to create elegant,
-              contemporary fashion that transitions seamlessly from day to night, just like the gradual blend of colors
-              in an ombré design. Our founder, inspired by the fluid nature of modern life, sought to create pieces that
-              would accompany the wearer through all of life's moments.
+              Ombré Affaire began with a simple vision — to create a brand that
+              celebrates individuality, comfort, and confidence. What started as
+              a passion project quickly evolved into a heartfelt affair with
+              fashion. Every curation is a step forward in our journey — shaped
+              by creativity, connection, and the evolving spirit of a woman who
+              is unapologetically herself.
             </p>
           </section>
 
           <section>
             <h2 className="mb-4 text-2xl font-semibold">Our Philosophy</h2>
             <p className="text-muted-foreground">
-              At OMBRÉ affaire, we believe in the power of subtle elegance. Our designs embrace the concept of
-              transition and transformation, creating pieces that are versatile, timeless, and sophisticated. We focus
-              on quality materials, expert craftsmanship, and thoughtful design to create clothing that becomes an
-              extension of the wearer's identity.
+              We believe fashion should empower, not overwhelm. Our philosophy
+              is rooted in balance — between style and simplicity, trends and
+              timelessness, self-expression and subtlety. We curate with care,
+              always putting thought into how each piece will make you feel when
+              you wear it. To us, clothing is a language — and every collection
+              tells a story worth wearing.
             </p>
           </section>
 
           <section>
-            <h2 className="mb-4 text-2xl font-semibold">Sustainability Commitment</h2>
+            <h2 className="mb-4 text-2xl font-semibold">
+              Sustainability Commitment
+            </h2>
             <p className="text-muted-foreground">
-              We are committed to responsible fashion practices. From sourcing sustainable materials to ensuring ethical
-              working conditions in our production facilities, we strive to minimize our environmental footprint while
-              maximizing our positive social impact. Each OMBRÉ affaire piece is created with respect for both people
-              and planet.
+              While we’re still in our early chapters, we’re consciously
+              choosing mindful practices. From prioritizing mindful curation, to
+              thoughtful packaging choices, we’re learning and improving every
+              day. We believe sustainability is a journey, and we're committed
+              to growing responsibly — one conscious choice at a time.{" "}
             </p>
           </section>
 
@@ -57,22 +66,29 @@ export default function AboutUsPage() {
             <div>
               <h2 className="mb-4 text-2xl font-semibold">Our Team</h2>
               <p className="text-muted-foreground">
-                Our diverse team of designers, artisans, and fashion professionals brings together expertise from around
-                the world. United by a passion for beautiful, functional design, our team works collaboratively to bring
-                the OMBRÉ affaire vision to life in every collection.
+                At Ombré Affaire, every team member brings a unique spark — and
+                wears multiple hats with pride. From curating collections to
+                engaging with our community and managing daily operations, we do
+                it all with passion and purpose. Our strength lies in our
+                versatility, creativity, and deep love for what we do. Together,
+                we’re building more than a brand — we’re creating a space where
+                fashion feels personal, joyful, and ever-evolving
               </p>
             </div>
             <div>
               <h2 className="mb-4 text-2xl font-semibold">Our Future</h2>
               <p className="text-muted-foreground">
-                As we continue to grow, we remain dedicated to our founding principles while embracing innovation. We're
-                excited to expand our offerings, reach new markets, and continue creating fashion that empowers and
-                inspires.
+                As we grow, our dream is to create a brand that feels like home
+                — where every woman can find a piece of herself in our
+                collections. We’re excited to explore new styles, build deeper
+                community connections, and keep elevating your experience with
+                us. The journey is just getting started, and we’re so glad
+                you’re here for it.
               </p>
             </div>
           </section>
         </div>
       </div>
     </div>
-  )
+  );
 }
