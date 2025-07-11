@@ -82,14 +82,14 @@ export default function Home() {
 
       {/* Categories Section */}
       <section className="py-12 px-4 md:px-6 lg:px-8 relative">
-        <div className="container mx-auto">
+        <div className="container px-1 mx-auto">
           <h2 className="text-3xl font-bold mb-8 text-center">
             Shop by Category
           </h2>
 
           <div className="relative">
             {/* Left Arrow */}
-            <button
+            {/* <button
               onClick={() => {
                 const scroller = document.getElementById("category-carousel");
                 scroller?.scrollBy({ left: -960, behavior: "smooth" }); // 3 * 320px
@@ -97,10 +97,10 @@ export default function Home() {
               className="absolute left-0 top-1/2 z-10 -translate-y-1/2 bg-white shadow-md rounded-full p-2"
             >
               ←
-            </button>
+            </button> */}
 
             {/* Right Arrow */}
-            <button
+            {/* <button
               onClick={() => {
                 const scroller = document.getElementById("category-carousel");
                 scroller?.scrollBy({ left: 960, behavior: "smooth" }); // 3 * 320px
@@ -108,12 +108,12 @@ export default function Home() {
               className="absolute right-0 top-1/2 z-10 -translate-y-1/2 bg-white shadow-md rounded-full p-2"
             >
               →
-            </button>
+            </button> */}
 
             {/* Scrollable Container */}
             <div
               id="category-carousel"
-              className="flex overflow-x-auto gap-6 scroll-smooth no-scrollbar px-8"
+              className="flex overflow-x-auto gap-6 scroll-smooth no-scrollbar px-7"
             >
               {categories.map((cat) => (
                 <div
