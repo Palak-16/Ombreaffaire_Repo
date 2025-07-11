@@ -3,7 +3,7 @@
 
 import { createContext, useContext } from "react";
 import type { ReactNode } from "react";
-import type { Category } from "@/app/(shop)/layout";
+import type { Category } from "@/app/layout";
 
 const CategoriesContext = createContext<Category[]>([]);
 
