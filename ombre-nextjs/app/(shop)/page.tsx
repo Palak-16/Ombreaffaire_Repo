@@ -46,7 +46,7 @@ export default function Home() {
     fetchProducts();
   }, [activeTab]);
 
-const categories = useCategories();
+  const categories = useCategories();
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -237,19 +237,28 @@ const categories = useCategories();
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div>
               <h2 className="text-2xl md:text-3xl font-bold mb-4">
-                About OMBRÉ affaire
+                The Heart Behind the Hanger
               </h2>
               <p className="text-muted-foreground mb-6">
-                OMBRÉ affaire was founded with a vision to create elegant,
-                contemporary fashion that transitions seamlessly from day to
-                night, just like the gradual blend of colors in an ombré design.
+                At Ombré Affaire, every piece is handpicked with intention —
+                blending effortless elegance, comfort, and individuality. We
+                believe fashion should feel as good as it looks, and our
+                collection reflects that balance with refined statement styles,
+                and versatile everyday wear.
               </p>
               <p className="text-muted-foreground mb-6">
-                Our pieces are crafted with attention to detail, using
-                high-quality fabrics and sustainable practices. Each collection
-                tells a story of sophistication and grace, designed for the
-                modern woman who appreciates timeless style with a contemporary
-                twist.
+                We’re not just about trends — we’re about expression. Whether
+                you love bold colours, neutral tones, modern cuts, or timeless
+                classics, Ombré Affaire offers something for every mood, every
+                season, and every woman. Our collection is thoughtfully curated
+                to help you look good and feel even better.
+              </p>
+              <p className="text-muted-foreground mb-6">
+                As a young brand, we're growing with every order, every
+                conversation, and every bit of love we receive. We're constantly
+                evolving — refining our styles, improving your experience, and
+                working towards becoming a brand that women can truly connect
+                with. Thank you for being part of our journey!
               </p>
               <Button asChild>
                 <Link href="/about-us">Learn More</Link>
@@ -257,7 +266,7 @@ const categories = useCategories();
             </div>
             <div className="relative h-[400px] rounded-lg overflow-hidden">
               <Image
-                src="/beige-atelier.png"
+                src="/about2.jpg"
                 alt="About OMBRÉ affaire"
                 fill
                 className="object-cover"
@@ -272,7 +281,7 @@ const categories = useCategories();
         <div className="container mx-auto">
           <div className="relative rounded-lg overflow-hidden">
             <Image
-              src="/chic-sale-display.png"
+              src="/sale.png"
               alt="Sale Banner"
               width={1200}
               height={400}
@@ -281,10 +290,10 @@ const categories = useCategories();
             <div className="absolute inset-0 bg-black/40 flex items-center p-6 md:p-12">
               <div className="max-w-md">
                 <h2 className="text-white text-3xl md:text-4xl font-bold mb-4">
-                  Summer Sale
+                  Festive Sale
                 </h2>
                 <p className="text-white text-lg mb-6">
-                  Up to 40% off on selected items. Limited time offer.
+                  Up to 50% off on selected items. Limited time offer.
                 </p>
                 <Button asChild size="lg" variant="secondary">
                   <Link href="/products">

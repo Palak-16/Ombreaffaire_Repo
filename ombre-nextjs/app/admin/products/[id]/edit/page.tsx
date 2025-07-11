@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ImagePlus, Loader2, Save, Trash } from "lucide-react";
+import { useCategories } from "@/components/CategoriesContext";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -125,22 +126,9 @@ export default function EditProductPage() {
   const [existingSizeChart, setExistingSizeChart] = useState([]);
   const [activeTab, setActiveTab] = useState("general");
 
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
-      []
-    );
-    useEffect(() => {
-      const fetchCategories = async () => {
-        try {
-          const res = await fetch(`${apiUrl}/api/categories`);
-          const data = await res.json();
-          setCategories(data.categories || []);
-        } catch (err) {
-          console.error("Failed to fetch categories", err);
-        }
-      };
   
-      fetchCategories();
-    }, []);
+  const categories = useCategories()
+    
   
 
   const [sizeChartRows, setSizeChartRows] = useState([

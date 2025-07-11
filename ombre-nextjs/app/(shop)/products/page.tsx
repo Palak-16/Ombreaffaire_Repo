@@ -36,6 +36,8 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
+import { useCategories } from "@/components/CategoriesContext";
+
 const sortOptions = ["Newest", "Price: Low to High", "Price: High to Low"];
 const allSizes = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "XXXL"];
 
@@ -51,7 +53,6 @@ export default function ProductsPage() {
   };
   const [products, setProducts] = useState<Product[]>([]);
   type Category = { slug: string; name: string };
-  const [categories, setCategories] = useState<Category[]>([]);
   const [allColors, setAllColors] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [priceQuery, setPriceQuery] = useState("All");
@@ -62,6 +63,7 @@ export default function ProductsPage() {
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const filter = searchParams.get("filter") || null;
+  const categories = useCategories();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -112,11 +114,7 @@ if (selectedColors.length > 0) {
   ]);
 
   useEffect(() => {
-    fetch(`${apiUrl}/api/categories`)
-      .then((res) => res.json())
-      .then((json) => setCategories(json.categories || []));
-
-    fetch(`${apiUrl}/api/colors`)
+   fetch(`${apiUrl}/api/colors`)
       .then((res) => res.json())
       .then((json) => setAllColors(json.colors.map((c) => c.label)));
   }, []);

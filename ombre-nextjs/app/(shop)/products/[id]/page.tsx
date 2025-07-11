@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import MediaRenderer from "@/components/ui/MediaRenderer";
+import { useCategories } from "@/components/CategoriesContext";
 
 type Product = {
   id: string;
@@ -35,28 +36,24 @@ export default function ProductPage() {
   const [selectedSize, setSelectedSize] = useState("M");
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
-  
   const { items, addItem } = useCart();
 
   const { toggleItem, isFavorite } = useFavorites();
 
   // Add this inside the component
   const [product, setProduct] = useState<Product | null>(null);
-  
 
-  
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
 
-useEffect(() => {
-  if (product && selectedColor) {
-    const mainImage = product.mainImageByColor?.[selectedColor];
-    const imageList = product.imagesByColor?.[selectedColor] || [];
+  useEffect(() => {
+    if (product && selectedColor) {
+      const mainImage = product.mainImageByColor?.[selectedColor];
+      const imageList = product.imagesByColor?.[selectedColor] || [];
 
-    const index = imageList.findIndex((img) => img === mainImage);
-    setActiveImageIndex(index >= 0 ? index : 0);
-  }
-}, [selectedColor, product]);
-
+      const index = imageList.findIndex((img) => img === mainImage);
+      setActiveImageIndex(index >= 0 ? index : 0);
+    }
+  }, [selectedColor, product]);
 
   useEffect(() => {
     setActiveImageIndex(0); // reset to first image when color changes
@@ -75,7 +72,6 @@ useEffect(() => {
         const res = await fetch(`${apiUrl}/api/products/${id}`);
         const data = await res.json();
         setProduct(data);
-        
       } catch (err) {
         console.error("Failed to load product", err);
       } finally {
@@ -86,13 +82,12 @@ useEffect(() => {
   }, [id]);
 
   useEffect(() => {
-  if (product && !selectedColor && product.colors.length > 0) {
-    setSelectedColor(product.colors[0].value); // default to first color’s hex
-  }
-}, [product, selectedColor]);
+    if (product && !selectedColor && product.colors.length > 0) {
+      setSelectedColor(product.colors[0].value); // default to first color’s hex
+    }
+  }, [product, selectedColor]);
 
-
-  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
   // useEffect(() => {
   //   if (product?.category) {
@@ -103,71 +98,73 @@ useEffect(() => {
   // }, [product]);
   // Get the token from localStorage
   const router = useRouter();
-const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-const [isInCart, setIsInCart] = useState(false);
+  const [isInCart, setIsInCart] = useState(false);
 
-useEffect(() => {
-  if (!product || !selectedSize || !selectedColor) return;
-  const token = localStorage.getItem("token");
-if (!token) {
-  setIsInCart(false);
-  return;
-}
+  useEffect(() => {
+    if (!product || !selectedSize || !selectedColor) return;
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setIsInCart(false);
+      return;
+    }
 
-fetch(
-  `${apiUrl}/api/cart?` +
-    `product=${product.id}` +
-    `&size=${selectedSize}` +
-    `&color=${encodeURIComponent(selectedColor)}`,
-  {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`,     // ← this line
-    },
-  }
-)
-  .then(r => r.json())
-  .then(d => setIsInCart(!!d.inCart))
-  .catch(() => setIsInCart(false));
+    fetch(
+      `${apiUrl}/api/cart?` +
+        `product=${product.id}` +
+        `&size=${selectedSize}` +
+        `&color=${encodeURIComponent(selectedColor)}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // ← this line
+        },
+      }
+    )
+      .then((r) => r.json())
+      .then((d) => setIsInCart(!!d.inCart))
+      .catch(() => setIsInCart(false));
+  }, [product, selectedSize, selectedColor, items]);
 
-}, [product, selectedSize, selectedColor, items]);
-
-console.log("Product:", product);
-console.log("isInCart:", isInCart);
   const handleAddToCart = () => {
     if (!product) return;
     if (!token) {
-    localStorage.setItem(
-      "pendingAction",
-      JSON.stringify({
-        type: "cart",
-        item: {
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          image: selectedColor ? product.imagesByColor?.[selectedColor]?.[0] : "/placeholder.svg",
-          quantity,
-          size: selectedSize,
-          color: selectedColor ?? "",
-        },
-      })
-    );
-    router.push(`/login?redirect=/products/${product.id}`);
-    return;
-  }
-  console.log("Adding to cart with:", {
-  id: product.id,
-  size: selectedSize,
-  color: selectedColor,
-});
+      localStorage.setItem(
+        "pendingAction",
+        JSON.stringify({
+          type: "cart",
+          item: {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image: selectedColor
+              ? product.imagesByColor?.[selectedColor]?.[0]
+              : "/placeholder.svg",
+            quantity,
+            size: selectedSize,
+            color: selectedColor ?? "",
+          },
+        })
+      );
+      router.push(`/login?redirect=/products/${product.id}`);
+      return;
+    }
+    console.log("Adding to cart with:", {
+      id: product.id,
+      size: selectedSize,
+      color: selectedColor,
+    });
 
     addItem({
       id: product.id,
       name: product.name,
       price: product.price,
-      image: selectedColor ? product.imagesByColor?.[selectedColor]?.[0] : "/placeholder.svg",
+      image: selectedColor
+        ? product.imagesByColor?.[selectedColor]?.[0]
+        : "/placeholder.svg",
       quantity: quantity,
       size: selectedSize,
       color: selectedColor ?? "",
@@ -176,29 +173,28 @@ console.log("isInCart:", isInCart);
 
   const handleToggleFavorite = () => {
     if (!product) return;
-     if (!token) {
-    localStorage.setItem(
-      "pendingAction",
-      JSON.stringify({
-        type: "favorite",
-        item: {
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          image:
-            selectedColor
+    if (!token) {
+      localStorage.setItem(
+        "pendingAction",
+        JSON.stringify({
+          type: "favorite",
+          item: {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image: selectedColor
               ? product.mainImageByColor?.[selectedColor] ||
                 product.imagesByColor?.[selectedColor]?.[0]
               : "/placeholder.svg",
-          category: product.category,
-          size: selectedSize,
-          color: selectedColor ?? undefined,
-        },
-      })
-    );
-    router.push(`/login?redirect=/products/${product.id}`);
-    return;
-  }
+            category: product.category,
+            size: selectedSize,
+            color: selectedColor ?? undefined,
+          },
+        })
+      );
+      router.push(`/login?redirect=/products/${product.id}`);
+      return;
+    }
 
     toggleItem({
       id: product.id,
@@ -214,6 +210,35 @@ console.log("isInCart:", isInCart);
       color: selectedColor ?? undefined,
     });
   };
+  function slugify(str: string) {
+  return str
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, `-`)
+    .replace(/^-+|-+$/g, ``)
+}
+
+  useEffect(() => {
+    if (!product) return;
+
+    fetch(
+      `${apiUrl}/api/products?category=${product.category ?? slugify(product.category)}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        // Remove the current product
+        const others = (data.products || []).filter(
+          (p: Product) => p.id !== product.id
+        );
+
+        // Shuffle in place
+        others.sort(() => Math.random() - 0.5);
+
+        // Keep only the first four
+        setRelatedProducts(others.slice(0, 4));
+      })
+      .catch(console.error);
+  }, [product]);
 
   // Update the quantity handlers
   const increaseQuantity = () => setQuantity((prev) => prev + 1);
@@ -400,17 +425,20 @@ console.log("isInCart:", isInCart);
           <div className="mt-8 space-y-4">
             <div className="flex gap-4">
               {isInCart ? (
-  <Button size="lg" className="flex-1" onClick={() => router.push("/cart")}>
-    <ShoppingBag className="mr-2 h-5 w-5" />
-    Go to Cart
-  </Button>
-) : (
-  <Button size="lg" className="flex-1" onClick={handleAddToCart}>
-    <ShoppingBag className="mr-2 h-5 w-5" />
-    Add to Cart
-  </Button>
-)}
-
+                <Button
+                  size="lg"
+                  className="flex-1"
+                  onClick={() => router.push("/cart")}
+                >
+                  <ShoppingBag className="mr-2 h-5 w-5" />
+                  Go to Cart
+                </Button>
+              ) : (
+                <Button size="lg" className="flex-1" onClick={handleAddToCart}>
+                  <ShoppingBag className="mr-2 h-5 w-5" />
+                  Add to Cart
+                </Button>
+              )}
 
               <Button
                 variant="outline"
@@ -468,13 +496,20 @@ console.log("isInCart:", isInCart);
 
       {/* Related Products */}
       <div className="mb-16">
-        <h2 className="text-2xl font-bold mb-8">You May Also Like</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {relatedProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      </div>
+  <h2 className="text-2xl font-bold mb-8">You May Also Like</h2>
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    {relatedProducts.length > 0 ? (
+      relatedProducts.map(p => (
+        <ProductCard key={p.id} product={p} />
+      ))
+    ) : (
+      <p className="col-span-full text-center text-muted-foreground">
+        No other items in this category.
+      </p>
+    )}
+  </div>
+</div>
+
     </div>
   );
 }

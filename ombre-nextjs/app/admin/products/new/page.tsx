@@ -29,6 +29,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import dynamic from "next/dynamic";
 import { set } from "date-fns";
+import { useCategories } from "@/components/CategoriesContext";
 const SummernoteEditor = dynamic(
   () => import("@/components/ui/SummernoteEditor"),
   { ssr: false }
@@ -77,22 +78,7 @@ export default function NewProductPage() {
   const [newColorHex, setNewColorHex] = useState("#000000");
   const [existingSizeChart, setExistingSizeChart] = useState([]);
   const [activeTab, setActiveTab] = useState("general");
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
-    []
-  );
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch(`${apiUrl}/api/categories`);
-        const data = await res.json();
-        setCategories(data.categories || []);
-      } catch (err) {
-        console.error("Failed to fetch categories", err);
-      }
-    };
-
-    fetchCategories();
-  }, []);
+  const categories = useCategories()
 
   const [sizeChartRows, setSizeChartRows] = useState([
     { size: "XXS", uk: "4", bust: "", waist: "", hip: "" },
