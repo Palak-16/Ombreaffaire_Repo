@@ -5,8 +5,11 @@ import Image from "next/image"
 import { Facebook, Instagram, Twitter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { useCategories } from "./CategoriesContext"; // Adjust the import path as needed
+
 
 export function Footer() {
+  const categories = useCategories();
   return (
     <footer className="bg-primary/30">
       <div className="container mx-auto px-4 py-12">
@@ -40,54 +43,16 @@ export function Footer() {
           <div>
             <h3 className="text-base font-medium mb-4">Shop</h3>
             <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/category/new-arrivals"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  New Arrivals
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/category/dresses"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Dresses
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/category/tops"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Tops
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/category/bottoms"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Bottoms
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/category/accessories"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Accessories
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/category/sale"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Sale
-                </Link>
-              </li>
+              {categories?.map((category) => (
+                <li key={category.id}>
+                  <Link
+                    href={`/products?category=${category.slug}`}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {category.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 

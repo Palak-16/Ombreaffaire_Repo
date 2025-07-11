@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { useCart } from "@/hooks/use-cart";
 import { useFavorites } from "@/hooks/use-favorites";
 import MediaRenderer from "@/components/ui/MediaRenderer";
+import { useCategories } from "@/components/CategoriesContext";
 
 export default function Home() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
@@ -45,18 +46,7 @@ export default function Home() {
     fetchProducts();
   }, [activeTab]);
 
-  const [categories, setCategories] = useState<Category[]>([]);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      const res = await fetch(`${apiUrl}/api/categories`);
-      const data = await res.json();
-      setCategories(data.categories || []);
-    };
-
-    fetchCategories();
-  }, []);
-
+const categories = useCategories();
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}

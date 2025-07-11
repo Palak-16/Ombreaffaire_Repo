@@ -94,13 +94,13 @@ useEffect(() => {
 
   const [relatedProducts, setRelatedProducts] = useState([]);
 
-  useEffect(() => {
-    if (product?.category) {
-      fetch(`${apiUrl}/api/products/${id}`)
-        .then((res) => res.json())
-        .then((data) => setRelatedProducts(data.products || []));
-    }
-  }, [product]);
+  // useEffect(() => {
+  //   if (product?.category) {
+  //     fetch(`${apiUrl}/api/products/${id}`)
+  //       .then((res) => res.json())
+  //       .then((data) => setRelatedProducts(data.products || []));
+  //   }
+  // }, [product]);
   // Get the token from localStorage
   const router = useRouter();
 const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;

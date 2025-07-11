@@ -18,6 +18,7 @@ import { useFavorites } from "@/hooks/use-favorites";
 import { CartSidebar } from "@/components/cart-sidebar";
 import { useAuth } from "@/hooks/use-auth";
 import { getUserFromToken } from "@/utils/getUserFromToken";
+import { useCategories } from "./CategoriesContext";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -35,23 +36,10 @@ export default function Header() {
   const { items: favoriteItems } = useFavorites();
   const { isLoggedIn } = useAuth();
   const user = getUserFromToken();
-  type Category = { id: string | number; name: string; slug: string };
-  const [dbCategories, setDbCategories] = useState<Category[]>([]);
+
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch(`${apiUrl}/api/categories`); // adjust if route differs
-        const json = await res.json();
-        setDbCategories(json.categories || []);
-      } catch (err) {
-        console.error("Failed to fetch categories:", err);
-      }
-    };
-
-    fetchCategories();
-  }, []);
+const categories = useCategories();
+  
 
   useEffect(() => {
     const handleScroll = () => {
@@ -116,7 +104,7 @@ export default function Header() {
               {/* Dropdown stays visible on hover */}
               <div className="absolute left-0 mt-1 z-20 bg-white shadow-md border rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                 <ul className="min-w-[180px] py-2 px-3 flex flex-col gap-y-2">
-                  {dbCategories.map((category) => (
+                  {categories.map((category) => (
                     <li key={category.id}>
                       <Link
                         href={`/products?category=${category.slug}`}
@@ -224,7 +212,7 @@ export default function Header() {
                   Categories
                 </li>
                 <ul className="space-y-4">
-                  {dbCategories.map((category) => (
+                  {categories.map((category) => (
                     <li key={category.id}>
                       <Link
                         href={`/category/${category.slug}`}

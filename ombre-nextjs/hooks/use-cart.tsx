@@ -19,10 +19,7 @@ type CartContextType = {
   items: CartItem[];
   addItem: (item: CartItem) => void;
   removeItem: (id: string, size: string, color: string) => void;
-  updateQuantity: (
-    pscId: string,
-    quantity: number
-  ) => Promise<void>;
+  updateQuantity: (pscId: string, quantity: number) => Promise<void>;
   clearCart: () => void;
   syncWithBackend: () => Promise<void>;
 };
@@ -34,31 +31,30 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   // Load cart from localStorage on mount
   useEffect(() => {
-  const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
-  if (token) {
-    // Logged in: always sync with backend, ignore localStorage
-    syncWithBackend();
-  } else {
-    // Not logged in: load from localStorage
-    const storedCart = localStorage.getItem("cart");
-    if (storedCart) {
-      try {
-        setItems(JSON.parse(storedCart));
-      } catch (error) {
-        console.error("Failed to parse cart from localStorage", error);
+    if (token) {
+      // Logged in: always sync with backend, ignore localStorage
+      syncWithBackend();
+    } else {
+      // Not logged in: load from localStorage
+      const storedCart = localStorage.getItem("cart");
+      if (storedCart) {
+        try {
+          setItems(JSON.parse(storedCart));
+        } catch (error) {
+          console.error("Failed to parse cart from localStorage", error);
+        }
       }
     }
-  }
-}, []);
-
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      syncWithBackend(); // pulls latest cart items from DB
-    }
   }, []);
+
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   if (token) {
+  //     syncWithBackend(); // pulls latest cart items from DB
+  //   }
+  // }, []);
 
   // Save cart to localStorage when it changes
   useEffect(() => {
@@ -109,53 +105,54 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addItem = (newItem: CartItem) => {
-  const token = localStorage.getItem("token");
-  if (!token) return;
+    const token = localStorage.getItem("token");
+    if (!token) return;
 
-  getPSCId(newItem).then((pscId) => {
-    if (!pscId) return;
+    getPSCId(newItem).then((pscId) => {
+      if (!pscId) return;
 
-    setItems((prevItems) => {
-      const existingItemIndex = prevItems.findIndex(
-        (item) =>
-          item.id === newItem.id &&
-          item.size === newItem.size &&
-          item.color === newItem.color
-      );
+      setItems((prevItems) => {
+        const existingItemIndex = prevItems.findIndex(
+          (item) =>
+            item.id === newItem.id &&
+            item.size === newItem.size &&
+            item.color === newItem.color
+        );
 
-      if (existingItemIndex > -1) {
-        const updatedItems = [...prevItems];
-        updatedItems[existingItemIndex] = {
-          ...updatedItems[existingItemIndex],
-          quantity: updatedItems[existingItemIndex].quantity + newItem.quantity,
-          product_size_color_id: pscId,
-        };
-        return updatedItems;
-      } else {
-        return [
-          ...prevItems,
-          {
-            ...newItem,
+        if (existingItemIndex > -1) {
+          const updatedItems = [...prevItems];
+          updatedItems[existingItemIndex] = {
+            ...updatedItems[existingItemIndex],
+            quantity:
+              updatedItems[existingItemIndex].quantity + newItem.quantity,
             product_size_color_id: pscId,
-          },
-        ];
-      }
-    });
+          };
+          return updatedItems;
+        } else {
+          return [
+            ...prevItems,
+            {
+              ...newItem,
+              product_size_color_id: pscId,
+            },
+          ];
+        }
+      });
 
-    // Send to backend
-    fetch(`${apiUrl}/api/cart/add`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        product_size_color_id: pscId,
-        quantity: newItem.quantity,
-      }),
+      // Send to backend
+      fetch(`${apiUrl}/api/cart/add`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          product_size_color_id: pscId,
+          quantity: newItem.quantity,
+        }),
+      });
     });
-  });
-};
+  };
 
   const removeItem = (id: string, size: string, color: string) => {
     const token = localStorage.getItem("token");
@@ -185,29 +182,29 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
- const updateQuantity = async (pscId: string, quantity: number) => {
-  const token = localStorage.getItem("token");
-  if (!token || !pscId) return;
+  const updateQuantity = async (pscId: string, quantity: number) => {
+    const token = localStorage.getItem("token");
+    if (!token || !pscId) return;
 
-  setItems((prevItems) =>
-    prevItems.map((i) =>
-      i.product_size_color_id === pscId ? { ...i, quantity } : i
-    )
-  );
+    setItems((prevItems) =>
+      prevItems.map((i) =>
+        i.product_size_color_id === pscId ? { ...i, quantity } : i
+      )
+    );
 
-  try {
-    await fetch(`${apiUrl}/api/cart/update`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ product_size_color_id: pscId, quantity }),
-    });
-  } catch (err) {
-    console.error("Failed to update quantity in DB", err);
-  }
-};
+    try {
+      await fetch(`${apiUrl}/api/cart/update`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ product_size_color_id: pscId, quantity }),
+      });
+    } catch (err) {
+      console.error("Failed to update quantity in DB", err);
+    }
+  };
 
   const clearCart = () => {
     setItems([]);
