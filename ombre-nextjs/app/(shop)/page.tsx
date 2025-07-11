@@ -277,7 +277,7 @@ export default function Home() {
       </section>
 
       {/* Sale Banner */}
-      <section className="py-12 px-4 md:px-6 lg:px-8 bg-muted/30">
+      <section className="py-12 md:px-6 lg:px-8 bg-muted/30">
         <div className="container mx-auto">
           <div className="relative rounded-lg overflow-hidden">
             <Image
@@ -285,7 +285,7 @@ export default function Home() {
               alt="Sale Banner"
               width={1200}
               height={400}
-              className="w-full h-[300px] md:h-[400px] object-cover"
+              className="w-full h-[240px] md:h-[400px] object-cover"
             />
             <div className="absolute inset-0 bg-black/40 flex items-center p-6 md:p-12">
               <div className="max-w-md">
