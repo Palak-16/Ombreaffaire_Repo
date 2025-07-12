@@ -105,8 +105,19 @@ if (req.query.filter === "new") {
     else if (price === "Over ₹5000") query = query.gt("price", 5000);
   }
 
-  query = query.range(from, to).order("created_at", { ascending: false });
-
+  // query = query.range(from, to).order("created_at", { ascending: false });
+  // apply sort
+  const { sort } = req.query
+  if (sort === "price_asc") {
+    query = query.order("price",  { ascending: true  })
+  } else if (sort === "price_desc") {
+    query = query.order("price",  { ascending: false })
+  } else {
+    // newest first
+    query = query.order("created_at", { ascending: false })
+  }
+  // then apply pagination
+  query = query.range(from, to)
   try {
     const { data, error, count } = await query;
 

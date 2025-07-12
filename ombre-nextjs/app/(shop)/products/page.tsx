@@ -42,7 +42,6 @@ const sortOptions = ["Newest", "Price: Low to High", "Price: High to Low"];
 const allSizes = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "XXXL"];
 
 export default function ProductsPage() {
-  
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -84,15 +83,22 @@ export default function ProductsPage() {
           url.searchParams.set("price", priceQuery);
         }
         if (filter) {
-        url.searchParams.set("filter", filter);  // ✅ Add this
-      }
-       if (selectedSizes.length > 0) {
-  url.searchParams.set("size", selectedSizes.join(","));
-}
-if (selectedColors.length > 0) {
-  url.searchParams.set("color", selectedColors.join(","));
-}
-
+          url.searchParams.set("filter", filter); // ✅ Add this
+        }
+        if (selectedSizes.length > 0) {
+          url.searchParams.set("size", selectedSizes.join(","));
+        }
+        if (selectedColors.length > 0) {
+          url.searchParams.set("color", selectedColors.join(","));
+        }
+        // 🚀 add sort param
+        if (sortBy === "Price: Low to High") {
+          url.searchParams.set("sort", "price_asc")
+        } else if (sortBy === "Price: High to Low") {
+          url.searchParams.set("sort", "price_desc")
+        } else {
+          url.searchParams.set("sort", "newest")
+        }
 
         const res = await fetch(url.toString());
         const data = await res.json();
@@ -112,19 +118,20 @@ if (selectedColors.length > 0) {
     selectedSizes,
     selectedColors,
     filter,
+    sortBy,
   ]);
 
   useEffect(() => {
-   fetch(`${apiUrl}/api/colors`)
+    fetch(`${apiUrl}/api/colors`)
       .then((res) => res.json())
       .then((json) => setAllColors(json.colors.map((c) => c.label)));
   }, []);
 
   const goToPage = (pageNum: number) => {
     router.push(
-    `/products?category=${selectedCategorySlug}&page=${pageNum}` +
-    (filter ? `&filter=${filter}` : "")
-  );
+      `/products?category=${selectedCategorySlug}&page=${pageNum}` +
+        (filter ? `&filter=${filter}` : "")
+    );
   };
 
   interface PageRange {
@@ -169,7 +176,8 @@ if (selectedColors.length > 0) {
               Our Collection
             </h1>
             <p className="text-sm md:text-base max-w-md">
-              Discover our carefully curated selection of elegant pieces designed for every shade of you.
+              Discover our carefully curated selection of elegant pieces
+              designed for every shade of you.
             </p>
           </div>
         </div>
