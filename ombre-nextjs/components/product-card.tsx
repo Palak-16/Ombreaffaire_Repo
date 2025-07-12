@@ -75,7 +75,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             Quick Add
           </Button> */}
         </div>
-        <Button
+        {/* <Button
           variant="ghost"
           size="icon"
           className={cn(
@@ -88,7 +88,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <span className="sr-only">
             {favorite ? "Remove from favorites" : "Add to favorites"}
           </span>
-        </Button>
+        </Button> */}
         {product.isNew && (
           <div className="absolute top-2 left-2 bg-primary px-2 py-1 text-xs font-medium rounded">
             New

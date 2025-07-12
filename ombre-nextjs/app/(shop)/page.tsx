@@ -176,7 +176,8 @@ export default function Home() {
                       className="w-full h-80 object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   </Link>
-                  <div className="absolute bottom-4 right-4 flex gap-2">
+                  {/* fav and cart buttons */}
+                  {/* <div className="absolute bottom-4 right-4 flex gap-2">
                     <Button
                       size="icon"
                       variant="secondary"
@@ -195,7 +196,7 @@ export default function Home() {
                       <ShoppingBag className="h-4 w-4" />
                       <span className="sr-only">Add to cart</span>
                     </Button>
-                  </div>
+                  </div> */}
                 </div>
                 <CardContent className="p-4">
                   <Link
