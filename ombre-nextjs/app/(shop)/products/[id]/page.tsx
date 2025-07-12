@@ -211,18 +211,20 @@ export default function ProductPage() {
     });
   };
   function slugify(str: string) {
-  return str
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, `-`)
-    .replace(/^-+|-+$/g, ``)
-}
+    return str
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, `-`)
+      .replace(/^-+|-+$/g, ``);
+  }
 
   useEffect(() => {
     if (!product) return;
 
     fetch(
-      `${apiUrl}/api/products?category=${product.category ?? slugify(product.category)}`
+      `${apiUrl}/api/products?category=${
+        product.category ?? slugify(product.category)
+      }`
     )
       .then((res) => res.json())
       .then((data) => {
@@ -235,7 +237,7 @@ export default function ProductPage() {
         others.sort(() => Math.random() - 0.5);
 
         // Keep only the first four
-        setRelatedProducts(others.slice(0, 4));
+        setRelatedProducts(others.slice(0, 8));
       })
       .catch(console.error);
   }, [product]);
@@ -495,21 +497,24 @@ export default function ProductPage() {
       </div>
 
       {/* Related Products */}
+      {/* Related Products */}
       <div className="mb-16">
-  <h2 className="text-2xl font-bold mb-8">You May Also Like</h2>
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-    {relatedProducts.length > 0 ? (
-      relatedProducts.map(p => (
-        <ProductCard key={p.id} product={p} />
-      ))
-    ) : (
-      <p className="col-span-full text-center text-muted-foreground">
-        No other items in this category.
-      </p>
-    )}
-  </div>
-</div>
+        <h2 className="text-2xl font-bold mb-8">You May Also Like</h2>
 
+        {relatedProducts.length > 0 ? (
+          <div className="flex space-x-6 overflow-x-auto snap-x snap-mandatory px-4 no-scrollbar">
+            {relatedProducts.map((p) => (
+              <div key={p.id} className="flex-shrink-0 snap-start w-60">
+                <ProductCard product={p} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-center text-muted-foreground">
+            No other items in this category.
+          </p>
+        )}
+      </div>
     </div>
   );
 }

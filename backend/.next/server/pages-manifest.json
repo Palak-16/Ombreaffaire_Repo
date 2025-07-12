@@ -2,7 +2,8 @@
   "/_error": "pages/_error.js",
   "/_app": "pages/_app.js",
   "/_document": "pages/_document.js",
-  "/api/products/[id]": "pages/api/products/[id].js",
   "/api/products": "pages/api/products.js",
+  "/api/products/[id]": "pages/api/products/[id].js",
+  "/api/favourites": "pages/api/favourites.js",
   "/api/cart": "pages/api/cart.js"
 }
