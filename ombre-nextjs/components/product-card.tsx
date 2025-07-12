@@ -21,6 +21,7 @@ type ProductCardProps = {
     isNew?: boolean;
     isSale?: boolean;
     main_image_url?: string;
+    brand?: string;
   };
 };
 
@@ -108,6 +109,9 @@ export default function ProductCard({ product }: ProductCardProps) {
               {product.name}
             </Link>
           </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {product.brand}
+          </p>
           <p className="mt-1 text-sm text-muted-foreground">
             {product.category}
           </p>

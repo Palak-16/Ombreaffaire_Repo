@@ -19,6 +19,7 @@ export default function Home() {
   type Product = {
     id: string;
     name: string;
+    brand?: string;
     category: string;
     price: number;
     compare_price?: number;
@@ -31,8 +32,8 @@ export default function Home() {
     image_url: string;
   };
 
-  const { addItem } = useCart();
-  const { addFavorite } = useFavorites();
+  // const { addItem } = useCart();
+  // const { addFavorite } = useFavorites();
   const [activeTab, setActiveTab] = useState("new");
   const [products, setProducts] = useState<Product[]>([]);
   // Featured products data
@@ -205,6 +206,9 @@ export default function Home() {
                   >
                     <h3 className="font-medium mb-1">{product.name}</h3>
                   </Link>
+                  <p className="text-muted-foreground text-sm mb-2">
+                    {product.brand}
+                  </p>
                   <p className="text-muted-foreground text-sm mb-2">
                     {product.category}
                   </p>

@@ -149,6 +149,7 @@ if (req.query.filter === "new") {
           price: product.price,
           category: product.category,
           compare_price: product.compare_price,
+          brand: product.brand,
           image,
         };
       })

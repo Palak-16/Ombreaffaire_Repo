@@ -22,6 +22,7 @@ type Product = {
   price: number;
   description: string;
   category: string;
+  brand: string;
   colors: { name: string; value: string }[];
   sizes: { size: string; inventory: number }[];
   imagesByColor: { [colorId: string]: string[] }; // <-- new
@@ -323,11 +324,15 @@ export default function ProductPage() {
 
         {/* Product Info */}
         <div>
-          <h1 className="text-3xl font-bold">{product.name}</h1>
+          
+          <h1 className="text-2xl font-bold">{product.name}</h1>
+          <h1 className="text-2xl font-large ">{product.brand}</h1>
+          
           <p className="text-2xl font-medium mt-2">
             ₹{product.price.toFixed(2)}
           </p>
-
+          
+          
           <div className="mt-8">
             <h2 className="text-sm font-medium mb-2">Color</h2>
             <RadioGroup
