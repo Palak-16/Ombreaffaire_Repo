@@ -111,6 +111,7 @@ if (selectedColors.length > 0) {
     priceQuery,
     selectedSizes,
     selectedColors,
+    filter,
   ]);
 
   useEffect(() => {
@@ -120,7 +121,10 @@ if (selectedColors.length > 0) {
   }, []);
 
   const goToPage = (pageNum: number) => {
-    router.push(`/products?category=${selectedCategorySlug}&page=${pageNum}`);
+    router.push(
+    `/products?category=${selectedCategorySlug}&page=${pageNum}` +
+    (filter ? `&filter=${filter}` : "")
+  );
   };
 
   interface PageRange {

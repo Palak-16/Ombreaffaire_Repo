@@ -91,6 +91,9 @@ if (req.query.filter === "new") {
   query = query.eq("best_seller", true);
 } else if (req.query.filter === "featured") {
   query = query.eq("is_featured", true);
+}else if (req.query.filter === "sale") {
+  // only products where compare_price IS NOT NULL
+  query = query.not("compare_price", "is", null)
 }
  
 
@@ -134,6 +137,7 @@ if (req.query.filter === "new") {
           name: product.name,
           price: product.price,
           category: product.category,
+          compare_price: product.compare_price,
           image,
         };
       })

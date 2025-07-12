@@ -295,7 +295,7 @@ export default function Home() {
                   Up to 50% off on selected items. Limited time offer.
                 </p>
                 <Button asChild size="lg" variant="secondary">
-                  <Link href="/products">
+                  <Link href="/products?filter=sale">
                     Shop Now <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
