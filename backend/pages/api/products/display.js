@@ -149,12 +149,12 @@ if (req.query.filter === "new") {
           price: product.price,
           category: product.category,
           compare_price: product.compare_price,
-          brand: product.brand,
+         brand: product.brand,
           image,
         };
       })
     );
-
+      console.log("Enriched products:", enriched);
     return res.status(200).json({ products: enriched, totalPages });
   } catch (e) {
     console.error("Display API error:", e);

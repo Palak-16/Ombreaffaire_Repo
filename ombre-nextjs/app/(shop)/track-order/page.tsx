@@ -44,7 +44,7 @@ export default function TrackOrderPage() {
           <h2 className="mb-2 text-sm font-medium">Need Help?</h2>
           <p className="text-xs text-muted-foreground">
             If you're having trouble tracking your order, please contact our customer service team at
-            support@ombreaffaire.com or call +1 (800) 555-OMBRE.
+            ombreaffaire@gmail.com or call +91 8077069310.
           </p>
         </div>
       </div>

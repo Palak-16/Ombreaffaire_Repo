@@ -24,10 +24,10 @@ import {
 import ProfileTab from "@/components/account/profile-tab";
 import OrdersTab from "@/components/account/orders-tab";
 import AddressesTab from "@/components/account/addresses-tab";
-import WishlistTab from "@/components/account/wishlist-tab";
-import PaymentMethodsTab from "@/components/account/payment-methods-tab";
-import NotificationsTab from "@/components/account/notifications-tab";
-import AccountSettingsTab from "@/components/account/account-settings-tab";
+// import WishlistTab from "@/components/account/wishlist-tab";
+// import PaymentMethodsTab from "@/components/account/payment-methods-tab";
+// import NotificationsTab from "@/components/account/notifications-tab";
+// import AccountSettingsTab from "@/components/account/account-settings-tab";
 import { getUserFromToken } from "@/utils/getUserFromToken";
 import { useCart } from "@/hooks/use-cart";
 import { useFavorites } from "@/hooks/use-favorites";
@@ -116,9 +116,9 @@ export default function AccountPage() {
               <TabsTrigger value="orders">Orders</TabsTrigger>
               <TabsTrigger value="profile">Profile</TabsTrigger>
               <TabsTrigger value="addresses">Addresses</TabsTrigger>
-              <TabsTrigger value="payment">Payment</TabsTrigger>
+              {/* <TabsTrigger value="payment">Payment</TabsTrigger>
               <TabsTrigger value="wishlist">Wishlist</TabsTrigger>
-              <TabsTrigger value="settings">Settings</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger> */}
             </TabsList>
 
             {/* Overview Tab */}
@@ -332,7 +332,7 @@ export default function AccountPage() {
               <AddressesTab />
             </TabsContent>
 
-            <TabsContent value="payment">
+            {/* <TabsContent value="payment">
               <PaymentMethodsTab />
             </TabsContent>
 
@@ -345,7 +345,7 @@ export default function AccountPage() {
                 <NotificationsTab />
                 <AccountSettingsTab />
               </div>
-            </TabsContent>
+            </TabsContent> */}
           </Tabs>
         </div>
       </div>

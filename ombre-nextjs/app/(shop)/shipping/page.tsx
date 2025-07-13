@@ -19,7 +19,7 @@ export default function ShippingPage() {
         </div>
 
         <div className="mb-12 space-y-8">
-          <section>
+          {/* <section>
             <h2 className="mb-4 text-2xl font-semibold">Domestic Shipping</h2>
             <div className="overflow-x-auto">
               <Table>
@@ -94,40 +94,20 @@ export default function ShippingPage() {
               * International customers may be subject to import duties and taxes, which are the responsibility of the
               recipient.
             </p>
-          </section>
+          </section> */}
 
           <section>
-            <h2 className="mb-4 text-2xl font-semibold">Shipping Policies</h2>
-            <ul className="space-y-4 text-muted-foreground">
-              <li>
-                <p className="font-medium">Order Processing</p>
-                <p>
-                  Orders are typically processed within 1-2 business days. During sale periods or holidays, processing
-                  may take longer.
-                </p>
-              </li>
-
-              <li>
-                <p className="font-medium">Tracking Information</p>
-                <p>You'll receive a shipping confirmation email with tracking information once your order ships.</p>
-              </li>
-
-              <li>
-                <p className="font-medium">Address Accuracy</p>
-                <p>
-                  Please ensure your shipping address is correct. We cannot be responsible for packages sent to
-                  incorrect addresses.
-                </p>
-              </li>
-
-              <li>
-                <p className="font-medium">Delivery Issues</p>
-                <p>
-                  If your package is lost or damaged during shipping, please contact our customer service team within 7
-                  days of the expected delivery date.
-                </p>
-              </li>
-            </ul>
+            <h2 className="mb-4 text-2xl text-jusify font-semibold">Shipping Policies</h2>
+            <p className="mb-4 text-muted-foreground">
+             All fresh orders are <b>processed and shipped within 7–10 business days</b> from the date of
+confirmation. We take pride in ensuring each piece is prepared with care and quality, which
+may take a little time. <br></br>
+In the rare event of any delays beyond this window, our team will proactively reach out to
+you via the WhatsApp or   Email provided at checkout to keep you informed about the updated
+timeline. <br></br>
+We appreciate your patience and support as we work to deliver your order with the attention
+it deserves
+</p>            
           </section>
         </div>
 
@@ -135,7 +115,7 @@ export default function ShippingPage() {
           <h2 className="mb-2 text-sm font-medium">Questions About Shipping?</h2>
           <p className="text-xs text-muted-foreground">
             If you have any questions about our shipping policies or need assistance with a shipment, please contact our
-            customer service team at support@ombreaffaire.com or call +1 (800) 555-OMBRE.
+            customer service team at ombreaffaire@gmail.com or call +91 8077069310.
           </p>
         </div>
       </div>

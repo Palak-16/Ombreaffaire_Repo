@@ -8,9 +8,12 @@
     "formidable": "^3.5.4",
     "jquery": "^3.7.1",
     "quill": "^2.0.3",
+    "react-icons": "^5.5.0",
     "react-pagination": "^1.0.0",
     "react-quill": "^0.0.2",
     "react-select": "^5.10.1",
+    "react-slick": "^0.30.3",
+    "slick-carousel": "^1.8.1",
     "summernote": "^0.9.1",
     "uuid": "^11.1.0"
   }
