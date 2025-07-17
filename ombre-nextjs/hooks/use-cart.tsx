@@ -6,6 +6,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 
 export type CartItem = {
   id: string;
+  pscId: string; // Optional, used for backend sync
   name: string;
   price: number;
   image: string;
@@ -18,7 +19,7 @@ export type CartItem = {
 type CartContextType = {
   items: CartItem[];
   addItem: (item: CartItem) => void;
-  removeItem: (id: string, size: string, color: string) => void;
+  removeItem: (id: string) => void;
   updateQuantity: (pscId: string, quantity: number) => Promise<void>;
   clearCart: () => void;
   syncWithBackend: () => Promise<void>;
@@ -154,57 +155,46 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const removeItem = (id: string, size: string, color: string) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      getPSCId({ id, size, color }).then((pscId) => {
-        if (!pscId) {
-          console.warn("Could not resolve PSC ID for removal");
-          return;
-        }
-        fetch(`${apiUrl}/api/cart/remove`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ product_size_color_id: pscId }),
-        });
-      });
-    }
+const removeItem = (pscId: string) => {
+  const token = localStorage.getItem("token");
+  if (!token || !pscId) return;
 
-    // Local state update
-    setItems((prevItems) =>
-      prevItems.filter(
-        (item) =>
-          !(item.id === id && item.size === size && item.color === color)
-      )
-    );
-  };
+  // 1) Ask backend to delete
+  fetch(`${apiUrl}/api/cart/remove`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type":  "application/json",
+      Authorization:   `Bearer ${token}`,
+    },
+    body: JSON.stringify({ product_size_color_id: pscId }),
+  })
+  .catch(console.error);
 
-  const updateQuantity = async (pscId: string, quantity: number) => {
-    const token = localStorage.getItem("token");
-    if (!token || !pscId) return;
+  // 2) Update local state
+  setItems(prev => prev.filter(item => item.pscId !== pscId));
+};
 
-    setItems((prevItems) =>
-      prevItems.map((i) =>
-        i.product_size_color_id === pscId ? { ...i, quantity } : i
-      )
-    );
+ const updateQuantity = async (pscId: string, quantity: number) => {
+  const token = localStorage.getItem("token");
+  if (!token || !pscId) return;
 
-    try {
-      await fetch(`${apiUrl}/api/cart/update`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ product_size_color_id: pscId, quantity }),
-      });
-    } catch (err) {
-      console.error("Failed to update quantity in DB", err);
-    }
-  };
+  // Optimistically update UI
+  setItems(prev =>
+    prev.map(i =>
+      i.product_size_color_id === pscId ? { ...i, quantity } : i
+    )
+  );
+
+  // Persist to DB
+  await fetch(`${apiUrl}/api/cart/update`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type":  "application/json",
+      Authorization:   `Bearer ${token}`,
+    },
+    body: JSON.stringify({ product_size_color_id: pscId, quantity }),
+  }).catch(console.error);
+};
 
   const clearCart = () => {
     setItems([]);
@@ -222,12 +212,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       id: entry.id,
       size: entry.size,
       color: entry.color,
-      color_hex: entry.colors_hex,
+      color_hex: entry.color_hex,
       quantity: entry.quantity,
       name: entry.name,
       price: entry.price,
       image: entry.image,
-      product_size_color_id: entry.product_size_color_id,
+      product_size_color_id: entry.pscId,
+       pscId:    entry.pscId,
     }));
 
     setItems(formatted);

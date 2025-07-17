@@ -30,10 +30,6 @@ export default function CartPage() {
   //   }
   // }
 
-  const handleRemoveItem = (id: string, size: string, color: string) => {
-  removeItem(id, size, color);
-};
-
 
   const handleMoveToFavorites = (item: any) => {
     addToFavorites({
@@ -45,7 +41,7 @@ export default function CartPage() {
       size: item.size,
       color: item.color,
     })
-   removeItem(item.id, item.size, item.color)
+   removeItem(item.pscId)
 
   }
 
@@ -136,11 +132,8 @@ export default function CartPage() {
                             size="icon"
                             className="h-8 w-8 rounded-none"
                             onClick={() => {
-                          if (item.product_size_color_id && item.quantity > 1) {
-                            updateQuantity(
-                              item.product_size_color_id,
-                              item.quantity - 1
-                            );
+                          if (item.pscId && item.quantity > 1) {
+                           updateQuantity(item.pscId, item.quantity - 1)
                           } else {
                             console.warn("PSC ID missing for item", item);
                           }
@@ -153,11 +146,8 @@ export default function CartPage() {
                             size="icon"
                             className="h-8 w-8 rounded-none"
                             onClick={() => {
-                          if (item.product_size_color_id) {
-                            updateQuantity(
-                              item.product_size_color_id,
-                              item.quantity + 1
-                            );
+                          if (item.pscId) {
+                             updateQuantity(item.pscId, item.quantity + 1)
                           } else {
                             console.warn("PSC ID missing for item", item);
                           }
@@ -177,13 +167,14 @@ export default function CartPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleRemoveItem(item.id, item.size, item.color)}
+                            onClick={() => removeItem(item.pscId)}
                             className="text-sm text-muted-foreground hover:text-foreground"
                           >
                             <Trash2 className="h-4 w-4" />
                             <span className="sr-only">Remove</span>
                           </Button>
                         </div>
+                  
                       </div>
                     </div>
                   </li>

@@ -9,52 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 
 // Mock order data
-const orders = [
-  {
-    id: "ORD123456",
-    date: "March 15, 2023",
-    status: "Delivered",
-    total: 229.98,
-    items: [
-      {
-        id: "1",
-        name: "Ombré Silk Dress",
-        price: 129.99,
-        quantity: 1,
-        image: "/flowing-ombre-silk.png",
-        size: "M",
-        color: "Beige Ombré",
-      },
-      {
-        id: "2",
-        name: "Gradient Blouse",
-        price: 79.99,
-        quantity: 1,
-        image: "/flowing-cream-gradient-blouse.png",
-        size: "S",
-        color: "Cream",
-      },
-    ],
-  },
-  {
-    id: "ORD789012",
-    date: "February 28, 2023",
-    status: "Delivered",
-    total: 149.99,
-    items: [
-      {
-        id: "4",
-        name: "Tonal Blazer",
-        price: 149.99,
-        quantity: 1,
-        image: "/soft-cream-blazer.png",
-        size: "M",
-        color: "Cream",
-      },
-    ],
-  },
-]
-
+const orders = []
 const processingOrders = []
 const cancelledOrders = []
 
