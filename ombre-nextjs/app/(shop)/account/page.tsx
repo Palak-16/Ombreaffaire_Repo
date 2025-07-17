@@ -3,6 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+
+// Define User type if not imported from elsewhere
+type User = {
+  name?: string;
+  email?: string;
+  // add other fields as needed
+};
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +28,7 @@ import {
   Heart,
   Bell,
 } from "lucide-react";
-import ProfileTab from "@/components/account/profile-tab";
+// import ProfileTab from "@/components/account/profile-tab";
 import OrdersTab from "@/components/account/orders-tab";
 import AddressesTab from "@/components/account/addresses-tab";
 // import WishlistTab from "@/components/account/wishlist-tab";
@@ -29,35 +36,40 @@ import AddressesTab from "@/components/account/addresses-tab";
 // import NotificationsTab from "@/components/account/notifications-tab";
 // import AccountSettingsTab from "@/components/account/account-settings-tab";
 import { getUserFromToken } from "@/utils/getUserFromToken";
-import { useCart } from "@/hooks/use-cart";
-import { useFavorites } from "@/hooks/use-favorites";
+// import { useCart } from "@/hooks/use-cart";
+// import { useFavorites } from "@/hooks/use-favorites";
 
 export default function AccountPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const user = getUserFromToken();
+  // we can’t read localStorage on the server, so delay auth check until client
+  const [user, setUser] = useState<User | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    if (!user) {
+    const u = getUserFromToken();       // reads token from localStorage
+    if (!u) {
+      // not logged in? push to login
       router.replace("/login");
+    } else {
+      setUser(u);
     }
-  }, [user]);
-  if (!user) {
-    return (
-      <div className="h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Redirecting...</p>
-      </div>
-    );
-  }
-  const { clearCart } = useCart();
-  const { clearAll } = useFavorites();
+    setAuthChecked(true);
+  }, [router]);
+
+  // while we’re figuring out auth on the client, render nothing (avoid SSR mismatch)
+  if (!authChecked) return null;
+
+  // now `user` is guaranteed to be non-null
+  // const { clearCart } = useCart();
+  // const { clearAll } = useFavorites();
 
   const handleLogout = () => {
     setIsLoading(true);
     // Clear token
     localStorage.removeItem("token");
-    clearCart();
-    clearAll(); // Clears favorites
+    // clearCart();
+    // clearAll(); // Clears favorites
     // Notify useAuth() and other tabs (if open)
     window.dispatchEvent(new Event("storage"));
     // Redirect to login page
@@ -114,7 +126,7 @@ export default function AccountPage() {
             <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 w-full">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="orders">Orders</TabsTrigger>
-              <TabsTrigger value="profile">Profile</TabsTrigger>
+              {/* <TabsTrigger value="profile">Profile</TabsTrigger> */}
               <TabsTrigger value="addresses">Addresses</TabsTrigger>
               {/* <TabsTrigger value="payment">Payment</TabsTrigger>
               <TabsTrigger value="wishlist">Wishlist</TabsTrigger>
@@ -323,10 +335,10 @@ export default function AccountPage() {
             <TabsContent value="orders">
               <OrdersTab />
             </TabsContent>
-
+{/* 
             <TabsContent value="profile">
               <ProfileTab />
-            </TabsContent>
+            </TabsContent> */}
 
             <TabsContent value="addresses">
               <AddressesTab />

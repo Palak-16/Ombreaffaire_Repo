@@ -1,206 +1,343 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState, useEffect, FormEvent } from "react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Pencil, Plus, Trash2 } from "lucide-react"
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 
-// Mock address data
-const addresses = [
-  {
-    id: "addr1",
-    type: "Home",
-    default: true,
-    firstName: "Jane",
-    lastName: "Doe",
-    address1: "123 Main Street",
-    address2: "Apt 4B",
-    city: "New York",
-    state: "NY",
-    postalCode: "10001",
-    country: "United States",
-    phone: "(123) 456-7890",
-  },
-  {
-    id: "addr2",
-    type: "Work",
-    default: false,
-    firstName: "Jane",
-    lastName: "Doe",
-    address1: "456 Market Street",
-    address2: "",
-    city: "New York",
-    state: "NY",
-    postalCode: "10002",
-    country: "United States",
-    phone: "(123) 456-7890",
-  },
-]
+type Address = {
+  id: string;
+  label: string;
+  recipient_name: string;
+  street: string;
+  address2: string | null;
+  city: string;
+  state: string;
+  postal_code: string;
+  country: string;
+  phone: string;
+  is_default: boolean;
+};
 
 export default function AddressesTab() {
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [currentAddress, setCurrentAddress] = useState<(typeof addresses)[0] | null>(null)
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const openAddDialog = () => {
-    setCurrentAddress(null)
-    setIsDialogOpen(true)
+  // dialog state
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Address | null>(null);
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+  // form fields
+  const [form, setForm] = useState<Partial<Address>>({});
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+  useEffect(() => {
+    loadAddresses();
+  }, []);
+
+  async function loadAddresses() {
+    setLoading(true);
+    try {
+      const res = await fetch(`${apiUrl}/api/account/addresses`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+      });
+      if (!res.ok) throw new Error(await res.text());
+      setAddresses(await res.json());
+    } finally {
+      setLoading(false);
+    }
   }
 
-  const openEditDialog = (address: (typeof addresses)[0]) => {
-    setCurrentAddress(address)
-    setIsDialogOpen(true)
+  function openAdd() {
+    setEditing(null);
+    setForm({});
+    setOpen(true);
+  }
+
+  function openEdit(addr: Address) {
+    setEditing(addr);
+    setForm(addr);
+    setOpen(true);
+  }
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    const url = editing
+      ? `${apiUrl}/api/account/addresses/${editing.id}`
+      : `${apiUrl}/api/account/addresses`;
+    const method = editing ? "PATCH" : "POST";
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      setOpen(false);
+      await loadAddresses();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+ async function remove(id: string) {
+    if (!confirm("Delete this address?")) return;
+    await fetch(`${apiUrl}/api/account/addresses/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    loadAddresses();
+  }
+
+   async function setDefault(id: string) {
+    await fetch(`${apiUrl}/api/account/addresses/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ is_default: true }),
+    });
+    loadAddresses();
   }
 
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-medium">Your Addresses</h2>
-        <Button onClick={openAddDialog}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add new address
+        <Button onClick={openAdd}>
+          <Plus className="mr-2 h-4 w-4" /> Add new address
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {addresses.map((address) => (
-          <Card key={address.id}>
-            <CardHeader className="pb-3">
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle className="text-base">{address.type}</CardTitle>
-                  {address.default && <CardDescription>Default Address</CardDescription>}
+      {loading ? (
+        <p>Loading…</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {addresses.map((a) => (
+            <Card key={a.id}>
+              <CardHeader>
+                <div className="flex justify-between">
+                  <div>
+                    <CardTitle>{a.label}</CardTitle>
+                    {a.is_default && <CardDescription>Default</CardDescription>}
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => openEdit(a)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => remove(a.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex space-x-2">
-                  <Button variant="ghost" size="icon" onClick={() => openEditDialog(address)}>
-                    <Pencil className="h-4 w-4" />
-                    <span className="sr-only">Edit</span>
-                  </Button>
-                  <Button variant="ghost" size="icon">
-                    <Trash2 className="h-4 w-4" />
-                    <span className="sr-only">Delete</span>
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-sm space-y-1">
-                <p>
-                  {address.firstName} {address.lastName}
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm">{a.recipient_name}</p>
+                <p className="text-sm">{a.street}</p>
+                {a.address2 && <p className="text-sm">{a.address2}</p>}
+                <p className="text-sm">
+                  {a.city}, {a.state} {a.postal_code}
                 </p>
-                <p>{address.address1}</p>
-                {address.address2 && <p>{address.address2}</p>}
-                <p>
-                  {address.city}, {address.state} {address.postalCode}
-                </p>
-                <p>{address.country}</p>
-                <p>{address.phone}</p>
-              </div>
-            </CardContent>
-            <CardFooter>
-              {!address.default && (
-                <Button variant="outline" size="sm" className="w-full">
-                  Set as default
-                </Button>
-              )}
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+                <p className="text-sm">{a.country}</p>
+                <p className="text-sm">{a.phone}</p>
+              </CardContent>
+              <CardFooter>
+                {!a.is_default && (
+                  <Button variant="outline" onClick={() => setDefault(a.id)}>
+                    Set as default
+                  </Button>
+                )}
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>{currentAddress ? "Edit Address" : "Add New Address"}</DialogTitle>
+            <DialogTitle>
+              {editing ? "Edit Address" : "Add Address"}
+            </DialogTitle>
             <DialogDescription>
-              {currentAddress
-                ? "Update your shipping address information."
-                : "Add a new shipping address to your account."}
+              {editing
+                ? "Update your shipping address."
+                : "Enter a new shipping address."}
             </DialogDescription>
           </DialogHeader>
-          <form className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="addressType">Address Type</Label>
-                <Input id="addressType" defaultValue={currentAddress?.type || "Home"} />
+
+          <form
+            id="address-form"
+            onSubmit={submit}
+            className="space-y-4 max-h-[60vh] overflow-y-auto pr-2"
+          >
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Label</Label>
+                <Input
+                  required
+                  value={form.label || ""}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, label: e.target.value }))
+                  }
+                />
               </div>
-              <div className="space-y-2 flex items-end">
-                <Label htmlFor="default" className="flex items-center space-x-2">
+              <div className="flex items-end">
+                <Label className="flex items-center space-x-2">
                   <Input
-                    id="default"
                     type="checkbox"
-                    className="h-4 w-4"
-                    defaultChecked={currentAddress?.default || false}
+                    checked={!!form.is_default}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        is_default: e.target.checked,
+                      }))
+                    }
                   />
-                  <span>Make this my default address</span>
+                  <span>Default</span>
                 </Label>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input id="firstName" defaultValue={currentAddress?.firstName || ""} required />
+            <div>
+              <Label>Recipient Name</Label>
+              <Input
+                required
+                value={form.recipient_name || ""}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    recipient_name: e.target.value,
+                  }))
+                }
+              />
+            </div>
+
+            <div>
+              <Label>Street</Label>
+              <Input
+                required
+                value={form.street || ""}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, street: e.target.value }))
+                }
+              />
+            </div>
+
+            <div>
+              <Label>Address</Label>
+              <Input
+                value={form.address2 || ""}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, address2: e.target.value }))
+                }
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label>City</Label>
+                <Input
+                  required
+                  value={form.city || ""}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, city: e.target.value }))
+                  }
+                />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input id="lastName" defaultValue={currentAddress?.lastName || ""} required />
+              <div>
+                <Label>State</Label>
+                <Input
+                  required
+                  value={form.state || ""}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, state: e.target.value }))
+                  }
+                />
+              </div>
+              <div>
+                <Label>ZIP</Label>
+                <Input
+                  required
+                  value={form.postal_code || ""}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      postal_code: e.target.value,
+                    }))
+                  }
+                />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="address1">Address Line 1</Label>
-              <Input id="address1" defaultValue={currentAddress?.address1 || ""} required />
+            <div>
+              <Label>Country</Label>
+              <Input
+                required
+                value={form.country || ""}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, country: e.target.value }))
+                }
+              />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="address2">Address Line 2 (Optional)</Label>
-              <Input id="address2" defaultValue={currentAddress?.address2 || ""} />
+            <div>
+              <Label>Phone</Label>
+              <Input
+                required
+                type="tel"
+                value={form.phone || ""}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, phone: e.target.value }))
+                }
+              />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <Input id="city" defaultValue={currentAddress?.city || ""} required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="state">State/Province</Label>
-                <Input id="state" defaultValue={currentAddress?.state || ""} required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="postalCode">ZIP/Postal Code</Label>
-                <Input id="postalCode" defaultValue={currentAddress?.postalCode || ""} required />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="country">Country</Label>
-              <Input id="country" defaultValue={currentAddress?.country || "United States"} required />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
-              <Input id="phone" type="tel" defaultValue={currentAddress?.phone || ""} required />
-            </div>
-
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit">{currentAddress ? "Save changes" : "Add address"}</Button>
-            </DialogFooter>
           </form>
+
+          <div className="mt-4 flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" form="address-form" disabled={saving}>
+              {editing ? "Save" : "Add"}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

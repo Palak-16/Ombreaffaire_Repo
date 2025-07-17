@@ -2,10 +2,12 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { Facebook, Instagram, Twitter } from "lucide-react"
+import { Facebook, Instagram } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useCategories } from "./CategoriesContext"; // Adjust the import path as needed
+import { FaWhatsapp } from "react-icons/fa";
+
 
 
 export function Footer() {
@@ -20,21 +22,39 @@ export function Footer() {
               <Image src="/ombre-logo-new.jpeg" alt="OMBRÉ affaire" width={120} height={40} className="h-10 w-auto" />
             </Link>
             <p className="text-sm text-muted-foreground">
-              OMBRÉ affaire offers elegant, contemporary fashion that transitions seamlessly from day to night, just
-              like the gradual blend of colors in an ombré design.
+              Ombré Affaire began with a simple vision - to create a brand that celebrates individuality, comfort, and confidence. <br></br>
+              We believe fashion should empower, not overwhelm. Our philosophy is rooted in balance between style and simplicity, trends and timelessness, self-expression and subtlety. 
             </p>
             <div className="flex space-x-4">
               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                <Link
+        href="https://www.facebook.com/share/1CNK8AFBVD/?mibextid=wwXIfr"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
                 <Facebook className="h-4 w-4" />
                 <span className="sr-only">Facebook</span>
+                </Link>
               </Button>
               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                <Link
+        href="https://www.instagram.com/ombreaffaire/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
                 <Instagram className="h-4 w-4" />
                 <span className="sr-only">Instagram</span>
+                </Link>
               </Button>
               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-                <Twitter className="h-4 w-4" />
+                 <Link
+        href="https://wa.me/918077069310?text=Hi%20there!"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+                <FaWhatsapp className="h-4 w-4" />
                 <span className="sr-only">Twitter</span>
+                </Link>
               </Button>
             </div>
           </div>
