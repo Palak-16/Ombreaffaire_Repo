@@ -67,6 +67,7 @@ export default async function handler(req, res) {
     .from("user_cart")
     .select(`
       product_size_color_id,
+      id,
       quantity,
       product_size_colors (
         product_id,
@@ -93,6 +94,9 @@ export default async function handler(req, res) {
     console.error("Supabase error:", error.message);
     return res.status(500).json({ error: error.message });
   }
+  console.log("raw user_cart row:", JSON.stringify(data, null, 2));
+
+
 
   const items = data.map((entry) => {
     const psc = entry.product_size_colors;
@@ -101,9 +105,10 @@ export default async function handler(req, res) {
       (img) =>
         img.product_id === psc.product_id && img.color_id === psc.color_id
     );
-
+  console.log("pscId",entry.product_size_color_id)
     return {
       id: psc.product_id,
+      pscId: entry.product_size_color_id,  
       size: psc.size,
       color: psc.colors?.label,
       color_hex: psc.colors?.hex,

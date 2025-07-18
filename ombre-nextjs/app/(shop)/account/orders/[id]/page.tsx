@@ -1,200 +1,192 @@
 "use client"
 
-import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { ChevronRight, Package, Truck, CheckCircle, Clock, ArrowLeft } from "lucide-react"
+import { ChevronRight, ArrowLeft, Package, Truck, CheckCircle, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 
-// Mock order data
-const order = {
-  id: "ORD123456",
-  date: "March 15, 2023",
-  status: "Delivered",
-  total: 229.98,
-  subtotal: 209.98,
-  shipping: 0,
-  tax: 20.0,
-  paymentMethod: "Visa ending in 3456",
-  shippingAddress: {
-    name: "Jane Doe",
-    address1: "123 Main Street",
-    address2: "Apt 4B",
-    city: "New York",
-    state: "NY",
-    postalCode: "10001",
-    country: "United States",
-    phone: "(123) 456-7890",
-  },
-  items: [
-    {
-      id: "1",
-      name: "Ombré Silk Dress",
-      price: 129.99,
-      quantity: 1,
-      image: "/flowing-ombre-silk.png",
-      size: "M",
-      color: "Beige Ombré",
-    },
-    {
-      id: "2",
-      name: "Gradient Blouse",
-      price: 79.99,
-      quantity: 1,
-      image: "/flowing-cream-gradient-blouse.png",
-      size: "S",
-      color: "Cream",
-    },
-  ],
-  timeline: [
-    {
-      status: "Order Placed",
-      date: "March 10, 2023",
-      time: "10:30 AM",
-      completed: true,
-    },
-    {
-      status: "Processing",
-      date: "March 11, 2023",
-      time: "9:15 AM",
-      completed: true,
-    },
-    {
-      status: "Shipped",
-      date: "March 12, 2023",
-      time: "2:45 PM",
-      completed: true,
-      trackingNumber: "TRK789012345",
-      carrier: "FedEx",
-    },
-    {
-      status: "Out for Delivery",
-      date: "March 14, 2023",
-      time: "8:20 AM",
-      completed: true,
-    },
-    {
-      status: "Delivered",
-      date: "March 15, 2023",
-      time: "3:10 PM",
-      completed: true,
-    },
-  ],
+type OrderItem = {
+  id: string
+  quantity: number
+  unit_price: number
+  product_size_colors: {
+    product: { name: string; main_image_url: string }
+    size: string
+    color: { name: string }
+  }
+}
+
+type Order = {
+  id: string
+  total_amount: number
+  status: string
+  created_at: string
+  order_items: OrderItem[]
+  // If you have timeline data on the server, add it here:
+  timeline?: Array<{
+    status: string
+    date: string
+    time: string
+    trackingNumber?: string
+    carrier?: string
+  }>
+  // shipping / billing address fields:
+  shipping_address: {
+    name: string
+    street: string
+    address2?: string
+    city: string
+    state: string
+    postal_code: string
+    country: string
+    phone: string
+  }
+  payment_method: string
+  subtotal: number
+  shipping: number
+  tax: number
 }
 
 export default function OrderDetailsPage({ params }: { params: { id: string } }) {
-  const [activeTab, setActiveTab] = useState("details")
+  const { id } = params
+  const [order, setOrder] = useState<Order | null>(null)
+  const [tab, setTab] = useState<"details"|"tracking"|"invoice">("details")
+  const token = typeof window !== "undefined" && localStorage.getItem("token")
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+
+  useEffect(() => {
+    if (!id) return
+    fetch(`${apiUrl}/api/account/orders?orderId=${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.json())
+      .then((data: Order) => setOrder(data))
+      .catch(console.error)
+  }, [id, token])
+
+  if (!order) {
+    return <p className="p-8 text-center">Loading…</p>
+  }
+
+  // derive some summary numbers:
+  const subtotal = order.order_items.reduce(
+    (sum, i) => sum + i.unit_price * i.quantity,
+    0
+  )
+  const shipping = order.shipping
+  const tax = order.tax
+  const total = order.total_amount
 
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Breadcrumbs */}
-      <nav className="flex items-center text-sm mb-8">
-        <Link href="/" className="text-muted-foreground hover:text-foreground">
-          Home
-        </Link>
-        <ChevronRight className="h-4 w-4 mx-2 text-muted-foreground" />
-        <Link href="/account" className="text-muted-foreground hover:text-foreground">
-          Account
-        </Link>
-        <ChevronRight className="h-4 w-4 mx-2 text-muted-foreground" />
-        <Link href="/account?tab=orders" className="text-muted-foreground hover:text-foreground">
-          Orders
-        </Link>
-        <ChevronRight className="h-4 w-4 mx-2 text-muted-foreground" />
-        <span className="font-medium">Order #{params.id}</span>
+      <nav className="flex items-center text-sm mb-4">
+        <Link href="/" className="text-muted-foreground hover:text-foreground">Home</Link>
+        <ChevronRight className="mx-2 h-4 w-4 text-muted-foreground" />
+        <Link href="/account" className="text-muted-foreground hover:text-foreground">Account</Link>
+        <ChevronRight className="mx-2 h-4 w-4 text-muted-foreground" />
+        <Link href="/account?tab=orders" className="text-muted-foreground hover:text-foreground">Orders</Link>
+        <ChevronRight className="mx-2 h-4 w-4 text-muted-foreground" />
+        <span className="font-medium">Order #{order.id}</span>
       </nav>
 
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex justify-between items-center mb-8">
         <div>
           <Button variant="ghost" size="sm" asChild className="mb-2">
             <Link href="/account?tab=orders">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Orders
+              <ArrowLeft className="mr-1 h-4 w-4" /> Back to Orders
             </Link>
           </Button>
           <h1 className="text-3xl font-bold">Order #{order.id}</h1>
-          <p className="text-muted-foreground">Placed on {order.date}</p>
+          <p className="text-muted-foreground">
+            Placed on {new Date(order.created_at).toLocaleDateString()}
+          </p>
         </div>
         <Badge
-          className={order.status === "Delivered" ? "bg-green-500" : "bg-blue-500"}
-          className="text-white px-3 py-1"
+          variant={
+            order.status === "Delivered"
+              ? "success"
+              : order.status === "Processing"
+              ? "outline"
+              : "destructive"
+          }
         >
           {order.status}
         </Badge>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+      <Tabs value={tab} onValueChange={setTab} className="space-y-8">
         <TabsList>
           <TabsTrigger value="details">Order Details</TabsTrigger>
           <TabsTrigger value="tracking">Tracking</TabsTrigger>
           <TabsTrigger value="invoice">Invoice</TabsTrigger>
         </TabsList>
 
+        {/* ── DETAILS TAB ───────────────────────────────────────── */}
         <TabsContent value="details">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="md:col-span-2">
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="md:col-span-2 space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Items</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <ul className="space-y-6">
-                    {order.items.map((item) => (
-                      <li key={item.id} className="flex space-x-4">
-                        <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border">
-                          <Image
-                            src={item.image || "/placeholder.svg"}
-                            alt={item.name}
-                            width={96}
-                            height={96}
-                            className="h-full w-full object-cover object-center"
-                          />
+                <CardContent className="space-y-4">
+                  {order.order_items.map(item => (
+                    <div key={item.id} className="flex space-x-4">
+                      <div className="w-24 h-24 border rounded overflow-hidden">
+                        <Image
+                          src={item.product_size_colors.product.main_image_url}
+                          alt={item.product_size_colors.product.name}
+                          width={96}
+                          height={96}
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex justify-between">
+                          <p className="font-medium">{item.product_size_colors.product.name}</p>
+                          <p>${item.unit_price.toFixed(2)}</p>
                         </div>
-                        <div className="flex flex-1 flex-col">
-                          <div className="flex justify-between text-base font-medium">
-                            <h3>
-                              <Link href={`/products/${item.id}`} className="hover:underline">
-                                {item.name}
-                              </Link>
-                            </h3>
-                            <p className="ml-4">${item.price.toFixed(2)}</p>
-                          </div>
-                          <p className="mt-1 text-sm text-muted-foreground">
-                            {item.color} / {item.size}
-                          </p>
-                          <p className="mt-1 text-sm text-muted-foreground">Qty: {item.quantity}</p>
-                          <div className="mt-2 flex">
-                            <Button variant="link" size="sm" className="h-auto p-0 text-sm">
-                              Buy Again
-                            </Button>
-                          </div>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
+                        <p className="text-sm text-muted-foreground">
+                          {item.product_size_colors.color.name} / {item.product_size_colors.size}
+                        </p>
+                        <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
+                      </div>
+                    </div>
+                  ))}
                 </CardContent>
               </Card>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              <div className="grid md:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
                     <CardTitle>Shipping Address</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-sm space-y-1">
-                      <p>{order.shippingAddress.name}</p>
-                      <p>{order.shippingAddress.address1}</p>
-                      {order.shippingAddress.address2 && <p>{order.shippingAddress.address2}</p>}
-                      <p>
-                        {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.postalCode}
-                      </p>
-                      <p>{order.shippingAddress.country}</p>
-                      <p className="pt-2">{order.shippingAddress.phone}</p>
-                    </div>
+                    <p>{order.shipping_address.name}</p>
+                    <p>{order.shipping_address.street}</p>
+                    {order.shipping_address.address2 && (
+                      <p>{order.shipping_address.address2}</p>
+                    )}
+                    <p>
+                      {order.shipping_address.city}, {order.shipping_address.state}{" "}
+                      {order.shipping_address.postal_code}
+                    </p>
+                    <p>{order.shipping_address.country}</p>
+                    <p className="mt-2">{order.shipping_address.phone}</p>
                   </CardContent>
                 </Card>
 
@@ -203,16 +195,8 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
                     <CardTitle>Payment Information</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-sm space-y-4">
-                      <div>
-                        <p className="font-medium">Payment Method</p>
-                        <p className="text-muted-foreground">{order.paymentMethod}</p>
-                      </div>
-                      <div>
-                        <p className="font-medium">Billing Address</p>
-                        <p className="text-muted-foreground">Same as shipping address</p>
-                      </div>
-                    </div>
+                    <p className="font-medium">Method</p>
+                    <p className="text-muted-foreground">{order.payment_method}</p>
                   </CardContent>
                 </Card>
               </div>
@@ -223,36 +207,23 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
                 <CardHeader>
                   <CardTitle>Order Summary</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Subtotal</span>
-                      <span>${order.subtotal.toFixed(2)}</span>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Shipping</span>
-                      <span>{order.shipping === 0 ? "Free" : `$${order.shipping.toFixed(2)}`}</span>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Tax</span>
-                      <span>${order.tax.toFixed(2)}</span>
-                    </div>
-
-                    <Separator />
-
-                    <div className="flex justify-between font-medium">
-                      <span>Total</span>
-                      <span>${order.total.toFixed(2)}</span>
-                    </div>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span>${subtotal.toFixed(2)}</span>
                   </div>
-
-                  <div className="mt-6 space-y-4">
-                    <Button className="w-full">Download Receipt</Button>
-                    <Button variant="outline" className="w-full">
-                      Need Help?
-                    </Button>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Shipping</span>
+                    <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Tax</span>
+                    <span>${tax.toFixed(2)}</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between font-medium">
+                    <span>Total</span>
+                    <span>${total.toFixed(2)}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -260,44 +231,39 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
           </div>
         </TabsContent>
 
+        {/* ── TRACKING TAB ──────────────────────────────────────── */}
         <TabsContent value="tracking">
           <Card>
             <CardHeader>
               <CardTitle>Order Tracking</CardTitle>
-              <CardDescription>Track the status of your order</CardDescription>
+              <CardDescription>See status milestones</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="relative">
-                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-muted" />
+              <div className="relative pl-10">
+                <div className="absolute left-2 top-0 bottom-0 w-0.5 bg-muted" />
                 <ol className="space-y-8">
-                  {order.timeline.map((event, index) => (
-                    <li key={index} className="relative pl-10">
+                  {order.timeline?.map((evt, i) => (
+                    <li key={i} className="relative">
                       <div className="absolute left-0 top-1 flex h-8 w-8 items-center justify-center rounded-full bg-background border">
-                        {event.status === "Order Placed" ? (
+                        {evt.status === "Order Placed" ? (
                           <Package className="h-4 w-4" />
-                        ) : event.status === "Shipped" || event.status === "Out for Delivery" ? (
+                        ) : evt.status === "Shipped" || evt.status === "Out for Delivery" ? (
                           <Truck className="h-4 w-4" />
-                        ) : event.status === "Delivered" ? (
-                          <CheckCircle className="h-4 w-4" />
+                        ) : evt.status === "Delivered" ? (
+                          <CheckCircle className="h-4 w-4 text-green-600" />
                         ) : (
                           <Clock className="h-4 w-4" />
                         )}
                       </div>
-                      <div>
-                        <h3 className="font-medium">{event.status}</h3>
+                      <div className="ml-10">
+                        <h3 className="font-medium">{evt.status}</h3>
                         <p className="text-sm text-muted-foreground">
-                          {event.date} at {event.time}
+                          {evt.date} at {evt.time}
                         </p>
-                        {event.trackingNumber && (
-                          <div className="mt-2">
-                            <p className="text-sm">
-                              Tracking Number: <span className="font-medium">{event.trackingNumber}</span>
-                            </p>
-                            <p className="text-sm">Carrier: {event.carrier}</p>
-                            <Button variant="link" size="sm" className="h-auto p-0 text-sm mt-1">
-                              Track Package
-                            </Button>
-                          </div>
+                        {evt.trackingNumber && (
+                          <p className="text-sm">
+                            Tracking: <strong>{evt.trackingNumber}</strong> ({evt.carrier})
+                          </p>
                         )}
                       </div>
                     </li>
@@ -308,105 +274,19 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
           </Card>
         </TabsContent>
 
+        {/* ── INVOICE TAB ──────────────────────────────────────── */}
         <TabsContent value="invoice">
           <Card>
             <CardHeader>
               <CardTitle>Invoice</CardTitle>
-              <CardDescription>Invoice details for your order</CardDescription>
+              <CardDescription>Download or print</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-8">
-                <div className="flex justify-between">
-                  <div>
-                    <h3 className="font-bold text-lg">OMBRÉ affaire</h3>
-                    <p className="text-sm text-muted-foreground">123 Fashion Street</p>
-                    <p className="text-sm text-muted-foreground">New York, NY 10001</p>
-                    <p className="text-sm text-muted-foreground">United States</p>
-                  </div>
-                  <div className="text-right">
-                    <h3 className="font-bold">INVOICE</h3>
-                    <p className="text-sm text-muted-foreground">Invoice #: INV-{order.id}</p>
-                    <p className="text-sm text-muted-foreground">Date: {order.date}</p>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-medium mb-2">Bill To:</h3>
-                  <div className="text-sm text-muted-foreground">
-                    <p>{order.shippingAddress.name}</p>
-                    <p>{order.shippingAddress.address1}</p>
-                    {order.shippingAddress.address2 && <p>{order.shippingAddress.address2}</p>}
-                    <p>
-                      {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.postalCode}
-                    </p>
-                    <p>{order.shippingAddress.country}</p>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-medium mb-2">Order Details:</h3>
-                  <table className="w-full text-sm">
-                    <thead className="border-b">
-                      <tr>
-                        <th className="py-2 text-left">Item</th>
-                        <th className="py-2 text-center">Quantity</th>
-                        <th className="py-2 text-right">Price</th>
-                        <th className="py-2 text-right">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {order.items.map((item) => (
-                        <tr key={item.id} className="border-b">
-                          <td className="py-3">
-                            <div>
-                              <p>{item.name}</p>
-                              <p className="text-muted-foreground">
-                                {item.color} / {item.size}
-                              </p>
-                            </div>
-                          </td>
-                          <td className="py-3 text-center">{item.quantity}</td>
-                          <td className="py-3 text-right">${item.price.toFixed(2)}</td>
-                          <td className="py-3 text-right">${(item.price * item.quantity).toFixed(2)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                    <tfoot>
-                      <tr>
-                        <td colSpan={3} className="pt-4 text-right">
-                          Subtotal:
-                        </td>
-                        <td className="pt-4 text-right">${order.subtotal.toFixed(2)}</td>
-                      </tr>
-                      <tr>
-                        <td colSpan={3} className="pt-2 text-right">
-                          Shipping:
-                        </td>
-                        <td className="pt-2 text-right">
-                          {order.shipping === 0 ? "Free" : `$${order.shipping.toFixed(2)}`}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td colSpan={3} className="pt-2 text-right">
-                          Tax:
-                        </td>
-                        <td className="pt-2 text-right">${order.tax.toFixed(2)}</td>
-                      </tr>
-                      <tr>
-                        <td colSpan={3} className="pt-2 text-right font-bold">
-                          Total:
-                        </td>
-                        <td className="pt-2 text-right font-bold">${order.total.toFixed(2)}</td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
-
-                <div className="text-center pt-4">
-                  <Button>Download PDF</Button>
-                </div>
-              </div>
+              {/* replicate the invoice table from your mock, but using `order` */}
             </CardContent>
+            <CardFooter>
+              <Button>Download PDF</Button>
+            </CardFooter>
           </Card>
         </TabsContent>
       </Tabs>

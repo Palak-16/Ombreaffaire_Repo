@@ -4,10 +4,32 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { CheckCircle, ShoppingBag } from "lucide-react"
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
-export default function CheckoutSuccess() {
+type Props = {
+  orderId: string
+  // order?: any   // optional full order data
+}
+
+export default function CheckoutSuccess({ orderId }: Props) {
   // Generate a random order number
-  const orderNumber = `ORD-${Math.floor(100000 + Math.random() * 900000)}`
+  // aconst orderNumber = `ORD-${Math.floor(100000 + Math.random() * 900000)}`
+ const router = useRouter()
+  const [order, setOrder] = useState(null)
+  // const orderId = new URLSearchParams(window.location.search).get('orderId')
+  const token = localStorage.getItem('token')
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+  useEffect(() => {
+    if (!orderId) return
+    fetch(`${apiUrl}/api/account/orders/${orderId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(r => r.json())
+      .then(setOrder)
+  }, [orderId])
+
+  if (!order) return <p>Loading…</p>
 
   return (
     <div className="max-w-md mx-auto">
@@ -21,8 +43,7 @@ export default function CheckoutSuccess() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-center">
-            <p className="text-sm text-muted-foreground">Your order number is</p>
-            <p className="font-medium text-lg">{orderNumber}</p>
+             <p>Your order number is <strong>{orderId}</strong></p>
           </div>
 
           <div className="bg-muted p-4 rounded-md">

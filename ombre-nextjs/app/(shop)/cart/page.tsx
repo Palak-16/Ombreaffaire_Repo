@@ -201,8 +201,8 @@ export default function CartPage() {
                 </div>
 
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Tax</span>
-                  <span>₹{tax.toFixed(2)}</span>
+                  <span className="text-muted-foreground">Inclusive gst applied</span>
+                  {/* <span>₹{tax.toFixed(2)}</span> */}
                 </div>
 
                 <Separator />
@@ -234,7 +234,7 @@ export default function CartPage() {
                 <Link href="/checkout">Proceed to Checkout</Link>
               </Button>
 
-              <div className="mt-6">
+              {/* <div className="mt-6">
                 <div className="rounded-lg bg-muted p-4 text-sm">
                   <div className="flex">
                     <ShoppingBag className="h-5 w-5 text-muted-foreground mr-2" />
@@ -243,7 +243,7 @@ export default function CartPage() {
                     </p>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

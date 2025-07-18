@@ -12,12 +12,18 @@ import CheckoutShipping from "@/components/checkout/checkout-shipping"
 import CheckoutPayment from "@/components/checkout/checkout-payment"
 import CheckoutReview from "@/components/checkout/checkout-review"
 import CheckoutSuccess from "@/components/checkout/checkout-success"
+import { add } from "date-fns"
 
 export default function CheckoutPage() {
   const { items, clearCart } = useCart()
   const [step, setStep] = useState<"shipping" | "payment" | "review" | "success">("shipping")
   const [progress, setProgress] = useState(33)
   const router = useRouter()
+  // new, right below your existing useState calls:
+const [orderId, setOrderId]     = useState<string>("")
+const [orderData, setOrderData] = useState<any>(null) // optional full order object
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
 
   // Form state
   const [shippingInfo, setShippingInfo] = useState({
@@ -32,6 +38,7 @@ export default function CheckoutPage() {
     country: "United States",
     saveAddress: false,
     shippingMethod: "standard",
+    addressId: "", // for saved addresses
   })
 
   const [paymentInfo, setPaymentInfo] = useState({
@@ -67,6 +74,7 @@ export default function CheckoutPage() {
     }
   }, [step])
 
+
   // Handle form submissions
   const handleShippingSubmit = (data: typeof shippingInfo) => {
     setShippingInfo(data)
@@ -78,13 +86,45 @@ export default function CheckoutPage() {
     setStep("review")
   }
 
-  const handlePlaceOrder = () => {
-    // Simulate order processing
-    setTimeout(() => {
-      clearCart()
-      setStep("success")
-    }, 1000)
+  // const handlePlaceOrder = () => {
+  //   // Simulate order processing
+  //   setTimeout(() => {
+  //     clearCart()
+  //     setStep("success")
+  //   }, 1000)
+  // }
+  const handlePlaceOrder = async () => {
+  const token = localStorage.getItem('token')
+  const payload = {
+    addressId:      shippingInfo.addressId,
+    shippingMethod: shippingInfo.shippingMethod,
+    items:          items.map(i => ({
+                      product_size_color_id:    i.product_size_color_id,
+                      quantity: i.quantity,
+                      price:    i.price
+                    })),
+    total:          total
   }
+
+  const res = await fetch(`${apiUrl}/api/account/orders`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization:  `Bearer ${token}`
+    },
+    body: JSON.stringify(payload),
+  })
+  const { orderId: newOrderId, error } = await res.json()
+  if (error) {
+    console.error(error)
+    return
+  }
+  setOrderId(newOrderId)
+ clearCart()
+setStep("success")
+}
+
+
 
   // If cart is empty, redirect to cart page
   useEffect(() => {
@@ -92,6 +132,19 @@ export default function CheckoutPage() {
       router.push("/cart")
     }
   }, [items, router, step])
+
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+useEffect(() => {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  fetch(`${apiUrl}/api/account/addresses`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+    .then(res => res.json())
+    .then(data => setSavedAddresses(data))    // your GET returns an array
+    .catch(console.error);
+}, []);
+
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -143,7 +196,7 @@ export default function CheckoutPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Checkout Form */}
         <div className="lg:col-span-2">
-          {step === "shipping" && <CheckoutShipping shippingInfo={shippingInfo} onSubmit={handleShippingSubmit} />}
+          {step === "shipping" && <CheckoutShipping shippingInfo={shippingInfo} onSubmit={handleShippingSubmit} savedAddresses={savedAddresses}   />}
 
           {step === "payment" && (
             <CheckoutPayment
@@ -163,7 +216,12 @@ export default function CheckoutPage() {
             />
           )}
 
-          {step === "success" && <CheckoutSuccess />}
+                {step === "success" && (
+       <CheckoutSuccess
+         orderId={orderId}
+         // order={orderData}   // if you fetched full order
+       />
+     )}
         </div>
 
         {/* Order Summary */}
@@ -211,8 +269,8 @@ export default function CheckoutPage() {
                     </div>
 
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Tax</span>
-                      <span>${tax.toFixed(2)}</span>
+                      <span className="text-muted-foreground">Items are inclusive oof gst</span>
+                      {/* <span>${tax.toFixed(2)}</span> */}
                     </div>
 
                     <Separator />
@@ -223,7 +281,7 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  <div className="mt-6">
+                  {/* <div className="mt-6">
                     <div className="rounded-lg bg-muted p-4 text-sm">
                       <div className="flex">
                         <ShoppingBag className="h-5 w-5 text-muted-foreground mr-2" />
@@ -232,7 +290,7 @@ export default function CheckoutPage() {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                 </>
               )}
             </div>

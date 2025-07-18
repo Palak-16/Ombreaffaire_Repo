@@ -1,16 +1,26 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import React, { useState, useEffect, FormEvent } from "react"
 import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Plus } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Truck, Clock } from "lucide-react"
+import { CardFooter } from "@/components/ui/card"
 
 type ShippingInfo = {
   firstName: string
@@ -24,304 +34,369 @@ type ShippingInfo = {
   country: string
   saveAddress: boolean
   shippingMethod: string
+  addressId: string // optional, if using saved address
 }
 
-type CheckoutShippingProps = {
+type Address = {
+  id: string
+  label: string
+  recipient_name: string
+  street: string
+  address2: string | null
+  city: string
+  state: string
+  postal_code: string
+  country: string
+  phone: string
+  is_default: boolean
+}
+
+type Props = {
   shippingInfo: ShippingInfo
   onSubmit: (data: ShippingInfo) => void
 }
 
-export default function CheckoutShipping({ shippingInfo, onSubmit }: CheckoutShippingProps) {
-  const [formData, setFormData] = useState<ShippingInfo>(shippingInfo)
-  const [errors, setErrors] = useState<Partial<Record<keyof ShippingInfo, string>>>({})
+export default function CheckoutShipping({ shippingInfo, onSubmit }: Props) {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || ""
+  const token = typeof window !== "undefined" && localStorage.getItem("token")
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    })
+  // we'll keep formData so we know what address got selected
+  const [formData, setFormData] = useState<ShippingInfo>({...shippingInfo, addressId: ""})
 
-    // Clear error when field is edited
-    if (errors[name as keyof ShippingInfo]) {
-      setErrors({
-        ...errors,
-        [name]: undefined,
+  // SAVED ADDRESSES
+  const [addresses, setAddresses] = useState<Address[]>([])
+  const [loading, setLoading] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingAddr, setEditingAddr] = useState<Address | null>(null)
+  const [addrForm, setAddrForm] = useState<Partial<Address>>({})
+  const [savingAddr, setSavingAddr] = useState(false)
+  const [selectedAddressId, setSelectedAddressId] = useState<string>("")
+
+  useEffect(() => {
+    loadAddresses()
+  }, [])
+
+  async function loadAddresses() {
+    setLoading(true)
+    try {
+      const res = await fetch(`${apiUrl}/api/account/addresses`, {
+        headers: { Authorization: `Bearer ${token}` },
       })
+      const data: Address[] = await res.json()
+      setAddresses(data)
+
+      // auto-select the default if none chosen yet
+      if (!selectedAddressId) {
+        const def = data.find((a) => a.is_default)
+        if (def) selectAddress(def.id, def)
+      }
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData({
-      ...formData,
-      [name]: value,
-    })
-
-    // Clear error when field is edited
-    if (errors[name as keyof ShippingInfo]) {
-      setErrors({
-        ...errors,
-        [name]: undefined,
-      })
-    }
+  function selectAddress(id: string, a?: Address) {
+    setSelectedAddressId(id)
+    // if they click on it, fill out formData so onSubmit has the right shape
+    const addr = a || addresses.find((x) => x.id === id)!
+    setFormData((f) => ({
+      ...f,
+      firstName: addr.recipient_name.split(" ")[0] || "",
+      lastName: addr.recipient_name.split(" ")[1] || "",
+      email: f.email,      // keep whatever email they typed in—or blank
+      phone: addr.phone,
+      address: addr.street,
+      city: addr.city,
+      state: addr.state,
+      zip: addr.postal_code,
+      country: addr.country,
+      saveAddress: f.saveAddress,
+      shippingMethod: f.shippingMethod,
+      addressId: addr.id, // set the addressId to the selected address
+    }))
   }
 
-  const validateForm = () => {
-    const newErrors: Partial<Record<keyof ShippingInfo, string>> = {}
-
-    if (!formData.firstName) newErrors.firstName = "First name is required"
-    if (!formData.lastName) newErrors.lastName = "Last name is required"
-    if (!formData.email) newErrors.email = "Email is required"
-    if (!formData.phone) newErrors.phone = "Phone number is required"
-    if (!formData.address) newErrors.address = "Address is required"
-    if (!formData.city) newErrors.city = "City is required"
-    if (!formData.state) newErrors.state = "State is required"
-    if (!formData.zip) newErrors.zip = "ZIP code is required"
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+  function openAdd() {
+    setEditingAddr(null)
+    setAddrForm({})
+    setDialogOpen(true)
+  }
+  function openEdit(a: Address) {
+    setEditingAddr(a)
+    setAddrForm(a)
+    setDialogOpen(true)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  async function submitAddress(e: FormEvent) {
     e.preventDefault()
-
-    if (validateForm()) {
-      onSubmit(formData)
-    }
+    setSavingAddr(true)
+    const url = editingAddr
+      ? `${apiUrl}/api/account/addresses/${editingAddr.id}`
+      : `${apiUrl}/api/account/addresses`
+    const method = editingAddr ? "PATCH" : "POST"
+    await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(addrForm),
+    })
+    setDialogOpen(false)
+    await loadAddresses()
+    setSavingAddr(false)
   }
-
-  // Mock saved addresses
-  const savedAddresses = [
-    {
-      id: "addr1",
-      name: "Home",
-      address: "123 Main St, Apt 4B, New York, NY 10001",
-    },
-    {
-      id: "addr2",
-      name: "Work",
-      address: "456 Market St, New York, NY 10002",
-    },
-  ]
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Card>
+    <>
+      <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Shipping Information</CardTitle>
-          <CardDescription>Enter your shipping details</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Saved Addresses */}
-          {savedAddresses.length > 0 && (
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium">Saved Addresses</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {savedAddresses.map((address) => (
-                  <div
-                    key={address.id}
-                    className="border rounded-md p-4 cursor-pointer hover:border-primary transition-colors"
-                    onClick={() => {
-                      // In a real app, this would populate the form with the saved address
-                    }}
-                  >
-                    <p className="font-medium">{address.name}</p>
-                    <p className="text-sm text-muted-foreground">{address.address}</p>
-                  </div>
-                ))}
-                <div className="border border-dashed rounded-md p-4 flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer">
-                  <span>+ Add new address</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="firstName">First Name</Label>
-              <Input
-                id="firstName"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                className={errors.firstName ? "border-red-500" : ""}
-              />
-              {errors.firstName && <p className="text-xs text-red-500">{errors.firstName}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input
-                id="lastName"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                className={errors.lastName ? "border-red-500" : ""}
-              />
-              {errors.lastName && <p className="text-xs text-red-500">{errors.lastName}</p>}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                className={errors.email ? "border-red-500" : ""}
-              />
-              {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                name="phone"
-                type="tel"
-                value={formData.phone}
-                onChange={handleChange}
-                className={errors.phone ? "border-red-500" : ""}
-              />
-              {errors.phone && <p className="text-xs text-red-500">{errors.phone}</p>}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="address">Address</Label>
-            <Input
-              id="address"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              className={errors.address ? "border-red-500" : ""}
-            />
-            {errors.address && <p className="text-xs text-red-500">{errors.address}</p>}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
-              <Input
-                id="city"
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
-                className={errors.city ? "border-red-500" : ""}
-              />
-              {errors.city && <p className="text-xs text-red-500">{errors.city}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="state">State</Label>
-              <Input
-                id="state"
-                name="state"
-                value={formData.state}
-                onChange={handleChange}
-                className={errors.state ? "border-red-500" : ""}
-              />
-              {errors.state && <p className="text-xs text-red-500">{errors.state}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="zip">ZIP Code</Label>
-              <Input
-                id="zip"
-                name="zip"
-                value={formData.zip}
-                onChange={handleChange}
-                className={errors.zip ? "border-red-500" : ""}
-              />
-              {errors.zip && <p className="text-xs text-red-500">{errors.zip}</p>}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="country">Country</Label>
-            <Select value={formData.country} onValueChange={(value) => handleSelectChange("country", value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a country" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="United States">United States</SelectItem>
-                <SelectItem value="Canada">Canada</SelectItem>
-                <SelectItem value="United Kingdom">United Kingdom</SelectItem>
-                <SelectItem value="Australia">Australia</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="saveAddress"
-              name="saveAddress"
-              checked={formData.saveAddress}
-              onCheckedChange={(checked) => setFormData({ ...formData, saveAddress: checked === true })}
-            />
-            <Label htmlFor="saveAddress" className="text-sm">
-              Save this address for future orders
-            </Label>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Shipping Method</CardTitle>
-          <CardDescription>Select your preferred shipping method</CardDescription>
+          <CardTitle>Saved Addresses</CardTitle>
         </CardHeader>
         <CardContent>
-          <RadioGroup
-            value={formData.shippingMethod}
-            onValueChange={(value) => handleSelectChange("shippingMethod", value)}
-            className="space-y-4"
-          >
-            <div className="flex items-center space-x-2 border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors">
-              <RadioGroupItem value="standard" id="standard" />
-              <Label htmlFor="standard" className="flex flex-1 items-center cursor-pointer">
-                <div className="ml-2 flex-1">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <Truck className="h-5 w-5 mr-2" />
-                      <span className="font-medium">Standard Shipping</span>
-                    </div>
-                    <span className="font-medium">
-                      {formData.shippingMethod === "standard" &&
-                      formData.country === "United States" &&
-                      (formData.state === "NY" || formData.state === "CA")
-                        ? "$10.00"
-                        : "Free"}
-                    </span>
+          {loading ? (
+            <p>Loading…</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {addresses.map((a) => (
+                <div
+                  key={a.id}
+                  className={`p-4 rounded cursor-pointer transition ${
+                    selectedAddressId === a.id
+                      ? "border-2 border-primary"
+                      : "border hover:border-primary"
+                  }`}
+                  onClick={() => selectAddress(a.id, a)}
+                >
+                  <div className="flex justify-between">
+                    <h3 className="font-medium">{a.label}</h3>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        openEdit(a)
+                      }}
+                    >
+                      ✏️
+                    </Button>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">Delivery in 3-5 business days</p>
+                  <p className="text-sm">
+                    {a.recipient_name}
+                    <br />
+                    {a.street}
+                    {a.address2 && `, ${a.address2}`}
+                    <br />
+                    {a.city}, {a.state} {a.postal_code}
+                    <br />
+                    {a.country}
+                    <br />
+                    📞 {a.phone}
+                  </p>
                 </div>
-              </Label>
-            </div>
+              ))}
 
-            <div className="flex items-center space-x-2 border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors">
-              <RadioGroupItem value="express" id="express" />
-              <Label htmlFor="express" className="flex flex-1 items-center cursor-pointer">
-                <div className="ml-2 flex-1">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <Clock className="h-5 w-5 mr-2" />
-                      <span className="font-medium">Express Shipping</span>
+              {/* — Add New Address */}
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="h-full flex items-center justify-center"
+                    onClick={openAdd}
+                  >
+                    <Plus className="mr-2 h-4 w-4" /> Add new address
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {editingAddr ? "Edit Address" : "Add Address"}
+                    </DialogTitle>
+                    <DialogDescription>
+                      {editingAddr
+                        ? "Update your shipping address."
+                        : "Enter a new shipping address."}
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  {/* reuse your address-form from AddressesTab: */}
+                  <form
+                    id="address-form"
+                    onSubmit={submitAddress}
+                    className="space-y-4 max-h-[60vh] overflow-y-auto"
+                  >
+                    {/* Label */}
+                    <div>
+                      <Label>Label</Label>
+                      <Input
+                        required
+                        value={addrForm.label || ""}
+                        onChange={(e) =>
+                          setAddrForm((f) => ({
+                            ...f,
+                            label: e.target.value,
+                          }))
+                        }
+                      />
                     </div>
-                    <span className="font-medium">$15.00</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">Delivery in 1-2 business days</p>
-                </div>
-              </Label>
+                    {/* Recipient */}
+                    <div>
+                      <Label>Recipient Name</Label>
+                      <Input
+                        required
+                        value={addrForm.recipient_name || ""}
+                        onChange={(e) =>
+                          setAddrForm((f) => ({
+                            ...f,
+                            recipient_name: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                    {/* Street */}
+                    <div>
+                      <Label>Street</Label>
+                      <Input
+                        required
+                        value={addrForm.street || ""}
+                        onChange={(e) =>
+                          setAddrForm((f) => ({
+                            ...f,
+                            street: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                    {/* Address2 */}
+                    <div>
+                      <Label>Address 2</Label>
+                      <Input
+                        value={addrForm.address2 || ""}
+                        onChange={(e) =>
+                          setAddrForm((f) => ({
+                            ...f,
+                            address2: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                    {/* City / State / ZIP */}
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <Label>City</Label>
+                        <Input
+                          required
+                          value={addrForm.city || ""}
+                          onChange={(e) =>
+                            setAddrForm((f) => ({
+                              ...f,
+                              city: e.target.value,
+                            }))
+                          }
+                        />
+                      </div>
+                      <div>
+                        <Label>State</Label>
+                        <Input
+                          required
+                          value={addrForm.state || ""}
+                          onChange={(e) =>
+                            setAddrForm((f) => ({
+                              ...f,
+                              state: e.target.value,
+                            }))
+                          }
+                        />
+                      </div>
+                      <div>
+                        <Label>ZIP Code</Label>
+                        <Input
+                          required
+                          value={addrForm.postal_code || ""}
+                          onChange={(e) =>
+                            setAddrForm((f) => ({
+                              ...f,
+                              postal_code: e.target.value,
+                            }))
+                          }
+                        />
+                      </div>
+                    </div>
+                    {/* Country */}
+                    <div>
+                      <Label>Country</Label>
+                      <Input
+                        required
+                        value={addrForm.country || ""}
+                        onChange={(e) =>
+                          setAddrForm((f) => ({
+                            ...f,
+                            country: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                    {/* Phone */}
+                    <div>
+                      <Label>Phone</Label>
+                      <Input
+                        required
+                        type="tel"
+                        value={addrForm.phone || ""}
+                        onChange={(e) =>
+                          setAddrForm((f) => ({
+                            ...f,
+                            phone: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                    {/* Default */}
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        checked={!!addrForm.is_default}
+                        onCheckedChange={(c) =>
+                          setAddrForm((f) => ({
+                            ...f,
+                            is_default: c === true,
+                          }))
+                        }
+                      />
+                      <Label>Default</Label>
+                    </div>
+                  </form>
+
+                  <CardFooter className="mt-4 flex justify-end space-x-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      form="address-form"
+                      disabled={savingAddr}
+                    >
+                      {editingAddr ? "Save" : "Add"}
+                    </Button>
+                  </CardFooter>
+                </DialogContent>
+              </Dialog>
             </div>
-          </RadioGroup>
-        </CardContent>
+         
+        )}
+      </CardContent>
       </Card>
 
-      <div className="mt-6">
-        <Button type="submit" className="w-full">
-          Continue to Payment
-        </Button>
-      </div>
-    </form>
+      {/* ─── Continue to Payment ─────────────────────────── */}
+      <Button
+        className="w-full"
+        disabled={!selectedAddressId}
+        onClick={() => onSubmit(formData)}
+      >
+        Continue to Payment
+      </Button>
+    </>
   )
 }
