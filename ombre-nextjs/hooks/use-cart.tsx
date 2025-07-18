@@ -196,7 +196,22 @@ const removeItem = (pscId: string) => {
   }).catch(console.error);
 };
 
-  const clearCart = () => {
+  const clearCart = async () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      // call your “clear cart” endpoint (you might need to create it server-side)
+      const res = await fetch(`${apiUrl}/api/cart/clear`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) {
+        console.error("Failed to clear cart on server", await res.text());
+      }
+    }
+    // now clear local state
     setItems([]);
   };
   const syncWithBackend = async () => {

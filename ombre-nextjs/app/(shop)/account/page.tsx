@@ -8,6 +8,7 @@ import { useEffect } from "react";
 type User = {
   name?: string;
   email?: string;
+  created_at?: string; // or Date, depending on your data structure
   // add other fields as needed
 };
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -45,7 +46,8 @@ export default function AccountPage() {
   // we can’t read localStorage on the server, so delay auth check until client
   const [user, setUser] = useState<User | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
-
+  const [memberSince, setMemberSince] = useState<string>("")
+  const [ordersCount, setOrdersCount] = useState(0)
   useEffect(() => {
     const u = getUserFromToken();       // reads token from localStorage
     if (!u) {
@@ -53,9 +55,24 @@ export default function AccountPage() {
       router.replace("/login");
     } else {
       setUser(u);
+      const d = new Date(u.created_at || "");
+      setMemberSince(d.toLocaleString("default", { month: "long", year: "numeric" }))
+   
     }
     setAuthChecked(true);
   }, [router]);
+
+   useEffect(() => {
+    if (!user) return
+    const token = localStorage.getItem("token")
+    fetch("/api/account/orders", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.json())
+      .then((orders: any[]) => {
+        setOrdersCount(orders.length)
+      })
+  }, [user])
 
   // while we’re figuring out auth on the client, render nothing (avoid SSR mismatch)
   if (!authChecked) return null;
@@ -81,8 +98,8 @@ export default function AccountPage() {
 
   // Mock values for now
   const avatar = "https://via.placeholder.com/150";
-  const memberSince = "March 2023";
-  const ordersCount = 5;
+  // const memberSince = "March 2023";
+  // const ordersCount = 5;
   const wishlistCount = 3;
 
   return (
@@ -103,10 +120,10 @@ export default function AccountPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-sm text-muted-foreground">
+              {/* <div className="text-sm text-muted-foreground">
                 <p>Member since {memberSince}</p>
                 <p className="mt-1">{ordersCount} orders placed</p>
-              </div>
+              </div> */}
               <Button
                 variant="outline"
                 onClick={handleLogout}
@@ -122,9 +139,9 @@ export default function AccountPage() {
 
         {/* Account Content */}
         <div className="flex-1">
-          <Tabs defaultValue="overview" className="space-y-8">
+          <Tabs defaultValue="orders" className="space-y-8">
             <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 w-full">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
+              {/* <TabsTrigger value="overview">Overview</TabsTrigger> */}
               <TabsTrigger value="orders">Orders</TabsTrigger>
               {/* <TabsTrigger value="profile">Profile</TabsTrigger> */}
               <TabsTrigger value="addresses">Addresses</TabsTrigger>
@@ -134,7 +151,7 @@ export default function AccountPage() {
             </TabsList>
 
             {/* Overview Tab */}
-            <TabsContent value="overview">
+            {/* <TabsContent value="overview">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Card>
                   <CardHeader className="pb-3">
@@ -330,7 +347,7 @@ export default function AccountPage() {
                   </CardContent>
                 </Card>
               </div>
-            </TabsContent>
+            </TabsContent> */}
 
             <TabsContent value="orders">
               <OrdersTab />

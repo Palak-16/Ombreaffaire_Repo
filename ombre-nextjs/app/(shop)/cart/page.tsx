@@ -94,7 +94,7 @@ export default function CartPage() {
             <div className="bg-card rounded-lg p-6 shadow-sm">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-medium">Items ({items.length})</h2>
-                <Button variant="ghost" size="sm" onClick={() => clearCart()}>
+                <Button variant="ghost" size="sm" onClick={async () => {   await clearCart();}}>
                   Clear cart
                 </Button>
               </div>
