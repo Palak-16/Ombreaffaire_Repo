@@ -5,11 +5,6 @@
   "/api/favourites": "pages/api/favourites.js",
   "/api/cart": "pages/api/cart.js",
   "/api/products": "pages/api/products.js",
-  "/api/products/[id]": "pages/api/products/[id].js",
-  "/api/resolve-psc": "pages/api/resolve-psc.js",
-  "/api/cart/add": "pages/api/cart/add.js",
-  "/api/account/addresses": "pages/api/account/addresses.js",
-  "/api/account/orders": "pages/api/account/orders.js",
-  "/api/account/orders/[id]": "pages/api/account/orders/[id].js",
-  "/api/cart/clear": "pages/api/cart/clear.js"
+  "/api/size-charts/[brand]": "pages/api/size-charts/[brand].js",
+  "/api/products/[id]": "pages/api/products/[id].js"
 }

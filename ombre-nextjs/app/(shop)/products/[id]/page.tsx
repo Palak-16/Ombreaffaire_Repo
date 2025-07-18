@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import MediaRenderer from "@/components/ui/MediaRenderer";
 import { useCategories } from "@/components/CategoriesContext";
+import SizeGuideModal from "@/components/SizeGuideModal";
 
 type Product = {
   id: string;
@@ -45,6 +46,7 @@ export default function ProductPage() {
   const [product, setProduct] = useState<Product | null>(null);
 
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
+  const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
 
   useEffect(() => {
     if (product && selectedColor) {
@@ -89,7 +91,7 @@ export default function ProductPage() {
   }, [product, selectedColor]);
 
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
-
+  const brand = product?.brand;
   // useEffect(() => {
   //   if (product?.category) {
   //     fetch(`${apiUrl}/api/products/${id}`)
@@ -324,15 +326,13 @@ export default function ProductPage() {
 
         {/* Product Info */}
         <div>
-          
           <h1 className="text-2xl font-bold">{product.name}</h1>
           <h1 className="text-2xl font-large ">{product.brand}</h1>
-          
+
           <p className="text-2xl font-medium mt-2">
             ₹{product.price.toFixed(2)}
           </p>
-          
-          
+
           <div className="mt-8">
             <h2 className="text-sm font-medium mb-2">Color</h2>
             <RadioGroup
@@ -396,12 +396,21 @@ export default function ProductPage() {
               })}
             </RadioGroup>
 
-            <Link
-              href="/size-guide"
-              className="text-sm text-muted-foreground hover:text-foreground mt-2 inline-block"
-            >
-              Size Guide
-            </Link>
+            <div className="mt-4">
+              {/* <span className="font-medium">Size Guide</span> */}
+              <button
+                className="ml-2 text-md text"
+                onClick={() => setSizeGuideOpen(true)}
+              >
+               Size Guide
+              </button>
+            </div>
+
+            <SizeGuideModal
+              brand={brand}
+              open={sizeGuideOpen}
+              onClose={() => setSizeGuideOpen(false)}
+            />
           </div>
 
           <div className="mt-8">
