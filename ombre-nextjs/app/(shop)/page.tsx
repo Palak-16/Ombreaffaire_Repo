@@ -36,6 +36,8 @@ export default function Home() {
   // const { addFavorite } = useFavorites();
   const [activeTab, setActiveTab] = useState("new");
   const [products, setProducts] = useState<Product[]>([]);
+     const [newsletterEmail, setNewsletterEmail] = useState("");
+   const [isSubscribing, setIsSubscribing] = useState(false);
   // Featured products data
   useEffect(() => {
     const fetchProducts = async () => {
@@ -46,6 +48,28 @@ export default function Home() {
 
     fetchProducts();
   }, [activeTab]);
+
+  {/* Newsletter */}                            
+
+   const handleSubscribe = async (e: React.FormEvent) => {
+     e.preventDefault();
+     setIsSubscribing(true);
+     try {
+       const res = await fetch(`${apiUrl}/api/newsletter`, {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ email: newsletterEmail.trim() }),
+       });
+       const json = await res.json();
+       if (!res.ok) throw new Error(json.error || json.message);
+       alert(json.message);             // or use your toast/notification
+       setNewsletterEmail("");
+     } catch (err: any) {
+       alert(err.message || "Subscription failed");
+     } finally {
+       setIsSubscribing(false);
+     }
+   };
 
   const categories = useCategories();
   return (
@@ -311,19 +335,29 @@ export default function Home() {
       </section>
 
       {/* Newsletter */}
-      <section className="py-12 px-4 md:px-6 lg:px-8">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl font-bold mb-4">Join Our Newsletter</h2>
-          <p className="text-lg mb-6">
-            Subscribe to receive updates on new arrivals, special offers, and
-            styling tips.
-          </p>
-          <form className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
-            <Input type="email" placeholder="Your email address" required />
-            <Button type="submit">Subscribe</Button>
-          </form>
-        </div>
-      </section>
+     <section className="py-12 px-4 md:px-6 lg:px-8">
+       <div className="container mx-auto max-w-4xl text-center">
+         <h2 className="text-3xl font-bold mb-4">Join Our Newsletter</h2>
+         <p className="text-lg mb-6">
+           Subscribe to receive updates on new arrivals, special offers, and styling tips.
+         </p>
+         <form
+           onSubmit={handleSubscribe}
+           className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto"
+         >
+           <Input
+             type="email"
+             placeholder="Your email address"
+             required
+             value={newsletterEmail}
+             onChange={(e) => setNewsletterEmail(e.target.value)}
+           />
+           <Button type="submit" disabled={isSubscribing}>
+             {isSubscribing ? "Subscribing…" : "Subscribe"}
+           </Button>
+         </form>
+       </div>
+     </section>
     </div>
   );
 }
