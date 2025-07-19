@@ -3,5 +3,7 @@
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
   "/api/products": "pages/api/products.js",
-  "/api/newsletter": "pages/api/newsletter.js"
+  "/api/products/[id]": "pages/api/products/[id].js",
+  "/api/products/display": "pages/api/products/display.js",
+  "/api/colors": "pages/api/colors.js"
 }

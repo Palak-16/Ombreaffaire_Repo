@@ -195,13 +195,13 @@ export default function Home() {
 
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-6">From Our Instagram</h2>
+          <h2 className="text-3xl font-bold mb-6">Shop the ‘Gram Lookbook</h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 justify-items-center">
             {reels.map(({ videoSrc, igUrl }) => (
               <div key={igUrl} className="flex flex-col items-center">
                 <video
-                  controls
+                  
                   autoPlay
                   loop
                   muted
@@ -216,7 +216,7 @@ export default function Home() {
                   href={igUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-3 inline-block text-sm font-medium text-primary hover:underline"
+                  className="mt-3 inline-block text-sm font-medium hover:underline"
                 >
                   View on Instagram →
                 </Link>

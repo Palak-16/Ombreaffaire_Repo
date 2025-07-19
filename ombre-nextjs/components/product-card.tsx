@@ -70,7 +70,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
           />
         </Link>
-        <div className="absolute inset-x-0 bottom-0 flex h-12 items-center justify-center bg-background/80 backdrop-blur-sm opacity-0 transition-opacity group-hover:opacity-100">
+        <div className="absolute inset-x-0 bottom-0 flex h-12 items-center justify-center bg-background/80 backdrop-blur-sm opacity-0 transition-opacity">
           {/* <Button variant="ghost" size="sm" className="flex items-center gap-1" onClick={handleQuickAdd}>
             <ShoppingBag className="h-4 w-4" />
             Quick Add
