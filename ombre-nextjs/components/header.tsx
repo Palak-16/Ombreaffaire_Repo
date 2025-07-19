@@ -121,10 +121,10 @@ const categories = useCategories();
 
           {/* Actions */}
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon">
+            {/* <Button variant="ghost" size="icon">
               <Search className="h-5 w-5" />
               <span className="sr-only">Search</span>
-            </Button>
+            </Button> */}
 
             <Button variant="ghost" size="icon" asChild className="relative">
               <Link href="/favorites">
