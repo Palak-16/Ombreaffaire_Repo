@@ -31,13 +31,33 @@ export default function Home() {
     name: string;
     image_url: string;
   };
+  type Reel = {
+    videoSrc: string; // your hosted MP4 URL or `/videos/…`
+    igUrl: string; // the Instagram permalink for “View on Instagram”
+  };
+
+  const reels: Reel[] = [
+    {
+      videoSrc: "/akansha_1.mp4",
+      igUrl: "https://www.instagram.com/reel/DKltdt5x3DP/",
+    },
+    {
+      videoSrc: "/archana_1.mp4",
+      igUrl: "https://www.instagram.com/reel/DK1Kz3vxD-4/",
+    },
+    {
+      videoSrc: "/model1.mp4",
+      igUrl: "https://www.instagram.com/reel/DK6JCrsStZB/",
+    },
+    
+  ];
 
   // const { addItem } = useCart();
   // const { addFavorite } = useFavorites();
   const [activeTab, setActiveTab] = useState("new");
   const [products, setProducts] = useState<Product[]>([]);
-     const [newsletterEmail, setNewsletterEmail] = useState("");
-   const [isSubscribing, setIsSubscribing] = useState(false);
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [isSubscribing, setIsSubscribing] = useState(false);
   // Featured products data
   useEffect(() => {
     const fetchProducts = async () => {
@@ -49,27 +69,29 @@ export default function Home() {
     fetchProducts();
   }, [activeTab]);
 
-  {/* Newsletter */}                            
+  {
+    /* Newsletter */
+  }
 
-   const handleSubscribe = async (e: React.FormEvent) => {
-     e.preventDefault();
-     setIsSubscribing(true);
-     try {
-       const res = await fetch(`${apiUrl}/api/newsletter`, {
-         method: "POST",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({ email: newsletterEmail.trim() }),
-       });
-       const json = await res.json();
-       if (!res.ok) throw new Error(json.error || json.message);
-       alert(json.message);             // or use your toast/notification
-       setNewsletterEmail("");
-     } catch (err: any) {
-       alert(err.message || "Subscription failed");
-     } finally {
-       setIsSubscribing(false);
-     }
-   };
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubscribing(true);
+    try {
+      const res = await fetch(`${apiUrl}/api/newsletter`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: newsletterEmail.trim() }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || json.message);
+      alert(json.message); // or use your toast/notification
+      setNewsletterEmail("");
+    } catch (err: any) {
+      alert(err.message || "Subscription failed");
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
 
   const categories = useCategories();
   return (
@@ -91,7 +113,8 @@ export default function Home() {
               Versatile Style for Every Side of You
             </h1>
             <p className="text-lg mb-6">
-              Step into comfort and color with our latest collection-luxurious fabrics, thoughtful details, effortless style.
+              Step into comfort and color with our latest collection-luxurious
+              fabrics, thoughtful details, effortless style.
             </p>
             <div className="flex flex-wrap gap-4">
               <Button asChild size="lg">
@@ -166,6 +189,39 @@ export default function Home() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold mb-6">From Our Instagram</h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 justify-items-center">
+            {reels.map(({ videoSrc, igUrl }) => (
+              <div key={igUrl} className="flex flex-col items-center">
+                <video
+                  controls
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  src={videoSrc}
+                  className="w-72 aspect-[3/4] rounded-lg shadow-md object-cover"
+                >
+                  Your browser doesn’t support HTML5 video.
+                </video>
+
+                <Link
+                  href={igUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-block text-sm font-medium text-primary hover:underline"
+                >
+                  View on Instagram →
+                </Link>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -335,29 +391,30 @@ export default function Home() {
       </section>
 
       {/* Newsletter */}
-     <section className="py-12 px-4 md:px-6 lg:px-8">
-       <div className="container mx-auto max-w-4xl text-center">
-         <h2 className="text-3xl font-bold mb-4">Join Our Newsletter</h2>
-         <p className="text-lg mb-6">
-           Subscribe to receive updates on new arrivals, special offers, and styling tips.
-         </p>
-         <form
-           onSubmit={handleSubscribe}
-           className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto"
-         >
-           <Input
-             type="email"
-             placeholder="Your email address"
-             required
-             value={newsletterEmail}
-             onChange={(e) => setNewsletterEmail(e.target.value)}
-           />
-           <Button type="submit" disabled={isSubscribing}>
-             {isSubscribing ? "Subscribing…" : "Subscribe"}
-           </Button>
-         </form>
-       </div>
-     </section>
+      <section className="py-12 px-4 md:px-6 lg:px-8">
+        <div className="container mx-auto max-w-4xl text-center">
+          <h2 className="text-3xl font-bold mb-4">Join Our Newsletter</h2>
+          <p className="text-lg mb-6">
+            Subscribe to receive updates on new arrivals, special offers, and
+            styling tips.
+          </p>
+          <form
+            onSubmit={handleSubscribe}
+            className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto"
+          >
+            <Input
+              type="email"
+              placeholder="Your email address"
+              required
+              value={newsletterEmail}
+              onChange={(e) => setNewsletterEmail(e.target.value)}
+            />
+            <Button type="submit" disabled={isSubscribing}>
+              {isSubscribing ? "Subscribing…" : "Subscribe"}
+            </Button>
+          </form>
+        </div>
+      </section>
     </div>
   );
 }
