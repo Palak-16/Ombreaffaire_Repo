@@ -37,7 +37,7 @@ import AddressesTab from "@/components/account/addresses-tab";
 // import NotificationsTab from "@/components/account/notifications-tab";
 // import AccountSettingsTab from "@/components/account/account-settings-tab";
 import { getUserFromToken } from "@/utils/getUserFromToken";
-// import { useCart } from "@/hooks/use-cart";
+import { useCart } from "@/hooks/use-cart";
 import { useFavorites } from "@/hooks/use-favorites";
 
 export default function AccountPage() {
@@ -49,6 +49,7 @@ export default function AccountPage() {
   const [memberSince, setMemberSince] = useState<string>("");
   const [ordersCount, setOrdersCount] = useState(0);
   const { clearAll } = useFavorites();
+  const { clearCart } = useCart();
   const name = user?.name || "User";
   const email = user?.email || "not-available@example.com";
 
@@ -91,6 +92,7 @@ export default function AccountPage() {
       localStorage.removeItem(`favorites_${userId}`);
     }
     clearAll();
+    clearCart();
     window.dispatchEvent(new Event("storage"));
     // Redirect to login page
     router.push("/login");
