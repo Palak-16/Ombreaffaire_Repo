@@ -29,7 +29,8 @@ const { data, error } = await supabase
         main_image_url
       )
     )
-  `);
+  `)
+  .eq("user_id", user.id);
    const { data: imagesData } = await supabase
   .from("product_color_images")
   .select("product_id, color_id, image_urls");

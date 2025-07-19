@@ -38,7 +38,7 @@ import AddressesTab from "@/components/account/addresses-tab";
 // import AccountSettingsTab from "@/components/account/account-settings-tab";
 import { getUserFromToken } from "@/utils/getUserFromToken";
 // import { useCart } from "@/hooks/use-cart";
-// import { useFavorites } from "@/hooks/use-favorites";
+import { useFavorites } from "@/hooks/use-favorites";
 
 export default function AccountPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -46,53 +46,9 @@ export default function AccountPage() {
   // we can’t read localStorage on the server, so delay auth check until client
   const [user, setUser] = useState<User | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
-  const [memberSince, setMemberSince] = useState<string>("")
-  const [ordersCount, setOrdersCount] = useState(0)
-  useEffect(() => {
-    const u = getUserFromToken();       // reads token from localStorage
-    if (!u) {
-      // not logged in? push to login
-      router.replace("/login");
-    } else {
-      setUser(u);
-      const d = new Date(u.created_at || "");
-      setMemberSince(d.toLocaleString("default", { month: "long", year: "numeric" }))
-   
-    }
-    setAuthChecked(true);
-  }, [router]);
-
-   useEffect(() => {
-    if (!user) return
-    const token = localStorage.getItem("token")
-    fetch("/api/account/orders", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(r => r.json())
-      .then((orders: any[]) => {
-        setOrdersCount(orders.length)
-      })
-  }, [user])
-
-  // while we’re figuring out auth on the client, render nothing (avoid SSR mismatch)
-  if (!authChecked) return null;
-
-  // now `user` is guaranteed to be non-null
-  // const { clearCart } = useCart();
-  // const { clearAll } = useFavorites();
-
-  const handleLogout = () => {
-    setIsLoading(true);
-    // Clear token
-    localStorage.removeItem("token");
-    // clearCart();
-    // clearAll(); // Clears favorites
-    // Notify useAuth() and other tabs (if open)
-    window.dispatchEvent(new Event("storage"));
-    // Redirect to login page
-    router.push("/login");
-  };
-
+  const [memberSince, setMemberSince] = useState<string>("");
+  const [ordersCount, setOrdersCount] = useState(0);
+  const { clearAll } = useFavorites();
   const name = user?.name || "User";
   const email = user?.email || "not-available@example.com";
 
@@ -100,7 +56,47 @@ export default function AccountPage() {
   const avatar = "https://via.placeholder.com/150";
   // const memberSince = "March 2023";
   // const ordersCount = 5;
-  const wishlistCount = 3;
+  // const wishlistCount = 3;
+  useEffect(() => {
+    const u = getUserFromToken(); // reads token from localStorage
+    if (!u) {
+      // not logged in? push to login
+      router.replace("/login");
+    } else {
+      setUser(u);
+    }
+    setAuthChecked(true);
+  }, [router]);
+
+  useEffect(() => {
+    if (!user) return;
+    const token = localStorage.getItem("token");
+    fetch("/api/account/orders", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((orders: any[]) => {
+        setOrdersCount(orders.length);
+      });
+  }, [user]);
+
+  const handleLogout = () => {
+    setIsLoading(true);
+    // Clear token & user ID
+    const userId = localStorage.getItem("user_id");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user_id");
+
+    if (userId) {
+      localStorage.removeItem(`favorites_${userId}`);
+    }
+    clearAll();
+    window.dispatchEvent(new Event("storage"));
+    // Redirect to login page
+    router.push("/login");
+  };
+
+  if (user === null) return null;
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -352,7 +348,7 @@ export default function AccountPage() {
             <TabsContent value="orders">
               <OrdersTab />
             </TabsContent>
-{/* 
+            {/* 
             <TabsContent value="profile">
               <ProfileTab />
             </TabsContent> */}

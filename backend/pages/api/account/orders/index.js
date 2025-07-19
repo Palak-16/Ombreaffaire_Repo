@@ -8,7 +8,10 @@ export default async function handler(req, res) {
 
   // auth
   const user = await getUserFromToken(req);
-  if (!user) return res.status(401).json({ error: "Not authenticated" });
+  if (!user) {
+  // instead of a 401, just return an empty list
+  return res.status(200).json({ items: [] });
+}
 
   // ── GET (list or single) ───────────────────────────────────
   if (req.method === "GET") {
