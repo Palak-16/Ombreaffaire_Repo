@@ -1,8 +1,6 @@
 "use client";
 
-import type React from "react";
-
-import { useState } from "react";
+import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter , useSearchParams } from "next/navigation";
@@ -14,12 +12,22 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useCart } from "@/hooks/use-cart";
 import { useFavorites } from "@/hooks/use-favorites";
 
+// This page only sets up Suspense
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="text-center py-20">Loading…</div>}>
+      <LoginPageInner />
+    </Suspense>
+  );
+}
+
+// All your hook calls now live inside here
+function LoginPageInner() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  const params       = useSearchParams();
-  const callbackUrl  = params.get("callbackUrl") || "/account";
+  const params = useSearchParams(); // <-- safe here
+  const callbackUrl = params.get("callbackUrl") || "/account";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -42,32 +50,31 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (res.ok) {
-        
         localStorage.setItem("token", data.token);
         await cart.syncWithBackend();
         await favorites.syncWithBackend();
+
         const pending = localStorage.getItem("pendingAction");
         if (pending) {
           const { type, item } = JSON.parse(pending);
-
-          // ✅ Safe inside useEffect-like async block
           setTimeout(() => {
             if (type === "cart") cart.addItem(item);
             if (type === "favorite") favorites.toggleItem(item);
             localStorage.removeItem("pendingAction");
           }, 0);
         }
+
         alert("Login successful!");
         if (data.is_admin) {
           router.push("/admin");
         } else {
-          router.push(callbackUrl); // or "/dashboard"
+          router.push(callbackUrl);
         }
       } else {
         alert(data.error || "Invalid credentials");
       }
-    } catch (error) {
-      console.error("Login error:", error);
+    } catch (err) {
+      console.error("Login error:", err);
       alert("Login failed. Please try again.");
     } finally {
       setIsLoading(false);

@@ -75,7 +75,7 @@ export function CartSidebar() {
                         size="icon"
                         className="h-8 w-8 rounded-none"
                         onClick={() => {
-                          if (item.product_size_color_id && item.quantity > 1) {
+                          if (item.product_size_color_id) {
                             updateQuantity(
                               item.product_size_color_id,
                               item.quantity - 1

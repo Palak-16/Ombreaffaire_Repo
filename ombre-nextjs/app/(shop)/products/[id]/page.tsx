@@ -38,7 +38,7 @@ export default function ProductPage() {
   const [selectedSize, setSelectedSize] = useState("M");
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
-  const { items, addItem } = useCart();
+  const { items, addItem, updateQuantity, removeItem } = useCart();
 
   const { toggleItem, isFavorite } = useFavorites();
 
