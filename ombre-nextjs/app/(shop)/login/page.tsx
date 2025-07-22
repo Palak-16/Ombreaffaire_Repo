@@ -5,7 +5,7 @@ import type React from "react";
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter , useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Facebook, Github, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,8 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const params       = useSearchParams();
+  const callbackUrl  = params.get("callbackUrl") || "/account";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -59,7 +61,7 @@ export default function LoginPage() {
         if (data.is_admin) {
           router.push("/admin");
         } else {
-          router.push("/account"); // or "/dashboard"
+          router.push(callbackUrl); // or "/dashboard"
         }
       } else {
         alert(data.error || "Invalid credentials");

@@ -152,7 +152,9 @@ export default function ProductPage() {
           },
         })
       );
-      router.push(`/login?redirect=/products/${product.id}`);
+      // router.push(`/login?redirect=/products/${product.id}`);
+      const next = encodeURIComponent(`/products/${product.id}`);
+      router.push(`/login?callbackUrl=${next}`);
       return;
     }
     console.log("Adding to cart with:", {
@@ -195,7 +197,9 @@ export default function ProductPage() {
           },
         })
       );
-      router.push(`/login?redirect=/products/${product.id}`);
+      // router.push(`/login?redirect=/products/${product.id}`);
+      const next = encodeURIComponent(`/products/${product.id}`);
+      router.push(`/login?callbackUrl=${next}`);      
       return;
     }
 
