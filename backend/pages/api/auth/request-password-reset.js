@@ -38,7 +38,7 @@ export default async function handler(req, res) {
   await supabase.from("password_resets").insert({
     email,
     token,
-    expires_at: expiresAt.toISOString(),
+    expires_at: expiresAt,
   });
 
   // ✅ Email setup
@@ -50,7 +50,8 @@ export default async function handler(req, res) {
     },
   });
 
-  const resetLink = `${process.env.NEXT_PUBLIC_FRONTEND_URL}/reset-password?token=${token}`;
+  const url = process.env.NEXT_PUBLIC_FRONTEND_URL || "https://ombreaffaire-repo-frontend.vercel.app"
+  const resetLink = `${url}/reset-password?token=${token}`;
 
   const mailOptions = {
     from: process.env.GMAIL_USER,

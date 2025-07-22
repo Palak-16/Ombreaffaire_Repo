@@ -414,7 +414,7 @@ export default function ProductsPage() {
 
           {products.length === 0 ? (
             <div className="text-center py-12">
-              <h3 className="text-lg font-medium mb-2">No products found</h3>
+              <h3 className="text-lg font-medium mb-2">Loading Products...</h3>
               <p className="text-muted-foreground mb-6">
                 Please check back later for updates in this category.
               </p>
