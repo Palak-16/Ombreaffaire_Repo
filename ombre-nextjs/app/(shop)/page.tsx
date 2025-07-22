@@ -98,24 +98,33 @@ export default function Home() {
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
       <section className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-background/80 to-transparent z-10" />
-        <Image
-          src="/final.jpg"
-          alt="Hero Image"
-          width={1920}
-          height={1080}
-          className="w-full h-[70vh] object-cover"
-          priority
-        />
-        <div className="absolute inset-0 flex items-center z-20 p-6 md:p-12">
-          <div className="max-w-md">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Versatile Style for Every Side of You
-            </h1>
-            <p className="text-lg mb-6">
-              Step into comfort and color with our latest collection-luxurious
-              fabrics, thoughtful details, effortless style.
-            </p>
+        <div className="absolute inset-0 bg-gradient-to-r z-10" />
+         {/* mobile-only hero */}
+ {/* mobile-only */}
+{/* MOBILE only: show below md, hide at md+ */}
+{/* show on all screens ≥ 0 (phones), hide on sm+ */}
+<Image
+  src="/final_desk.jpg"
+  alt="Hero Mobile"
+  width={800}
+  height={800}
+  className="block sm:hidden w-full h-[30vh] object-cover"
+/>
+
+{/* hide by default, show on sm+ (tablets & up) */}
+<Image
+  src="/final_desk.jpg"
+  alt="Hero Desktop"
+  width={1920}
+  height={1080}
+  className="hidden sm:block w-full h-[60vh] object-cover"
+/>
+
+
+
+        <div className="absolute inset-0 flex flex-col justify-end items-center z-20 p-6 md:p-12">
+         {/* items-center  */}
+           
             <div className="flex flex-wrap gap-4">
               <Button asChild size="lg">
                 <Link href="/products">
@@ -123,7 +132,7 @@ export default function Home() {
                 </Link>
               </Button>
             </div>
-          </div>
+          
         </div>
       </section>
 

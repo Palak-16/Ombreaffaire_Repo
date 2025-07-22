@@ -42,6 +42,9 @@ export default async function RootLayout({
           href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.18/summernote-lite.min.css"
         />
       </head>
+     
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
       <body>
         <CategoriesProvider categories={categories}>
           <div className={`${inter.variable} ${playfair.variable} font-sans`}>
