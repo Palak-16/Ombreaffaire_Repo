@@ -1,3 +1,4 @@
+// display.js
 import supabase from "../../../lib/supabaseClient";
 import cors, { runMiddleware } from "../../../lib/cors";
 
@@ -12,55 +13,56 @@ export default async function handler(req, res) {
     price,
     color,
     size,
+    filter,
+    sort,
   } = req.query;
 
   const from = (page - 1) * limit;
   const to = from + parseInt(limit) - 1;
 
-  const colorArray = typeof color === "string" ? color.split(",").filter(Boolean) : [];
-  const sizeArray = typeof size === "string" ? size.split(",").filter(Boolean) : [];
+  // parse multi-select filters
+  const colorArray = typeof color === "string"
+    ? color.split(",").filter(Boolean)
+    : [];
+  const sizeArray = typeof size === "string"
+    ? size.split(",").filter(Boolean)
+    : [];
 
-  // ✅ Convert slug to category name
+  // 1. Category lookup
   let categoryName = null;
-  if (category && category !== "all" && category !== "All") {
-    const { data: catMatch, error: catError } = await supabase
+  if (category && category !== "all") {
+    const { data: catMatch } = await supabase
       .from("categories")
       .select("name")
       .eq("slug", category)
       .single();
-
     if (catMatch) categoryName = catMatch.name;
   }
 
-  // 🎯 Color filter
+  // 2. Build sub-filters on product_id from size/color joins (unchanged)
   let colorFilteredIds = null;
-  if (colorArray.length > 0) {
-    const { data: colorRows } = await supabase
+  if (colorArray.length) {
+    const { data: cols } = await supabase
       .from("colors")
       .select("id")
       .in("label", colorArray);
-
-    const colorIds = colorRows.map((c) => c.id);
+    const ids = cols.map((c) => c.id);
     const { data: links } = await supabase
       .from("product_colors")
       .select("product_id")
-      .in("color_id", colorIds);
-
-    colorFilteredIds = links.map((i) => i.product_id);
+      .in("color_id", ids);
+    colorFilteredIds = links.map((l) => l.product_id);
   }
 
-  // 🎯 Size filter
   let sizeFilteredIds = null;
-  if (sizeArray.length > 0) {
+  if (sizeArray.length) {
     const { data: links } = await supabase
       .from("product_sizes")
       .select("product_id")
       .in("size", sizeArray);
-
-    sizeFilteredIds = links.map((i) => i.product_id);
+    sizeFilteredIds = links.map((l) => l.product_id);
   }
 
-  // ✅ Combine filters
   let finalFilteredIds = null;
   if (colorFilteredIds && sizeFilteredIds) {
     finalFilteredIds = colorFilteredIds.filter((id) =>
@@ -70,94 +72,107 @@ export default async function handler(req, res) {
     finalFilteredIds = colorFilteredIds || sizeFilteredIds;
   }
 
-  // 🔍 Main product query
-  let query = supabase.from("products").select("*", { count: "exact" });
+  // 3. Build our main variant query
+  //    We select *, plus embed the product via a foreign join
+  let query = supabase
+    .from("product_color_images")
+    .select(
+      `product_id,
+       color_id,
+       image_urls,
+       main_index,
+       product:products!inner (
+         id,
+         name,
+         price,
+         category,
+         compare_price,
+         brand,
+         created_at
+       )`,
+      { count: "exact" }
+    );
 
+  // 4. Apply product-level filters on the joined product
   if (finalFilteredIds) {
-    query = query.in("id", finalFilteredIds);
+    query = query.in("product_id", finalFilteredIds);
   }
-
   if (categoryName) {
-    query = query.eq("category", categoryName);
+    query = query.eq("product.category", categoryName);
   }
-
   if (search) {
-    query = query.ilike("name", `%${search}%`);
+    query = query.ilike("product.name", `%${search}%`);
   }
-  // ✅ Apply homepage filters
-if (req.query.filter === "new") {
-  query = query.eq('new_arrival', true)
-} else if (req.query.filter === "best") {
-  query = query.eq("best_seller", true);
-} else if (req.query.filter === "featured") {
-  query = query.eq("is_featured", true);
-}else if (req.query.filter === "sale") {
-  // only products where compare_price IS NOT NULL
-  query = query.not("compare_price", "is", null)
-}
- 
+  // homepage filters
+  if (filter === "new") query = query.eq("product.new_arrival", true);
+  else if (filter === "best") query = query.eq("product.best_seller", true);
+  else if (filter === "featured")
+    query = query.eq("product.is_featured", true);
+  else if (filter === "sale") query = query.not("product.compare_price", "is", null);
 
-
+  // price ranges
   if (price) {
-    if (price === "Under ₹1000") query = query.lt("price", 1000);
-    else if (price === "₹1000 - ₹3000") query = query.gte("price", 1000).lte("price", 3000);
-    else if (price === "₹3000 - ₹5000") query = query.gte("price", 3000).lte("price", 5000);
-    else if (price === "Over ₹5000") query = query.gt("price", 5000);
+    if (price === "Under ₹1000") query = query.lt("product.price", 1000);
+    else if (price === "₹1000 - ₹3000")
+      query = query.gte("product.price", 1000).lte("product.price", 3000);
+    else if (price === "₹3000 - ₹5000")
+      query = query.gte("product.price", 3000).lte("product.price", 5000);
+    else if (price === "Over ₹5000") query = query.gt("product.price", 5000);
   }
 
-  // query = query.range(from, to).order("created_at", { ascending: false });
-  // apply sort
-  const { sort } = req.query
+  // 5. Sorting at the variant level (using the embedded product)
   if (sort === "price_asc") {
-    query = query.order("price",  { ascending: true  })
+    query = query.order("price", {
+      foreignTable: "product",
+      ascending: true,
+    });
   } else if (sort === "price_desc") {
-    query = query.order("price",  { ascending: false })
+    query = query.order("price", {
+      foreignTable: "product",
+      ascending: false,
+    });
   } else {
     // newest first
-    query = query.order("created_at", { ascending: false })
+    query = query.order("created_at", {
+      foreignTable: "product",
+      ascending: false,
+    });
   }
-  // then apply pagination
-  query = query.range(from, to)
+
+  // 6. Paginate
+  query = query.range(from, to);
+
   try {
     const { data, error, count } = await query;
+    if (error) throw error;
 
-    if (error) {
-      console.error("DB error:", error);
-      return res.status(500).json({ error: error.message });
-    }
+    // 7. Map each variant into your front-end shape
+    const enriched = data.map((row) => {
+      const prod = row.product || {};
+      const idx = row.main_index != null ? row.main_index : 0;
+      const image =
+        (row.image_urls && row.image_urls[idx]) || "/placeholder.svg";
+      return {
+        // unique id per product–color
+        id: `${row.product_id}-${row.color_id}`,
+        name: prod.name,
+        price: prod.price,
+        compare_price: prod.compare_price,
+        category: prod.category,
+        brand: prod.brand,
+        image,
+        // you can pass these along if your card needs them:
+        product_id: row.product_id,
+        color_id: row.color_id,
+      };
+    });
 
     const totalPages = Math.ceil(count / limit);
+    // console.log({ raw: data, enriched });
 
-    const enriched = await Promise.all(
-      data.map(async (product) => {
-        const { data: imageRow } = await supabase
-          .from("product_color_images")
-          .select("image_urls, main_index")
-          .eq("product_id", product.id)
-          .order("main_index", { ascending: true })
-          .limit(1)
-          .single();
-
-        const image =
-          imageRow?.image_urls?.[imageRow.main_index] ||
-          imageRow?.image_urls?.[0] ||
-          "/placeholder.svg";
-
-        return {
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          category: product.category,
-          compare_price: product.compare_price,
-         brand: product.brand,
-          image,
-        };
-      })
-    );
-      console.log("Enriched products:", enriched);
     return res.status(200).json({ products: enriched, totalPages });
-  } catch (e) {
-    console.error("Display API error:", e);
-    return res.status(500).json({ error: "Internal Server Error" });
+  } catch (error) {
+    console.error("Display API error:", error);
+    return res.status(500).json({ error: error.message });
   }
 }

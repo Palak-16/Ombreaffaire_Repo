@@ -1,15 +1,11 @@
 {
-  "/_document": "pages/_document.js",
-  "/_error": "pages/_error.js",
   "/_app": "pages/_app.js",
-  "/api/products": "pages/api/products.js",
-  "/api/favourites": "pages/api/favourites.js",
-  "/api/resolve-psc": "pages/api/resolve-psc.js",
-  "/api/cart": "pages/api/cart.js",
-  "/api/favourites/remove": "pages/api/favourites/remove.js",
+  "/_error": "pages/_error.js",
+  "/_document": "pages/_document.js",
   "/api/products/display": "pages/api/products/display.js",
   "/api/colors": "pages/api/colors.js",
   "/api/products/[id]": "pages/api/products/[id].js",
-  "/api/favourites/add": "pages/api/favourites/add.js",
-  "/api/cart/add": "pages/api/cart/add.js"
+  "/api/products": "pages/api/products.js",
+  "/api/cart": "pages/api/cart.js",
+  "/api/favourites": "pages/api/favourites.js"
 }

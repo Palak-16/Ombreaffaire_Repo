@@ -414,7 +414,7 @@ export default function ProductsPage() {
 
           {products.length === 0 ? (
             <div className="text-center py-12">
-              <h3 className="text-lg font-medium mb-2">Loading Products...</h3>
+              <h3 className="text-lg font-medium mb-2">Loading</h3>
               <p className="text-muted-foreground mb-6">
                 Please check back later for updates in this category.
               </p>
@@ -422,12 +422,10 @@ export default function ProductsPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard key={`${product.product_id}-${product.color_id}`} product={product} />
               ))}
             </div>
           )}
-
-          {/* Pagination */}
           {totalPages > 1 && (
             <Pagination className="mt-8">
               <PaginationContent>
@@ -441,11 +439,11 @@ export default function ProductsPage() {
 
                 {getPageRange(currentPage, totalPages).map((page, index) =>
                   page === "..." ? (
-                    <PaginationItem key={index}>
+                    <PaginationItem key={`ellipsis-${index}`}>
                       <PaginationEllipsis />
                     </PaginationItem>
                   ) : (
-                    <PaginationItem key={page}>
+                    <PaginationItem key={`page-${page}`}>
                       <PaginationLink
                         isActive={page === currentPage}
                         onClick={() => goToPage(Number(page))}

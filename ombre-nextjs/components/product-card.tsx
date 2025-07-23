@@ -14,7 +14,7 @@ type ProductCardProps = {
   product: {
     id: string;
     name: string;
-    price: number;
+    price?: number;
     compare_price?: number | null;
     image: string;
     category: string;
@@ -22,6 +22,8 @@ type ProductCardProps = {
     isSale?: boolean;
     main_image_url?: string;
     brand?: string;
+    product_id: string;
+    color_id?: string;
   };
 };
 
