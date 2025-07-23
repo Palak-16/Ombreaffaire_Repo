@@ -15,6 +15,7 @@ export default async function handler(req, res) {
   // first 36 chars = the real product ID
   const productId = composite.substring(0, 36);
   // (optional) const colorId = composite.substring(37);
+  const colorId   = composite.substring(37);
 
   // ————————————————
   // CORS preflight
@@ -97,8 +98,9 @@ export default async function handler(req, res) {
     ...product,
     imagesByColor,
     mainImageByColor,
-    colors: colors.map(({ id, ...rest }) => rest),
+    colors: colors,
     sizes,
+    selectedColorId: colorId,        
     features: ["Handmade", "Washable", "Sustainable"], // placeholder
   });
 }

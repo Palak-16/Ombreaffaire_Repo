@@ -19,12 +19,13 @@ import SizeGuideModal from "@/components/SizeGuideModal";
 
 type Product = {
   id: string;
+  selectedColorId?: string;
   name: string;
   price: number;
   description: string;
   category: string;
   brand: string;
-  colors: { name: string; value: string }[];
+  colors: { id: string; name: string; value: string }[];
   sizes: { size: string; inventory: number }[];
   imagesByColor: { [colorId: string]: string[] }; // <-- new
   features: string[];
@@ -84,11 +85,18 @@ export default function ProductPage() {
     fetchProduct();
   }, [id]);
 
-  useEffect(() => {
-    if (product && !selectedColor && product.colors.length > 0) {
-      setSelectedColor(product.colors[0].value); // default to first color’s hex
-    }
-  }, [product, selectedColor]);
+useEffect(() => {
+  if (!product || selectedColor) return;
+
+  // 1) find the clicked‐variant’s hex by matching on the returned selectedColorId
+  const clickedHex = product.colors.find(
+    (c) => c.id === product.selectedColorId
+  )?.value;
+
+  // 2) fallback to first color if something’s off
+  setSelectedColor(clickedHex ?? product.colors[0].value);
+}, [product, selectedColor]);
+
 
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const brand = product?.brand;
