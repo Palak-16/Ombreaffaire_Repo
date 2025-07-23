@@ -109,7 +109,7 @@ export function CartSidebar() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => removeItem(item.id, item.size, item.color)}
+                      onClick={() => removeItem(item.pscId)}
                       className="text-sm text-muted-foreground hover:text-foreground"
                     >
                       Remove

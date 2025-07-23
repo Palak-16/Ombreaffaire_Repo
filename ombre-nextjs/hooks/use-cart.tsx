@@ -104,57 +104,48 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     return pscId;
   };
-
-  const addItem = (newItem: CartItem) => {
+  const addItem = async (newItem: CartItem): Promise<void> => {
     const token = localStorage.getItem("token");
-    if (!token) return;
+    if (!token) throw new Error("Not authenticated");
 
-    getPSCId(newItem).then((pscId) => {
-      if (!pscId) return;
+    // 1) lookup PSC
+    const pscId = await getPSCId(newItem);
+    if (!pscId) throw new Error("PSC ID not found");
 
-      setItems((prevItems) => {
-        const existingItemIndex = prevItems.findIndex(
-          (item) =>
-            item.id === newItem.id &&
-            item.size === newItem.size &&
-            item.color === newItem.color
-        );
+    // 2) persist to backend first
+    const response = await fetch(`${apiUrl}/api/cart/add`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        product_size_color_id: pscId,
+        quantity: newItem.quantity,
+      }),
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Add to cart failed: ${text}`);
+    }
 
-        if (existingItemIndex > -1) {
-          const updatedItems = [...prevItems];
-          updatedItems[existingItemIndex] = {
-            ...updatedItems[existingItemIndex],
-            quantity:
-              updatedItems[existingItemIndex].quantity + newItem.quantity,
-            product_size_color_id: pscId,
-          };
-          return updatedItems;
-        } else {
-          return [
-            ...prevItems,
-            {
-              ...newItem,
-              product_size_color_id: pscId,
-            },
-          ];
-        }
-      });
-
-      // Send to backend
-      fetch(`${apiUrl}/api/cart/add`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          product_size_color_id: pscId,
-          quantity: newItem.quantity,
-        }),
-      });
+    // 3) now update your local state/UI
+    setItems(prev => {
+      const idx = prev.findIndex(
+        i =>
+          i.id === newItem.id &&
+          i.size === newItem.size &&
+          i.color === newItem.color
+      );
+      if (idx > -1) {
+        const updated = [...prev];
+        updated[idx].quantity += newItem.quantity;
+        return updated;
+      }
+      return [...prev, { ...newItem, product_size_color_id: pscId }];
     });
   };
-
+  
 const removeItem = (pscId: string) => {
   const token = localStorage.getItem("token");
   if (!token || !pscId) return;

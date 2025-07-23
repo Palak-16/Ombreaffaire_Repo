@@ -1,27 +1,32 @@
-"use client"
-import Link from "next/link"
-import Image from "next/image"
-import { ChevronRight, Heart, ShoppingBag, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { useCart } from "@/hooks/use-cart"
-import { useFavorites } from "@/hooks/use-favorites"
+"use client";
+import Link from "next/link";
+import Image from "next/image";
+import { ChevronRight, Heart, ShoppingBag, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useCart } from "@/hooks/use-cart";
+import { useFavorites } from "@/hooks/use-favorites";
 
 export default function FavoritesPage() {
-  const { addItem } = useCart()
-  const { items, removeItem } = useFavorites()
-
-  const moveToCart = (item: any) => {
-    addItem({
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      image: item.image,
-      quantity: 1,
-      size: item.size || "M", // Default size if not specified
-      color: item.color || "Default", // Default color if not specified
-    })
-    removeItem(item)
+  const { addItem } = useCart();
+  const { items, removeItem, hydrated } = useFavorites();
+  if (!hydrated) {
+    return (
+      <div className="container mx-auto px-4 py-16 text-center">
+        <p className="text-lg">Loading your favorites…</p>
+      </div>
+    );
   }
+  const moveToCart = async (item: any) => {
+    try {
+      // 1) add to cart (will await our new async addItem)
+      await addItem(item);
+
+      // 2) only once cart add succeeds, remove from favorites
+      await removeItem(item);
+    } catch (err) {
+      console.error("Move to cart failed", err);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -44,7 +49,8 @@ export default function FavoritesPage() {
           <Heart className="h-16 w-16 mx-auto text-muted-foreground" />
           <h2 className="text-xl font-medium">Your favorites list is empty</h2>
           <p className="text-muted-foreground max-w-md mx-auto">
-            Add items to your favorites while you shop by clicking the heart icon on products you love.
+            Add items to your favorites while you shop by clicking the heart
+            icon on products you love.
           </p>
           <Button asChild className="mt-4">
             <Link href="/products">Continue shopping</Link>
@@ -53,7 +59,10 @@ export default function FavoritesPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {items.map((item) => (
-            <div key={`${item.id}-${item.size}-${item.color}`} className="border rounded-lg overflow-hidden group">
+            <div
+              key={`${item.id}-${item.size}-${item.color}`}
+              className="border rounded-lg overflow-hidden group"
+            >
               <div className="relative aspect-[3/4]">
                 <Link href={`/products/${item.id}`}>
                   <Image
@@ -68,6 +77,7 @@ export default function FavoritesPage() {
                   size="icon"
                   className="absolute top-2 right-2 h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                   onClick={() => removeItem(item)}
+                 
                 >
                   <Trash2 className="h-4 w-4" />
                   <span className="sr-only">Remove from favorites</span>
@@ -77,10 +87,17 @@ export default function FavoritesPage() {
                 <Link href={`/products/${item.id}`} className="hover:underline">
                   <h3 className="font-medium">{item.name}</h3>
                 </Link>
-                <p className="text-muted-foreground text-sm mt-1">{item.category}</p>
+                <p className="text-muted-foreground text-sm mt-1">
+                  {item.category}
+                </p>
                 <div className="flex items-center justify-between mt-4">
                   <p className="font-medium">${item.price.toFixed(2)}</p>
-                  <Button variant="outline" size="sm" onClick={() => moveToCart(item)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void moveToCart(item)}
+                   
+                  >
                     <ShoppingBag className="mr-2 h-4 w-4" />
                     Add to cart
                   </Button>
@@ -91,5 +108,5 @@ export default function FavoritesPage() {
         </div>
       )}
     </div>
-  )
+  );
 }
