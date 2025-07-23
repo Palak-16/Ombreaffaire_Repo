@@ -108,9 +108,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const token = localStorage.getItem("token");
     if (!token) throw new Error("Not authenticated");
 
-    // 1) lookup PSC
-    const pscId = await getPSCId(newItem);
-    if (!pscId) throw new Error("PSC ID not found");
+    // 1) prefer the ID we already hydrated, else resolve it
+    let pscId = newItem.product_size_color_id;
+    if (!pscId) {
+      pscId = await getPSCId(newItem);
+      if (!pscId) throw new Error("PSC ID not found");
+    }
 
     // 2) persist to backend first
     const response = await fetch(`${apiUrl}/api/cart/add`, {
@@ -162,7 +165,7 @@ const removeItem = (pscId: string) => {
   .catch(console.error);
 
   // 2) Update local state
-  setItems(prev => prev.filter(item => item.pscId !== pscId));
+  setItems(prev => prev.filter(item => item.product_size_color_id !== pscId));
 };
 
  const updateQuantity = async (pscId: string, quantity: number) => {
