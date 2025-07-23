@@ -41,18 +41,16 @@ export default async function handler(req, res) {
 
   // 2. Build sub-filters on product_id from size/color joins (unchanged)
   let colorFilteredIds = null;
-  if (colorArray.length) {
-    const { data: cols } = await supabase
-      .from("colors")
-      .select("id")
-      .in("label", colorArray);
-    const ids = cols.map((c) => c.id);
-    const { data: links } = await supabase
-      .from("product_colors")
-      .select("product_id")
-      .in("color_id", ids);
-    colorFilteredIds = links.map((l) => l.product_id);
-  }
+
+ let colorIds = null;
+ if (colorArray.length) {
+   // look up the actual color IDs
+   const { data: cols } = await supabase
+     .from("colors")
+     .select("id")
+     .in("label", colorArray);
+   colorIds = cols.map((c) => c.id);
+ }
 
   let sizeFilteredIds = null;
   if (sizeArray.length) {
@@ -103,6 +101,9 @@ export default async function handler(req, res) {
   if (search) {
     query = query.ilike("product.name", `%${search}%`);
   }
+   if (colorIds && colorIds.length) {
+   query = query.in("color_id", colorIds);
+ }
   // homepage filters
   if (filter === "new") query = query.eq("product.new_arrival", true);
   else if (filter === "best") query = query.eq("product.best_seller", true);
