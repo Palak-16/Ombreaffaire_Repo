@@ -417,7 +417,7 @@ export default function ProductPage() {
             />
           </div>
 
-          <div className="mt-8">
+          {/* <div className="mt-8">
             <h2 className="text-sm font-medium mb-2">Quantity</h2>
             <div className="flex items-center border rounded-md w-32">
               <Button
@@ -440,7 +440,7 @@ export default function ProductPage() {
                 <span className="sr-only">Increase quantity</span>
               </Button>
             </div>
-          </div>
+          </div> */}
 
           <div className="mt-8 space-y-4">
             <div className="flex gap-4">
