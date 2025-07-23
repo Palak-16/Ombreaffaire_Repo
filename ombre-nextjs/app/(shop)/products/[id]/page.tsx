@@ -30,6 +30,7 @@ type Product = {
   imagesByColor: { [colorId: string]: string[] }; // <-- new
   features: string[];
   mainImageByColor: { [colorId: string]: string };
+  mainIndexByColor: { [colorId: string]: number }; // <-- new
 };
 
 export default function ProductPage() {
@@ -49,19 +50,11 @@ export default function ProductPage() {
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
 
-  useEffect(() => {
-    if (product && selectedColor) {
-      const mainImage = product.mainImageByColor?.[selectedColor];
-      const imageList = product.imagesByColor?.[selectedColor] || [];
-
-      const index = imageList.findIndex((img) => img === mainImage);
-      setActiveImageIndex(index >= 0 ? index : 0);
-    }
-  }, [selectedColor, product]);
-
-  useEffect(() => {
-    setActiveImageIndex(0); // reset to first image when color changes
-  }, [selectedColor]);
+ useEffect(() => {
+  if (!product || !selectedColor) return;
+  const idx = product.mainIndexByColor[selectedColor] ?? 0;
+  setActiveImageIndex(idx);
+}, [product, selectedColor]);
 
   const [loading, setLoading] = useState(true);
   const favorite = product ? isFavorite(product.id) : false;

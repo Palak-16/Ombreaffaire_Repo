@@ -83,6 +83,7 @@ export default async function handler(req, res) {
   });
 
   // Map images by hex, pick main image
+  const mainIndexByColor = {};
   const imagesByColor     = {};
   const mainImageByColor  = {};
   imageData?.forEach(({ color_id, image_urls, main_index }) => {
@@ -90,6 +91,7 @@ export default async function handler(req, res) {
     if (hex) {
       imagesByColor[hex]    = image_urls;
       mainImageByColor[hex] = image_urls?.[main_index] || image_urls?.[0] || null;
+      mainIndexByColor[hex]   = main_index ?? 0;
     }
   });
 
@@ -98,6 +100,7 @@ export default async function handler(req, res) {
     ...product,
     imagesByColor,
     mainImageByColor,
+    mainIndexByColor, 
     colors: colors,
     sizes,
     selectedColorId: colorId,        
