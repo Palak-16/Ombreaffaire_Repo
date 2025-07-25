@@ -231,7 +231,7 @@ export default function CartPage() {
               </form>
 
               <Button className="w-full mt-6" asChild>
-                <Link href="/checkout">Proceed to Checkout</Link>
+                <Link href="/payment-info">Proceed to Checkout</Link>
               </Button>
 
               {/* <div className="mt-6">

@@ -113,12 +113,15 @@ export default async function handler(req, res) {
 
   // price ranges
   if (price) {
-    if (price === "Under ₹1000") query = query.lt("product.price", 1000);
-    else if (price === "₹1000 - ₹3000")
-      query = query.gte("product.price", 1000).lte("product.price", 3000);
-    else if (price === "₹3000 - ₹5000")
-      query = query.gte("product.price", 3000).lte("product.price", 5000);
-    else if (price === "Over ₹5000") query = query.gt("product.price", 5000);
+    if (price === "Under ₹5000") query = query.lt("product.price", 5000);
+    else if (price === "₹5000 - ₹10000")
+      query = query.gte("product.price", 5000).lte("product.price", 10000);
+    else if (price === "₹10000 - ₹20000")
+      query = query.gte("product.price", 10000).lte("product.price", 20000);
+    else if (price === "₹20000 - ₹30000") 
+      query = query.gte("product.price", 20000).lte("product.price", 30000);
+    else if (price === "Over ₹30000") 
+      query = query.gt("product.price", 30000);
   }
 
   // 5. Sorting at the variant level (using the embedded product)

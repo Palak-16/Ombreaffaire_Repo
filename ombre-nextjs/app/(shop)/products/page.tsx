@@ -247,10 +247,11 @@ export default function ProductsPage() {
               <div className="space-y-2">
                 {[
                   "All",
-                  "Under ₹1000",
-                  "₹1000 - ₹3000",
-                  "₹3000 - ₹5000",
-                  "Over ₹5000",
+                  "Under ₹5000",
+                  "₹5000 - ₹10000",
+                  "₹10000 - ₹20000",
+                  "₹20000 - ₹30000",
+                  "Over ₹30000",
                 ].map((range) => (
                   <div key={range} className="flex items-center space-x-2">
                     <Checkbox
@@ -345,11 +346,12 @@ export default function ProductsPage() {
                   <div className="space-y-4">
                     <h3 className="text-sm font-medium">Price Range</h3>
                     {[
-                      "All",
-                      "Under ₹1000",
-                      "₹1000 - ₹3000",
-                      "₹3000 - ₹5000",
-                      "Over ₹5000",
+                       "All",
+                  "Under ₹5000",
+                  "₹5000 - ₹10000",
+                  "₹10000 - ₹20000",
+                  "₹20000 - ₹30000",
+                  "Over ₹30000",
                     ].map((range) => (
                       <div key={range} className="flex items-center space-x-2">
                         <Checkbox

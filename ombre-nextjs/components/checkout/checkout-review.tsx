@@ -22,13 +22,16 @@ type ShippingInfo = {
 }
 
 type PaymentInfo = {
-  cardNumber: string
-  cardName: string
-  expiry: string
-  cvc: string
-  saveCard: boolean
-  billingAddressSame: boolean
+  paymentMethod: "card" | "upi"
+  cardNumber?: string
+  cardName?: string
+  expiry?: string
+  cvc?: string
+  saveCard?: boolean
+  billingAddressSame?: boolean
+  upiId?: string
 }
+
 
 type CartItem = {
   id: string
@@ -104,26 +107,37 @@ export default function CheckoutReview({
               </div>
             </div>
 
-            <div>
-              <h3 className="font-medium mb-2">Payment Information</h3>
-              <div className="flex items-center space-x-2">
-                <div className="h-8 w-12 bg-gradient-to-r from-blue-600 to-blue-800 rounded-md flex items-center justify-center text-white text-xs font-bold">
-                  VISA
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  <p>•••• •••• •••• {paymentInfo.cardNumber.slice(-4) || "4242"}</p>
-                  <p>Expires {paymentInfo.expiry || "05/25"}</p>
-                </div>
-              </div>
-              <div className="mt-4">
-                <h4 className="text-sm font-medium">Billing Address</h4>
-                <p className="text-sm text-muted-foreground">
-                  {paymentInfo.billingAddressSame
-                    ? "Same as shipping address"
-                    : `${shippingInfo.firstName} ${shippingInfo.lastName}, ${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.state} ${shippingInfo.zip}, ${shippingInfo.country}`}
-                </p>
-              </div>
-            </div>
+            <h3 className="font-medium mb-2">Payment Information</h3>
+
+{paymentInfo.paymentMethod === "card" ? (
+  <>
+    <div className="flex items-center space-x-2">
+      <div className="h-8 w-12 bg-gradient-to-r from-blue-600 to-blue-800 rounded-md flex items-center justify-center text-white text-xs font-bold">
+        VISA
+      </div>
+      <div className="text-sm text-muted-foreground">
+        <p>•••• •••• •••• {paymentInfo.cardNumber?.slice(-4) || "****"}</p>
+        <p>Expires {paymentInfo.expiry || "MM/YY"}</p>
+      </div>
+    </div>
+    <div className="mt-4">
+      <h4 className="text-sm font-medium">Billing Address</h4>
+      <p className="text-sm text-muted-foreground">
+        {paymentInfo.billingAddressSame
+          ? "Same as shipping address"
+          : `${shippingInfo.firstName} ${shippingInfo.lastName}, ${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.state} ${shippingInfo.zip}, ${shippingInfo.country}`}
+      </p>
+    </div>
+  </>
+) : (
+  <>
+    <div className="text-sm text-muted-foreground">
+      <p>Payment Method: <strong>UPI</strong></p>
+      <p>UPI ID: <strong>{paymentInfo.upiId || "ombre@upi"}</strong></p>
+    </div>
+  </>
+)}
+
           </div>
 
           <Separator />
