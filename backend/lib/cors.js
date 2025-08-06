@@ -4,6 +4,7 @@ import Cors from 'cors';
 const allowedOrigins = [
   'http://localhost:3000',
   'https://ombreaffaire-repo-frontend.vercel.app',
+  'https://ombreaffaire.in'
 ];
 
 // Dynamic origin function
