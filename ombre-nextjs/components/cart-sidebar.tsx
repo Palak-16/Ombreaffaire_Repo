@@ -131,7 +131,7 @@ export function CartSidebar() {
             <div className="mt-6">
               <SheetClose asChild>
                 <Button className="w-full" asChild>
-                  <Link href="/checkout">Checkout</Link>
+                  <Link href="/cart">Cart</Link>
                 </Button>
               </SheetClose>
             </div>

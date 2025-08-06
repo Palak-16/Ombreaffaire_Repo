@@ -50,7 +50,7 @@ export default async function handler(req, res) {
     },
   });
 
-  const url = process.env.NEXT_PUBLIC_FRONTEND_URL || "https://ombreaffaire-repo-frontend.vercel.app"
+  const url = process.env.NEXT_PUBLIC_FRONTEND_URL || "https://ombreaffaire.in" || "https://ombreaffaire-repo-frontend.vercel.app" 
   const resetLink = `${url}/reset-password?token=${token}`;
 
   const mailOptions = {
