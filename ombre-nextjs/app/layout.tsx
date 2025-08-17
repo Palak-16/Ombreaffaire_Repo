@@ -28,11 +28,11 @@ export default async function RootLayout({
   // fetch once for your entire app
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/api/categories`,
-    { cache: "force-cache" }
+    { cache: "reload" }
   );
   const json = await res.json();
   const categories = Array.isArray(json.categories) ? json.categories : [];
-
+  console.log("Fetched categories:", categories);
   return (
     <html lang="en" suppressHydrationWarning>
       <head>

@@ -15,11 +15,11 @@ export default async function ShopLayout({
   // ① hit your categories API once
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/api/categories`,
-    { cache: "force-cache" }  // or revalidate/sec as you prefer
+    { cache: "reload" }  // or revalidate/sec as you prefer
   );
   const json = await res.json();
   const categories: Category[] = json.categories || [];
-
+  // console.log("Fetched categories:", categories);
   return (
     <>
       {/* ② pass them down */}
