@@ -61,7 +61,7 @@ export default function ProductPage() {
 
   const params = useParams();
   const id = params?.id;
-  const allSizes = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
+  const allSizes = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "OneSize"];
 
   useEffect(() => {
     const fetchProduct = async () => {

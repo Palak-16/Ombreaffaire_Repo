@@ -39,7 +39,7 @@ import {
 import { useCategories } from "@/components/CategoriesContext";
 
 const sortOptions = ["Newest", "Price: Low to High", "Price: High to Low"];
-const allSizes = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "XXXL"];
+const allSizes = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "XXXL", "OneSize"];
 
 export default function ProductsPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";

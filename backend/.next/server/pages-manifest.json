@@ -2,8 +2,9 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/api/categories": "pages/api/categories.js",
   "/api/favourites": "pages/api/favourites.js",
+  "/api/cart": "pages/api/cart.js",
+  "/api/products/[id]": "pages/api/products/[id].js",
   "/api/products": "pages/api/products.js",
-  "/api/cart": "pages/api/cart.js"
+  "/api/admin/sizechart": "pages/api/admin/sizechart.js"
 }

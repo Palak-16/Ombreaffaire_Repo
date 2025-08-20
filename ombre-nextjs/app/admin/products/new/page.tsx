@@ -627,7 +627,7 @@ export default function NewProductPage() {
                 <div className="space-y-2">
                   <Label>Available Sizes</Label>
                   <div className="flex flex-wrap gap-2">
-                    {["XXS", "XS", "S", "M", "L", "XL", "XXL"].map((size) => (
+                    {["XXS", "XS", "S", "M", "L", "XL", "XXL", "OneSize"].map((size) => (
                       <label key={size} className="flex items-center space-x-2">
                         <input
                           type="checkbox"

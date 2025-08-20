@@ -47,6 +47,7 @@ export default async function handler(req, res) {
 
       return res.status(200).json({ sizeChart: data.chart_data || [] });
     } catch (err) {
+      console.log("brand:", brand);
       console.error("Size chart fetch error:", err);
       return res.status(500).json({ error: "Failed to fetch size chart" });
     }
