@@ -122,6 +122,8 @@ export default function TermsOfServicePage() {
             Phone: +91 8077069310
             <br />
             Address: Mayfair Business Park Dehradun
+            <br />
+            Managed by : Mittal Associates
           </p>
         </div>
       </div>
