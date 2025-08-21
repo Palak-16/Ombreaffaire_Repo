@@ -74,7 +74,7 @@ export default function ReturnsExchangesPage() {
             <p className="mb-4 text-muted-foreground">
               We understand that sometimes the size might not be just right —
               and that’s okay! At Ombré Affaire, we offer a one-time exchange on
-              your order. <br></br>
+              your order. Exchanged or replaced products will be delivered within 7-10 days <br></br>
               <br></br>
               <b>To request an exchange, please email us at
               ombreaffaire@gmail.com within 24–48 hours of receiving your order,

@@ -99,8 +99,7 @@ export default function TermsOfServicePage() {
 
           <h2>12. Governing Law</h2>
           <p>
-            These Terms shall be governed by and construed in accordance with the laws of the State of New York, without
-            regard to its conflict of law provisions.
+            "These Terms shall be governed by and construed in accordance with the laws of India, without regard to its conflict of law provisions.
           </p>
 
           <h2>13. Dispute Resolution</h2>
@@ -118,11 +117,11 @@ export default function TermsOfServicePage() {
           <h2>15. Contact Information</h2>
           <p>If you have any questions about these Terms, please contact us at:</p>
           <p>
-            Email: legal@ombreaffaire.com
+            Email: ombreaffaire@gmail.com
             <br />
-            Phone: +1 (800) 555-OMBRE
+            Phone: +91 8077069310
             <br />
-            Address: 123 Fashion Avenue, New York, NY 10001
+            Address: Mayfair Business Park Dehradun
           </p>
         </div>
       </div>

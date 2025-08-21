@@ -12,7 +12,7 @@ export default function PrivacyPolicyPage() {
         <h1 className="mb-8 text-center text-4xl font-bold">Privacy Policy</h1>
 
         <div className="mb-8">
-          <p className="text-muted-foreground">Last Updated: April 30, 2023</p>
+          <p className="text-muted-foreground">Last Updated: August 20, 2025</p>
         </div>
 
         <div className="prose prose-gray max-w-none dark:prose-invert">
@@ -112,11 +112,11 @@ export default function PrivacyPolicyPage() {
           <h2>Contact Us</h2>
           <p>If you have any questions about this Privacy Policy, please contact us at:</p>
           <p>
-            Email: privacy@ombreaffaire.com
+            Email: ombreaffaire@gmai.com
             <br />
-            Phone: +1 (800) 555-OMBRE
+            Phone: +91 8077069310
             <br />
-            Address: 123 Fashion Avenue, New York, NY 10001
+            Address:  Mayfair Business Park Dehradun
           </p>
         </div>
       </div>

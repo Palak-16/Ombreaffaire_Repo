@@ -99,7 +99,7 @@ export default function ShippingPage() {
           <section>
             <h2 className="mb-4 text-2xl text-jusify font-semibold">Shipping Policies</h2>
             <p className="mb-4 text-muted-foreground">
-             All fresh orders are <b>processed and shipped within 7–10 business days</b> from the date of
+             All fresh orders are <b>processed and delivered within 7–10 business days</b> from the date of
 confirmation. We take pride in ensuring each piece is prepared with care and quality, which
 may take a little time. <br></br>
 In the rare event of any delays beyond this window, our team will proactively reach out to
