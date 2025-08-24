@@ -1,4 +1,3 @@
-// pages/api/phonepe/callback.js
 import { StatusCheckClient, Env } from "pg-sdk-node";
 
 export default async function handler(req, res) {
@@ -14,13 +13,17 @@ export default async function handler(req, res) {
 
     const status = await client.checkStatus(orderId);
 
+    const frontendBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
     if (status.success) {
-      res.redirect(`/payment-success?orderId=${orderId}`);
+      res.redirect(`${frontendBaseUrl}/payment-success?orderId=${orderId}`);
     } else {
-      res.redirect(`/payment-failed?orderId=${orderId}`);
+      res.redirect(`${frontendBaseUrl}/payment-failed?orderId=${orderId}`);
     }
   } catch (err) {
     console.error("Callback error:", err);
-    res.redirect(`/payment-failed`);
+
+    const frontendBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    res.redirect(`${frontendBaseUrl}/payment-failed`);
   }
 }
