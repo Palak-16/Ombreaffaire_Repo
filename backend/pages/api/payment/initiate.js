@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     const request = StandardCheckoutPayRequest.builder()
       .merchantOrderId(orderId)
       .amount(amount * 100)  // amount in paisa
-      .redirectUrl(`${process.env.NEXT_PUBLIC_BASE_URL}/api/phonepe/callback?orderId=${orderId}`)
+      .redirectUrl(`${process.env.NEXT_PUBLIC_BASE_URL}/api/payment/callback?orderId=${orderId}`)
       .build();
 
     const response = await client.pay(request);
