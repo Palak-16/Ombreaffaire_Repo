@@ -61,9 +61,9 @@ export default function CheckoutReview({
   const [isProcessing, setIsProcessing] = useState(false)
 
   const subtotal = items.reduce((total, item) => total + item.price * item.quantity, 0)
-  const shipping = shippingInfo.shippingMethod === "express" ? 15 : subtotal > 100 ? 0 : 10
-  const tax = subtotal * 0.08
-  const total = subtotal + shipping + tax
+  const shipping = shippingInfo.shippingMethod === "express" ? 15 : subtotal > 100 ? 0 : 0
+  // const tax = subtotal * 0.08
+  const total = subtotal + shipping 
 
   const handlePlaceOrder = () => {
     setIsProcessing(true)
@@ -159,7 +159,7 @@ export default function CheckoutReview({
                   <div className="flex flex-1 flex-col">
                     <div className="flex justify-between text-base font-medium">
                       <h4>{item.name}</h4>
-                      <p className="ml-4">${item.price.toFixed(2)}</p>
+                      <p className="ml-4">₹{item.price.toFixed(2)}</p>
                     </div>
                     <p className="mt-1 text-sm text-muted-foreground">
                       {item.color} / {item.size}
@@ -177,24 +177,24 @@ export default function CheckoutReview({
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>₹{subtotal.toFixed(2)}</span>
               </div>
 
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Shipping</span>
-                <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
+                <span>{shipping === 0 ? "Free" : `₹${shipping.toFixed(2)}`}</span>
               </div>
 
-              <div className="flex justify-between">
+              {/* <div className="flex justify-between">
                 <span className="text-muted-foreground">Tax</span>
                 <span>${tax.toFixed(2)}</span>
-              </div>
+              </div> */}
 
               <Separator />
 
               <div className="flex justify-between font-medium text-lg">
                 <span>Total</span>
-                <span>${total.toFixed(2)}</span>
+                <span>₹{total.toFixed(2)}</span>
               </div>
             </div>
           </div>

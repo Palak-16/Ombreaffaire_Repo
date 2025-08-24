@@ -3,8 +3,15 @@
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
   "/api/products/display": "pages/api/products/display.js",
-  "/api/products/[id]": "pages/api/products/[id].js",
   "/api/products": "pages/api/products.js",
+  "/api/cart": "pages/api/cart.js",
   "/api/colors": "pages/api/colors.js",
-  "/api/cart": "pages/api/cart.js"
+  "/api/products/[id]": "pages/api/products/[id].js",
+  "/api/cart/add": "pages/api/cart/add.js",
+  "/api/account/addresses": "pages/api/account/addresses.js",
+  "/api/account/orders": "pages/api/account/orders.js",
+  "/api/cart/clear": "pages/api/cart/clear.js",
+  "/api/payment/initiate": "pages/api/payment/initiate.js",
+  "/api/favourites": "pages/api/favourites.js",
+  "/api/resolve-psc": "pages/api/resolve-psc.js"
 }

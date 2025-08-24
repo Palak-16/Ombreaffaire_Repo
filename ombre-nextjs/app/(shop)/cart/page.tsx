@@ -20,9 +20,9 @@ export default function CartPage() {
   const [promoSuccess, setPromoSuccess] = useState("")
 
   const subtotal = items.reduce((total, item) => total + item.price * item.quantity, 0)
-  const shipping = subtotal > 100 ? 0 : 10
-  const tax = subtotal * 0.08
-  const total = subtotal + shipping + tax
+  const shipping = subtotal > 100 ? 0 : 0
+  // const tax = subtotal * 0.08
+  const total = subtotal + shipping 
 
   // const handleQuantityChange = (id: string, newQuantity: number) => {
   //   if (newQuantity > 0) {
@@ -231,7 +231,7 @@ export default function CartPage() {
               </form>
 
               <Button className="w-full mt-6" asChild>
-                <Link href="/payment-info">Proceed to Checkout</Link>
+                <Link href="/checkout">Proceed to Checkout</Link>
               </Button>
 
               {/* <div className="mt-6">
