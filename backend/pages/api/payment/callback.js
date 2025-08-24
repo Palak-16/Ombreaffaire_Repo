@@ -13,12 +13,12 @@ export default async function handler(req, res) {
 
     const status = await client.checkStatus(orderId);
 
-    const frontendBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    // const frontendBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
     if (status.success) {
-      res.redirect(`${frontendBaseUrl}/payment-success?orderId=${orderId}`);
+      res.redirect(`${NEXT_PUBLIC_BASE_URL}/payment-success?orderId=${orderId}`);
     } else {
-      res.redirect(`${frontendBaseUrl}/payment-failed?orderId=${orderId}`);
+      res.redirect(`${NEXT_PUBLIC_BASE_URL}/payment-failed?orderId=${orderId}`);
     }
   } catch (err) {
     console.error("Callback error:", err);
