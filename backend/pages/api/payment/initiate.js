@@ -20,7 +20,7 @@ export default async function handler(req, res) {
     );
 
     // Redirect to **frontend callback page**, not backend API
-    const frontendRedirect = `${process.env.NEXT_PUBLIC_BASE_URL}/payment-success?orderId=${orderId}`;
+    const frontendRedirect = `${process.env.BACKEND_BASE_URL}/payment-success?orderId=${orderId}`;
 
     const request = StandardCheckoutPayRequest.builder()
       .merchantOrderId(orderId)

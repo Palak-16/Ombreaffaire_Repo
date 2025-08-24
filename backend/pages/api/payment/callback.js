@@ -16,14 +16,14 @@ export default async function handler(req, res) {
     // const frontendBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
     if (status.success) {
-      res.redirect(`${NEXT_PUBLIC_BASE_URL}/payment-success?orderId=${orderId}`);
+      res.redirect(`${process.env.BACKEND_BASE_URL}/payment-success?orderId=${orderId}`);
     } else {
-      res.redirect(`${NEXT_PUBLIC_BASE_URL}/payment-failed?orderId=${orderId}`);
+      res.redirect(`${process.env.BACKEND_BASE_URL}/payment-failed?orderId=${orderId}`);
     }
   } catch (err) {
     console.error("Callback error:", err);
 
-    const frontendBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const frontendBaseUrl = process.env.BACKEND_BASE_URL || "http://localhost:3000";
     res.redirect(`${frontendBaseUrl}/payment-failed`);
   }
 }
