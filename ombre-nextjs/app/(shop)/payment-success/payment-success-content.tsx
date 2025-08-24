@@ -13,7 +13,7 @@ export default function PaymentSuccessContent() {
       <h1 className="text-2xl font-bold mb-2">Payment Successful 🎉</h1>
       {orderId && <p className="mb-4">Your order ID is <strong>{orderId}</strong></p>}
 
-      <Link href="/orders" className="bg-black text-white px-4 py-2 rounded-lg">
+      <Link href="/account" className="bg-black text-white px-4 py-2 rounded-lg">
         View My Orders
       </Link>
     </div>
