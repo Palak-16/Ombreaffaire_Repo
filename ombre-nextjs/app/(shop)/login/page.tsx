@@ -172,7 +172,7 @@ function LoginPageInner() {
             </Button>
           </form>
 
-          <div className="relative">
+          {/* <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
             </div>
@@ -192,7 +192,7 @@ function LoginPageInner() {
               <Github className="mr-2 h-4 w-4" />
               Google
             </Button>
-          </div>
+          </div> */}
 
           <div className="text-center text-sm">
             Don't have an account?{" "}
